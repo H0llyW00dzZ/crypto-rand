@@ -1,0 +1,49 @@
+{
+  "name": "@h0llyw00dzz/crypto-rand",
+  "version": "0.0.1",
+  "description": "Cryptographically secure random utilities",
+  "main": "dist/crypto_rand.js",
+  "types": "dist/crypto_rand.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
+  },
+  "keywords": [
+    "crypto",
+    "random",
+    "secure",
+    "cryptographic",
+    "random-number",
+    "random-string",
+    "security"
+  ],
+  "author": "H0llyW00dzZ",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "^24.0.3",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3",
+    "undici-types": "^7.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/H0llyW00dzZ/crypto-rand.git"
+  },
+  "bugs": {
+    "url": "https://github.com/H0llyW00dzZ/crypto-rand/issues"
+  },
+  "homepage": "https://github.com/H0llyW00dzZ/crypto-rand#readme",
+  "engines": {
+    "node": ">=14.17"
+  }
+}
