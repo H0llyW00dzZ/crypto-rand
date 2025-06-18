@@ -34,6 +34,7 @@ const id = Crypto.randUUID();
 - UUID generation
 - Weighted random choices
 - Normal distribution random numbers
+- Cross-platform compatibility (Node.js + Browser)
 - And much more!
 
 ## API Documentation
@@ -92,4 +93,15 @@ const bytes = Crypto.randBytes(32);
 This library uses Node.js's built-in `crypto` module to provide cryptographically secure random number generation. Unlike `Math.random()`, which uses a pseudorandom number generator that can be predictable, this library ensures true randomness suitable for security-sensitive applications.
 
 ## Browser Compatibility
-This package is designed for Node.js environments. For browser usage, ensure your bundler can handle Node.js crypto polyfills or use the Web Crypto API alternatives.
+This package supports both Node.js and browser environments out of the box. It automatically detects the environment and uses the appropriate cryptographic API:
+
+- **Node.js**: Uses the built-in `crypto.randomBytes()` for secure random generation
+- **Browser**: Uses `window.crypto.getRandomValues()` from the Web Crypto API
+- **Universal**: Works seamlessly in both environments without additional configuration
+
+### Supported Browsers
+- Chrome 37+
+- Firefox 34+
+- Safari 7+
+- Edge 12+
+- Modern mobile browsers with Web Crypto API support
