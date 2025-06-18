@@ -9,3 +9,8 @@ export const collectCoverageFrom = [
 export const coverageDirectory = 'coverage';
 export const coverageReporters = ['text', 'lcov', 'html'];
 export const verbose = true;
+export const transform = {
+  '^.+\\.tsx?$': ['ts-jest', {
+    tsconfig: 'tsconfig.json',
+  }]
+};
