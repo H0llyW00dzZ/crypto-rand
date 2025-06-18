@@ -23,7 +23,7 @@ const randomNumber = randInt(1, 100);
 const token = randString(32);
 
 // Generate UUID
-const id = Crypto.uuid();
+const id = Crypto.randUUID();
 ```
 
 ## Features
