@@ -13,6 +13,5 @@ export const verbose = true;
 export const transform = {
   '^.+\\.tsx?$': ['ts-jest', {
     tsconfig: 'tsconfig.test.json',
-    isolatedModules: true
   }]
 };
