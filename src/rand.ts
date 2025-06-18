@@ -13,12 +13,17 @@ export class Crypto {
      * Replacement for Math.random().
      */
     static rand(): number {
-        // Generate 4 random bytes (32 bits)
-        const randomBytes = crypto.randomBytes(4);
-        // Convert to unsigned 32-bit integer
-        const randomUint32 = randomBytes.readUInt32BE(0);
-        // Convert to float between 0 and 1
-        return randomUint32 / 0x100000000;
+        if (typeof window !== 'undefined' && window.crypto) {
+            // Browser environment
+            const array = new Uint32Array(1);
+            window.crypto.getRandomValues(array);
+            return array[0] / 0x100000000;
+        } else {
+            // Node.js environment
+            const randomBytes = crypto.randomBytes(4);
+            const randomUint32 = randomBytes.readUInt32BE(0);
+            return randomUint32 / 0x100000000;
+        }
     }
 
     /**
@@ -137,15 +142,52 @@ export class Crypto {
     /**
      * Generate random bytes.
      */
-    static randBytes(size: number): Buffer {
-        return crypto.randomBytes(size);
+    static randBytes(size: number): Uint8Array | Buffer {
+        if (typeof window !== 'undefined' && window.crypto) {
+            // Browser environment
+            const array = new Uint8Array(size);
+            window.crypto.getRandomValues(array);
+            return array;
+        } else {
+            // Node.js environment
+            return crypto.randomBytes(size);
+        }
     }
 
     /**
      * Generate UUID v4.
      */
     static randUUID(): string {
-        return crypto.randomUUID();
+        if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+            // Modern browsers with randomUUID support
+            return window.crypto.randomUUID();
+        } else if (typeof window !== 'undefined' && window.crypto) {
+            // Older browsers with crypto support but no randomUUID
+            // Implement UUID v4 using getRandomValues
+            const rnds = new Uint8Array(16);
+            window.crypto.getRandomValues(rnds);
+
+            // Set version bits (V4)
+            rnds[6] = (rnds[6] & 0x0f) | 0x40;
+            // Set variant bits (RFC4122)
+            rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+            // Convert to hex string
+            return [
+                ...Array.from(rnds.subarray(0, 4)).map(b => b.toString(16).padStart(2, '0')),
+                '-',
+                ...Array.from(rnds.subarray(4, 6)).map(b => b.toString(16).padStart(2, '0')),
+                '-',
+                ...Array.from(rnds.subarray(6, 8)).map(b => b.toString(16).padStart(2, '0')),
+                '-',
+                ...Array.from(rnds.subarray(8, 10)).map(b => b.toString(16).padStart(2, '0')),
+                '-',
+                ...Array.from(rnds.subarray(10)).map(b => b.toString(16).padStart(2, '0')),
+            ].join('');
+        } else {
+            // Node.js environment
+            return crypto.randomUUID();
+        }
     }
 
     /**

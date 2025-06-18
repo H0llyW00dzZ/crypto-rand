@@ -1,12 +1,16 @@
 {
   "name": "@h0llyw00dzz/crypto-rand",
-  "version": "0.0.3",
-  "description": "Cryptographically secure random utilities",
+  "version": "0.0.4",
+  "description": "Cryptographically secure random utilities for Node.js and browsers",
   "main": "dist/crypto_rand.js",
   "types": "dist/crypto_rand.d.ts",
+  "browser": {
+    "crypto": false
+  },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc",
@@ -23,15 +27,22 @@
     "cryptographic",
     "random-number",
     "random-string",
-    "security"
+    "security",
+    "uuid",
+    "browser",
+    "nodejs"
   ],
   "author": "H0llyW00dzZ",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.23.7",
+    "@babel/preset-env": "^7.23.7",
+    "@babel/preset-typescript": "^7.23.7",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.3",
+    "babel-jest": "^30.0.0",
     "jest": "^30.0.0",
-    "ts-jest": "^29.4.0",
+    "jest-environment-jsdom": "^30.0.0",
     "typescript": "^5.8.3",
     "undici-types": "^7.10.0"
   },
