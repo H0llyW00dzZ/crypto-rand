@@ -1,6 +1,6 @@
 {
   "name": "@h0llyw00dzz/crypto-rand",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Cryptographically secure random utilities",
   "main": "dist/crypto_rand.js",
   "types": "dist/crypto_rand.d.ts",
