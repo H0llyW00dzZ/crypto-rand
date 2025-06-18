@@ -17,3 +17,5 @@ __tests__/
 
 # Node modules (though this is default)
 node_modules/
+.env
+.env.*
