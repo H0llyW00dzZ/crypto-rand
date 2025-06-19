@@ -19,7 +19,7 @@ export class Crypto {
      * Check if Web Crypto API is available with getRandomValues
      */
     private static hasWebCrypto(): boolean {
-        return this.isBrowser() && typeof window.crypto.getRandomValues === 'function';
+        return Crypto.isBrowser() && typeof window.crypto.getRandomValues === 'function';
     }
 
     /**
@@ -34,7 +34,7 @@ export class Crypto {
      * Replacement for Math.random().
      */
     static rand(): number {
-        if (this.hasWebCrypto()) {
+        if (Crypto.hasWebCrypto()) {
             // Browser environment
             const array = new Uint32Array(1);
             window.crypto.getRandomValues(array);
@@ -144,8 +144,8 @@ export class Crypto {
      * Note: Only available in Node.js environment.
      */
     static randHex(length: number): string {
-        if (this.isBrowser()) {
-            this.throwBrowserError('randHex');
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randHex');
         }
 
         const bytes = crypto.randomBytes(Math.ceil(length / 2));
@@ -157,8 +157,8 @@ export class Crypto {
      * Note: Only available in Node.js environment.
      */
     static randBase64(length: number): string {
-        if (this.isBrowser()) {
-            this.throwBrowserError('randBase64');
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randBase64');
         }
 
         const bytes = crypto.randomBytes(Math.ceil(length * 3 / 4));
@@ -176,7 +176,7 @@ export class Crypto {
      * Generate random bytes.
      */
     static randBytes(size: number): Uint8Array | Buffer {
-        if (this.hasWebCrypto()) {
+        if (Crypto.hasWebCrypto()) {
             // Browser environment
             const array = new Uint8Array(size);
             window.crypto.getRandomValues(array);
@@ -193,10 +193,10 @@ export class Crypto {
      * Generate UUID v4.
      */
     static randUUID(): string {
-        if (this.isBrowser() && window.crypto.randomUUID) {
+        if (Crypto.isBrowser() && window.crypto.randomUUID) {
             // Modern browsers with randomUUID support
             return window.crypto.randomUUID();
-        } else if (this.hasWebCrypto()) {
+        } else if (Crypto.hasWebCrypto()) {
             // Older browsers with crypto support but no randomUUID
             // Implement UUID v4 using getRandomValues
             const rnds = new Uint8Array(16);
@@ -244,8 +244,8 @@ export class Crypto {
      * Note: Only available in Node.js environment.
      */
     static randSeed(): number {
-        if (this.isBrowser()) {
-            this.throwBrowserError('randSeed');
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randSeed');
         }
 
         const bytes = crypto.randomBytes(4);
@@ -257,8 +257,8 @@ export class Crypto {
      * Note: Only available in Node.js environment.
      */
     static randVersion(): string {
-        if (this.isBrowser()) {
-            this.throwBrowserError('randVersion');
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randVersion');
         }
 
         const randomBytes = crypto.randomBytes(32);
@@ -289,8 +289,8 @@ export class Crypto {
      */
     static randSeeded(seed?: number): number {
         if (seed !== undefined) {
-            if (this.isBrowser()) {
-                this.throwBrowserError('randSeeded (with seed parameter)');
+            if (Crypto.isBrowser()) {
+                Crypto.throwBrowserError('randSeeded (with seed parameter)');
             }
             // Create deterministic but secure random from seed
             const hash = crypto.createHash('sha256');
@@ -306,14 +306,14 @@ export class Crypto {
      * Check if current environment supports all features.
      */
     static isFullySupported(): boolean {
-        return !this.isBrowser();
+        return !Crypto.isBrowser();
     }
 
     /**
      * Get list of methods that are not supported in current environment.
      */
     static getUnsupportedMethods(): string[] {
-        if (this.isBrowser()) {
+        if (Crypto.isBrowser()) {
             return [
                 'randHex',
                 'randBase64',
@@ -335,8 +335,8 @@ export class Crypto {
         supportedMethods: string[];
         unsupportedMethods: string[];
     } {
-        const isBrowser = this.isBrowser();
-        const hasWebCrypto = this.hasWebCrypto();
+        const isBrowser = Crypto.isBrowser();
+        const hasWebCrypto = Crypto.hasWebCrypto();
         const hasRandomUUID = isBrowser ?
             (window.crypto && typeof window.crypto.randomUUID === 'function') :
             (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function');
@@ -348,7 +348,7 @@ export class Crypto {
             'randNormal', 'randSeeded'
         ];
 
-        const unsupportedMethods = this.getUnsupportedMethods();
+        const unsupportedMethods = Crypto.getUnsupportedMethods();
         const supportedMethods = allMethods.filter(method => !unsupportedMethods.includes(method));
 
         return {
