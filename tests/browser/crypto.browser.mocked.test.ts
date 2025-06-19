@@ -1,4 +1,3 @@
-
 import { Crypto } from '../../src/rand';
 
 // Setup browser environment mocks
