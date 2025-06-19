@@ -9,20 +9,43 @@ import { DEFAULT_CHARSET } from './const';
  */
 export class Crypto {
     /**
+     * Check if running in browser environment
+     */
+    private static isBrowser(): boolean {
+        return typeof window !== 'undefined' && typeof window.crypto !== 'undefined';
+    }
+
+    /**
+     * Check if Web Crypto API is available with getRandomValues
+     */
+    private static hasWebCrypto(): boolean {
+        return this.isBrowser() && typeof window.crypto.getRandomValues === 'function';
+    }
+
+    /**
+     * Throw error for Node.js-only methods when running in browser
+     */
+    private static throwBrowserError(methodName: string): never {
+        throw new Error(`${methodName} is not available in browser environment. This method requires Node.js crypto module.`);
+    }
+
+    /**
      * Generate a cryptographically secure random float between 0 and 1.
      * Replacement for Math.random().
      */
     static rand(): number {
-        if (typeof window !== 'undefined' && window.crypto) {
+        if (this.hasWebCrypto()) {
             // Browser environment
             const array = new Uint32Array(1);
             window.crypto.getRandomValues(array);
             return array[0] / 0x100000000;
-        } else {
+        } else if (typeof crypto !== 'undefined' && crypto.randomBytes) {
             // Node.js environment
             const randomBytes = crypto.randomBytes(4);
             const randomUint32 = randomBytes.readUInt32BE(0);
             return randomUint32 / 0x100000000;
+        } else {
+            throw new Error('No secure random number generator available. Please use in Node.js environment or modern browser with Web Crypto API.');
         }
     }
 
@@ -118,16 +141,26 @@ export class Crypto {
 
     /**
      * Generate random hex string.
+     * Note: Only available in Node.js environment.
      */
     static randHex(length: number): string {
+        if (this.isBrowser()) {
+            this.throwBrowserError('randHex');
+        }
+
         const bytes = crypto.randomBytes(Math.ceil(length / 2));
         return bytes.toString('hex').substring(0, length);
     }
 
     /**
      * Generate random base64 string.
+     * Note: Only available in Node.js environment.
      */
     static randBase64(length: number): string {
+        if (this.isBrowser()) {
+            this.throwBrowserError('randBase64');
+        }
+
         const bytes = crypto.randomBytes(Math.ceil(length * 3 / 4));
         return bytes.toString('base64').substring(0, length);
     }
@@ -143,14 +176,16 @@ export class Crypto {
      * Generate random bytes.
      */
     static randBytes(size: number): Uint8Array | Buffer {
-        if (typeof window !== 'undefined' && window.crypto) {
+        if (this.hasWebCrypto()) {
             // Browser environment
             const array = new Uint8Array(size);
             window.crypto.getRandomValues(array);
             return array;
-        } else {
+        } else if (typeof crypto !== 'undefined' && crypto.randomBytes) {
             // Node.js environment
             return crypto.randomBytes(size);
+        } else {
+            throw new Error('No secure random bytes generator available. Please use in Node.js environment or modern browser with Web Crypto API.');
         }
     }
 
@@ -158,10 +193,10 @@ export class Crypto {
      * Generate UUID v4.
      */
     static randUUID(): string {
-        if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+        if (this.isBrowser() && window.crypto.randomUUID) {
             // Modern browsers with randomUUID support
             return window.crypto.randomUUID();
-        } else if (typeof window !== 'undefined' && window.crypto) {
+        } else if (this.hasWebCrypto()) {
             // Older browsers with crypto support but no randomUUID
             // Implement UUID v4 using getRandomValues
             const rnds = new Uint8Array(16);
@@ -184,9 +219,11 @@ export class Crypto {
                 '-',
                 ...Array.from(rnds.subarray(10)).map(b => b.toString(16).padStart(2, '0')),
             ].join('');
-        } else {
+        } else if (typeof crypto !== 'undefined' && crypto.randomUUID) {
             // Node.js environment
             return crypto.randomUUID();
+        } else {
+            throw new Error('UUID generation not available. Please use in Node.js environment or modern browser with Web Crypto API.');
         }
     }
 
@@ -204,16 +241,26 @@ export class Crypto {
 
     /**
      * Generate cryptographically secure seed.
+     * Note: Only available in Node.js environment.
      */
     static randSeed(): number {
+        if (this.isBrowser()) {
+            this.throwBrowserError('randSeed');
+        }
+
         const bytes = crypto.randomBytes(4);
         return bytes.readUInt32BE(0);
     }
 
     /**
      * Generate random version string (44 characters base64-like).
+     * Note: Only available in Node.js environment.
      */
     static randVersion(): string {
+        if (this.isBrowser()) {
+            this.throwBrowserError('randVersion');
+        }
+
         const randomBytes = crypto.randomBytes(32);
         const base64Version = randomBytes.toString('base64');
         return base64Version;
@@ -238,9 +285,13 @@ export class Crypto {
 
     /**
      * Secure replacement for Math.random() with seed support.
+     * Note: Seeded functionality only available in Node.js environment.
      */
     static randSeeded(seed?: number): number {
         if (seed !== undefined) {
+            if (this.isBrowser()) {
+                this.throwBrowserError('randSeeded (with seed parameter)');
+            }
             // Create deterministic but secure random from seed
             const hash = crypto.createHash('sha256');
             hash.update(seed.toString());
@@ -249,6 +300,64 @@ export class Crypto {
             return value / 0x100000000;
         }
         return Crypto.rand();
+    }
+
+    /**
+     * Check if current environment supports all features.
+     */
+    static isFullySupported(): boolean {
+        return !this.isBrowser();
+    }
+
+    /**
+     * Get list of methods that are not supported in current environment.
+     */
+    static getUnsupportedMethods(): string[] {
+        if (this.isBrowser()) {
+            return [
+                'randHex',
+                'randBase64',
+                'randSeed',
+                'randVersion',
+                'randSeeded (with seed parameter)'
+            ];
+        }
+        return [];
+    }
+
+    /**
+     * Get environment info.
+     */
+    static getEnvironmentInfo(): {
+        isBrowser: boolean;
+        hasWebCrypto: boolean;
+        hasRandomUUID: boolean;
+        supportedMethods: string[];
+        unsupportedMethods: string[];
+    } {
+        const isBrowser = this.isBrowser();
+        const hasWebCrypto = this.hasWebCrypto();
+        const hasRandomUUID = isBrowser ?
+            (window.crypto && typeof window.crypto.randomUUID === 'function') :
+            (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function');
+
+        const allMethods = [
+            'rand', 'randInt', 'randN', 'randIndex', 'randChoice', 'randWeighted',
+            'shuffle', 'randString', 'randHex', 'randBase64', 'randBool', 'randBytes',
+            'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat',
+            'randNormal', 'randSeeded'
+        ];
+
+        const unsupportedMethods = this.getUnsupportedMethods();
+        const supportedMethods = allMethods.filter(method => !unsupportedMethods.includes(method));
+
+        return {
+            isBrowser,
+            hasWebCrypto,
+            hasRandomUUID,
+            supportedMethods,
+            unsupportedMethods
+        };
     }
 }
 
