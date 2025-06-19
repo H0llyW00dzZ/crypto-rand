@@ -8,7 +8,7 @@ Cryptographically secure random utilities for Node.js and browsers.
 npm install @h0llyw00dzz/crypto-rand
 ```
 
-> **Troubleshooting**: If the standard import doesn't work after installation, try using the direct path:
+> **Troubleshooting**: If the standard import doesn't work after installation for an older version, try using the direct path:
 >
 > ```typescript
 > import { Crypto, randString, randInt } from '@h0llyw00dzz/crypto-rand/dist/src/crypto_rand';
