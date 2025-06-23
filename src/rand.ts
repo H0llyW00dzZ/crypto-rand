@@ -274,7 +274,21 @@ export class Crypto {
     }
 
     /**
-     * Generate random with normal distribution (Box-Muller transform).
+     * Generate random number with normal distribution using Box-Muller transform.
+     * 
+     * This method is similar to randGaussian but ensures that the logarithm function
+     * never receives zero by converting [0,1) to (0,1).
+     * 
+     * Steps:
+     * 
+     * 1. Generate two independent uniform random numbers:
+     *    - (u) is adjusted to be in the interval (0, 1) by using 1 - Crypto.rand().
+     *    - (v) is a standard uniform random number in [0, 1).
+     * 2. Apply the Box-Muller transform:
+     *    - Compute z = √(-2 × ln(u)) × cos(2π × v)
+     *    - This gives z, a standard normally distributed random number (mean = 0, std dev = 1).
+     * 3. Scale and shift z to have the desired mean and standard deviation:
+     *    - Return z × stdDev + mean
      */
     static randNormal(mean: number = 0, stdDev: number = 1): number {
         const u = 1 - Crypto.rand(); // Converting [0,1) to (0,1)
@@ -345,7 +359,7 @@ export class Crypto {
             'rand', 'randInt', 'randN', 'randIndex', 'randChoice', 'randWeighted',
             'shuffle', 'randString', 'randHex', 'randBase64', 'randBool', 'randBytes',
             'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat',
-            'randNormal', 'randSeeded'
+            'randNormal', 'randSeeded', 'randSubset', 'randGaussian'
         ];
 
         const unsupportedMethods = Crypto.getUnsupportedMethods();
@@ -359,6 +373,41 @@ export class Crypto {
             unsupportedMethods
         };
     }
+
+    /**
+     * Generate a random subset of a given size from an array.
+     */
+    static randSubset<T>(array: T[], size: number): T[] {
+        if (size > array.length) {
+            throw new Error('Subset size cannot be larger than the array size');
+        }
+
+        const shuffled = Crypto.shuffle(array);
+        return shuffled.slice(0, size);
+    }
+
+    /**
+     * Generate random number with Gaussian distribution using Box-Muller transform.
+     * 
+     * Steps:
+     * 
+     * 1. Generate two independent uniform random numbers (u₁) and (u₂) in the interval [0, 1).
+     * 2. Apply the Box-Muller transform:
+     *    - Compute z₀ = √(-2 × ln(u₁)) × cos(2π × u₂)
+     *    - This gives z₀, a standard normally distributed random number (mean = 0, std dev = 1).
+     * 3. Scale and shift z₀ to have the desired mean and standard deviation:
+     *    - Return z₀ × stdDev + mean
+     */
+    static randGaussian(mean: number = 0, stdDev: number = 1): number {
+        // Uniform random number in [0, 1)
+        const u1 = Crypto.rand();
+        // Uniform random number in [0, 1)
+        const u2 = Crypto.rand();
+        // Theoretically could encounter Math.log(0) if returns exactly 0 (though this is extremely unlikely with cryptographic randomness 🤪) Crypto.rand()
+        const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+        return z0 * stdDev + mean;
+    }
+
 }
 
 // Convenience exports - Go-style short names
@@ -381,5 +430,7 @@ export const {
     randVersion,
     randFloat,
     randNormal,
-    randSeeded
+    randSeeded,
+    randSubset,
+    randGaussian
 } = Crypto;

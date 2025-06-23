@@ -348,4 +348,47 @@ describe('Crypto Class', () => {
       expect(result).toBeLessThan(1);
     });
   });
+
+  describe('randSubset()', () => {
+    it('should return a subset of the specified size', () => {
+      const array = [1, 2, 3, 4, 5];
+      const subset = Crypto.randSubset(array, 3);
+      expect(subset).toHaveLength(3);
+      subset.forEach(item => {
+        expect(array).toContain(item);
+      });
+    });
+
+    it('should throw an error if subset size is larger than array size', () => {
+      const array = [1, 2, 3];
+      expect(() => Crypto.randSubset(array, 5)).toThrow('Subset size cannot be larger than the array size');
+    });
+
+    it('should return an empty array if size is 0', () => {
+      const array = [1, 2, 3];
+      const subset = Crypto.randSubset(array, 0);
+      expect(subset).toEqual([]);
+    });
+  });
+
+  describe('randGaussian()', () => {
+    it('should generate numbers with mean close to specified mean', () => {
+      const mean = 5;
+      const stdDev = 2;
+      const samples = Array.from({ length: 1000 }, () => Crypto.randGaussian(mean, stdDev));
+      const sampleMean = samples.reduce((sum, value) => sum + value, 0) / samples.length;
+      expect(sampleMean).toBeCloseTo(mean, 0);
+    });
+
+    it('should generate numbers with standard deviation close to specified stdDev', () => {
+      const mean = 0;
+      const stdDev = 1;
+      const samples = Array.from({ length: 1000 }, () => Crypto.randGaussian(mean, stdDev));
+      const sampleMean = samples.reduce((sum, value) => sum + value, 0) / samples.length;
+      const variance = samples.reduce((sum, value) => sum + Math.pow(value - sampleMean, 2), 0) / samples.length;
+      const sampleStdDev = Math.sqrt(variance);
+      expect(sampleStdDev).toBeCloseTo(stdDev, 0);
+    });
+  });
+
 });
