@@ -1,4 +1,5 @@
 # crypto-rand
+[![npm version](https://badge.fury.io/js/@h0llyw00dzz%2Fcrypto-rand.svg)](https://badge.fury.io/js/@h0llyw00dzz%2Fcrypto-rand)
 
 Cryptographically secure random utilities for Node.js and browsers.
 
