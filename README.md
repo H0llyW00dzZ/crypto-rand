@@ -61,6 +61,15 @@ const id = Crypto.randUUID();
 - `Crypto.randNormal(mean, stdDev)` - Normal distribution random
 - `Crypto.randSeed()` - Generate cryptographically secure seed
 - `Crypto.randUUID()` - Generate UUID v4
+- `Crypto.randGaussian(mean, stdDev)` - Similar to randNormal, but with different handling of edge cases
+- `Crypto.randSubset(array, size)` - Select a random subset from an array
+
+> [!NOTE]
+>
+> - **randNormal vs. randGaussian**: Both methods generate normally distributed random numbers using the Box-Muller transform. `randNormal` ensures the logarithm function never receives zero by adjusting its input range, while `randGaussian` uses a direct approach.
+>
+> - **randSubset**: Allows selection of a random subset from an array, useful for sampling without replacement.
+
 
 ### Character Sets
 ```typescript
