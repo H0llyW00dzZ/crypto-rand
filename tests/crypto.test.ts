@@ -391,4 +391,174 @@ describe('Crypto Class', () => {
     });
   });
 
+  describe('randWalk()', () => {
+    it('should return array with correct length', () => {
+      const steps = 10;
+      const walk = Crypto.randWalk(steps);
+      // +1 because it includes starting position 0
+      expect(walk).toHaveLength(steps + 1);
+    });
+
+    it('should start at position 0', () => {
+      const walk = Crypto.randWalk(5);
+      expect(walk[0]).toBe(0);
+    });
+
+    it('should use default step size of 1', () => {
+      const walk = Crypto.randWalk(10);
+      for (let i = 1; i < walk.length; i++) {
+        const step = Math.abs(walk[i] - walk[i - 1]);
+        expect(step).toBe(1);
+      }
+    });
+
+    it('should use custom step size', () => {
+      const stepSize = 2;
+      const walk = Crypto.randWalk(10, stepSize);
+      for (let i = 1; i < walk.length; i++) {
+        const step = Math.abs(walk[i] - walk[i - 1]);
+        expect(step).toBe(stepSize);
+      }
+    });
+
+    it('should only move by +stepSize or -stepSize', () => {
+      const stepSize = 3;
+      const walk = Crypto.randWalk(20, stepSize);
+      for (let i = 1; i < walk.length; i++) {
+        const change = walk[i] - walk[i - 1];
+        expect([stepSize, -stepSize]).toContain(change);
+      }
+    });
+
+    it('should produce different walks on multiple calls', () => {
+      const walks = new Set<string>();
+      for (let i = 0; i < 10; i++) {
+        const walk = Crypto.randWalk(10);
+        walks.add(JSON.stringify(walk));
+      }
+      // Should have variety (at least 8 different walks out of 10)
+      expect(walks.size).toBeGreaterThan(7);
+    });
+
+    it('should handle zero steps', () => {
+      const walk = Crypto.randWalk(0);
+      expect(walk).toEqual([0]);
+    });
+
+    it('should handle single step', () => {
+      const walk = Crypto.randWalk(1);
+      expect(walk).toHaveLength(2);
+      expect(walk[0]).toBe(0);
+      expect([1, -1]).toContain(walk[1]);
+    });
+
+    it('should handle fractional step sizes', () => {
+      const stepSize = 0.5;
+      const walk = Crypto.randWalk(5, stepSize);
+      expect(walk).toHaveLength(6);
+      expect(walk[0]).toBe(0);
+
+      for (let i = 1; i < walk.length; i++) {
+        const change = walk[i] - walk[i - 1];
+        expect([stepSize, -stepSize]).toContain(change);
+      }
+    });
+
+    it('should handle negative step sizes', () => {
+      const stepSize = -2;
+      const walk = Crypto.randWalk(5, stepSize);
+
+      for (let i = 1; i < walk.length; i++) {
+        const change = walk[i] - walk[i - 1];
+        // With negative stepSize, directions are flipped
+        expect([stepSize, -stepSize]).toContain(change);
+      }
+    });
+
+    it('should be cumulative (each position depends on previous)', () => {
+      const walk = Crypto.randWalk(10, 2);
+      let expectedPosition = 0;
+
+      expect(walk[0]).toBe(expectedPosition);
+
+      for (let i = 1; i < walk.length; i++) {
+        const change = walk[i] - walk[i - 1];
+        expectedPosition += change;
+        expect(walk[i]).toBe(expectedPosition);
+      }
+    });
+
+    it('should maintain mathematical properties over many steps', () => {
+      const steps = 1000;
+      const walk = Crypto.randWalk(steps);
+
+      // Verify array length
+      expect(walk).toHaveLength(steps + 1);
+
+      // Verify all steps are valid
+      for (let i = 1; i < walk.length; i++) {
+        const change = walk[i] - walk[i - 1];
+        expect([1, -1]).toContain(change);
+      }
+
+      // Final position should be reasonable (not impossibly far)
+      const finalPosition = walk[walk.length - 1];
+      expect(Math.abs(finalPosition)).toBeLessThanOrEqual(steps);
+    });
+
+    it('should have roughly balanced movement over many iterations', () => {
+      // Test statistical properties over multiple walks
+      const walkCount = 50;
+      const steps = 20;
+      let totalFinalPositions = 0;
+
+      for (let i = 0; i < walkCount; i++) {
+        const walk = Crypto.randWalk(steps);
+        totalFinalPositions += walk[walk.length - 1];
+      }
+
+      const averageFinalPosition = totalFinalPositions / walkCount;
+      // Average should be close to 0 (unbiased random walk)
+      expect(Math.abs(averageFinalPosition)).toBeLessThan(5);
+    });
+
+    it('should work with large step counts', () => {
+      const walk = Crypto.randWalk(1000);
+      expect(walk).toHaveLength(1001);
+      expect(walk[0]).toBe(0);
+
+      // Verify first few and last few steps for efficiency
+      for (let i = 1; i <= 5; i++) {
+        const change = walk[i] - walk[i - 1];
+        expect([1, -1]).toContain(change);
+      }
+
+      for (let i = walk.length - 5; i < walk.length; i++) {
+        const change = walk[i] - walk[i - 1];
+        expect([1, -1]).toContain(change);
+      }
+    });
+
+    it('should return numbers (not strings or other types)', () => {
+      const walk = Crypto.randWalk(5);
+      walk.forEach(position => {
+        expect(typeof position).toBe('number');
+        expect(Number.isFinite(position)).toBe(true);
+      });
+    });
+
+    it('should handle edge case with very small step size', () => {
+      const stepSize = 0.001;
+      const walk = Crypto.randWalk(3, stepSize);
+
+      expect(walk).toHaveLength(4);
+      expect(walk[0]).toBe(0);
+
+      for (let i = 1; i < walk.length; i++) {
+        const change = walk[i] - walk[i - 1];
+        expect(Math.abs(Math.abs(change) - stepSize)).toBeLessThan(0.0001);
+      }
+    });
+  });
+
 });

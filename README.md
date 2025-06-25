@@ -63,13 +63,15 @@ const id = Crypto.randUUID();
 - `Crypto.randUUID()` - Generate UUID v4
 - `Crypto.randGaussian(mean, stdDev)` - Similar to randNormal, but with different handling of edge cases
 - `Crypto.randSubset(array, size)` - Select a random subset from an array
+- `Crypto.randWalk(steps, stepSize?)` - Generate random walk sequence (stepSize defaults to 1)
 
 > [!NOTE]
 >
 > - **randNormal vs. randGaussian**: Both methods generate normally distributed random numbers using the [Box-Muller transform](https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform). `randNormal` ensures the logarithm function never receives zero by adjusting its input range, while `randGaussian` uses a direct approach.
 >
 > - **randSubset**: Allows selection of a random subset from an array, useful for sampling without replacement.
-
+>
+> - **randWalk**: Generates a sequence representing a random walk starting from position 0, where each step moves by ±stepSize. Returns an array containing all positions including the starting position.
 
 ### Character Sets
 ```typescript

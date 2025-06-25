@@ -359,7 +359,7 @@ export class Crypto {
             'rand', 'randInt', 'randN', 'randIndex', 'randChoice', 'randWeighted',
             'shuffle', 'randString', 'randHex', 'randBase64', 'randBool', 'randBytes',
             'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat',
-            'randNormal', 'randSeeded', 'randSubset', 'randGaussian'
+            'randNormal', 'randSeeded', 'randSubset', 'randGaussian', 'randWalk'
         ];
 
         const unsupportedMethods = Crypto.getUnsupportedMethods();
@@ -408,6 +408,22 @@ export class Crypto {
         return z0 * stdDev + mean;
     }
 
+    /**
+     * Generate random walk sequence.
+     */
+    static randWalk(steps: number, stepSize: number = 1): number[] {
+        const walk = [0];
+        let position = 0;
+
+        for (let i = 0; i < steps; i++) {
+            const direction = Crypto.randBool() ? 1 : -1;
+            position += direction * stepSize;
+            walk.push(position);
+        }
+
+        return walk;
+    }
+
 }
 
 // Convenience exports - Go-style short names
@@ -432,5 +448,6 @@ export const {
     randNormal,
     randSeeded,
     randSubset,
-    randGaussian
+    randGaussian,
+    randWalk
 } = Crypto;
