@@ -118,7 +118,8 @@ describe('Crypto Browser Error Handling', () => {
       expect(unsupported).toContain('randSeed');
       expect(unsupported).toContain('randVersion');
       expect(unsupported).toContain('randSeeded (with seed parameter)');
-      expect(unsupported).toHaveLength(5);
+      expect(unsupported).toContain('randLattice');
+      expect(unsupported).toHaveLength(6);
     });
 
     it('should provide correct environment information', () => {
@@ -147,7 +148,8 @@ describe('Crypto Browser Error Handling', () => {
         'randBase64',
         'randSeed',
         'randVersion',
-        'randSeeded (with seed parameter)'
+        'randSeeded (with seed parameter)',
+        'randLattice'
       ]);
     });
   });
