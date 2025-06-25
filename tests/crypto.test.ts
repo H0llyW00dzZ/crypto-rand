@@ -561,4 +561,265 @@ describe('Crypto Class', () => {
     });
   });
 
+  describe('randPassword()', () => {
+    it('should generate password of specified length', () => {
+      const password = Crypto.randPassword({ length: 12 });
+      expect(password).toHaveLength(12);
+      expect(typeof password).toBe('string');
+    });
+
+    it('should use default character types (uppercase, lowercase, numbers)', () => {
+      const password = Crypto.randPassword({ length: 20 });
+
+      // Should contain at least one of each default type
+      expect(/[A-Z]/.test(password)).toBe(true); // uppercase
+      expect(/[a-z]/.test(password)).toBe(true); // lowercase
+      expect(/[0-9]/.test(password)).toBe(true); // numbers
+
+      // Should not contain symbols by default
+      expect(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)).toBe(false);
+    });
+
+    it('should include uppercase when specified', () => {
+      const password = Crypto.randPassword({
+        length: 20,
+        includeUppercase: true,
+        includeLowercase: false,
+        includeNumbers: false,
+        includeSymbols: false
+      });
+
+      expect(/[A-Z]/.test(password)).toBe(true);
+      expect(/[a-z]/.test(password)).toBe(false);
+      expect(/[0-9]/.test(password)).toBe(false);
+    });
+
+    it('should include lowercase when specified', () => {
+      const password = Crypto.randPassword({
+        length: 20,
+        includeUppercase: false,
+        includeLowercase: true,
+        includeNumbers: false,
+        includeSymbols: false
+      });
+
+      expect(/[A-Z]/.test(password)).toBe(false);
+      expect(/[a-z]/.test(password)).toBe(true);
+      expect(/[0-9]/.test(password)).toBe(false);
+    });
+
+    it('should include numbers when specified', () => {
+      const password = Crypto.randPassword({
+        length: 20,
+        includeUppercase: false,
+        includeLowercase: false,
+        includeNumbers: true,
+        includeSymbols: false
+      });
+
+      expect(/[A-Z]/.test(password)).toBe(false);
+      expect(/[a-z]/.test(password)).toBe(false);
+      expect(/[0-9]/.test(password)).toBe(true);
+    });
+
+    it('should include symbols when specified', () => {
+      const password = Crypto.randPassword({
+        length: 20,
+        includeUppercase: false,
+        includeLowercase: false,
+        includeNumbers: false,
+        includeSymbols: true
+      });
+
+      expect(/[A-Z]/.test(password)).toBe(false);
+      expect(/[a-z]/.test(password)).toBe(false);
+      expect(/[0-9]/.test(password)).toBe(false);
+      expect(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)).toBe(true);
+    });
+
+    it('should exclude similar characters when specified', () => {
+      const password = Crypto.randPassword({
+        length: 100, // Large sample for better testing
+        excludeSimilar: true
+      });
+
+      // Should not contain similar-looking characters: 0, O, 1, l, I
+      expect(password).not.toMatch(/[0O1lI]/);
+    });
+
+    it('should include similar characters when not excluded', () => {
+      // Generate multiple passwords to increase chance of getting similar chars
+      let foundSimilar = false;
+      for (let i = 0; i < 10; i++) {
+        const password = Crypto.randPassword({
+          length: 50,
+          excludeSimilar: false
+        });
+        if (/[0O1lI]/.test(password)) {
+          foundSimilar = true;
+          break;
+        }
+      }
+      expect(foundSimilar).toBe(true);
+    });
+
+    it('should use custom characters when provided', () => {
+      const customChars = 'ABC123';
+      const password = Crypto.randPassword({
+        length: 20,
+        customChars
+      });
+
+      for (const char of password) {
+        expect(customChars).toContain(char);
+      }
+    });
+
+    it('should ignore other options when custom characters are provided', () => {
+      const customChars = 'XYZ';
+      const password = Crypto.randPassword({
+        length: 10,
+        customChars,
+        includeUppercase: true,
+        includeLowercase: true,
+        includeNumbers: true,
+        includeSymbols: true
+      });
+
+      // Should only use custom chars, ignoring other options
+      for (const char of password) {
+        expect(customChars).toContain(char);
+      }
+      expect(password).toMatch(/^[XYZ]+$/);
+    });
+
+    it('should throw error when no character types are enabled', () => {
+      expect(() => Crypto.randPassword({
+        length: 10,
+        includeUppercase: false,
+        includeLowercase: false,
+        includeNumbers: false,
+        includeSymbols: false
+      })).toThrow('At least one character type must be enabled');
+    });
+
+    it('should generate different passwords on multiple calls', () => {
+      const passwords = new Set<string>();
+      for (let i = 0; i < 50; i++) {
+        passwords.add(Crypto.randPassword({ length: 16 }));
+      }
+      // Should have high uniqueness (at least 48 unique out of 50)
+      expect(passwords.size).toBeGreaterThan(47);
+    });
+
+    it('should handle complex character combinations', () => {
+      const password = Crypto.randPassword({
+        length: 50,
+        includeUppercase: true,
+        includeLowercase: true,
+        includeNumbers: true,
+        includeSymbols: true,
+        excludeSimilar: true
+      });
+
+      expect(password).toHaveLength(50);
+      expect(/[A-Z]/.test(password)).toBe(true);
+      expect(/[a-z]/.test(password)).toBe(true);
+      expect(/[0-9]/.test(password)).toBe(true);
+      expect(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)).toBe(true);
+      expect(password).not.toMatch(/[0O1lI]/);
+    });
+
+    it('should handle minimum length passwords', () => {
+      const password = Crypto.randPassword({ length: 1 });
+      expect(password).toHaveLength(1);
+      expect(typeof password).toBe('string');
+    });
+
+    it('should handle large passwords efficiently', () => {
+      const start = Date.now();
+      const password = Crypto.randPassword({ length: 1000 });
+      const end = Date.now();
+
+      expect(password).toHaveLength(1000);
+      expect(end - start).toBeLessThan(100); // Should complete quickly
+    });
+
+    it('should generate passwords with balanced character distribution', () => {
+      const password = Crypto.randPassword({
+        length: 200, // Large sample for statistical analysis
+        includeUppercase: true,
+        includeLowercase: true,
+        includeNumbers: true,
+        includeSymbols: false
+      });
+
+      const uppercaseCount = (password.match(/[A-Z]/g) || []).length;
+      const lowercaseCount = (password.match(/[a-z]/g) || []).length;
+      const numberCount = (password.match(/[0-9]/g) || []).length;
+
+      // Each type should appear at least a few times
+      expect(uppercaseCount).toBeGreaterThan(5);
+      expect(lowercaseCount).toBeGreaterThan(5);
+      expect(numberCount).toBeGreaterThan(5);
+    });
+
+    it('should maintain security properties', () => {
+      const passwords: string[] = [];
+      for (let i = 0; i < 20; i++) {
+        passwords.push(Crypto.randPassword({ length: 12 }));
+      }
+
+      // Check that passwords don't follow predictable patterns
+      const firstChars = passwords.map(p => p[0]);
+      const uniqueFirstChars = new Set(firstChars);
+      expect(uniqueFirstChars.size).toBeGreaterThan(10); // Good entropy in first char
+
+      // Check that no password is a substring of another
+      for (let i = 0; i < passwords.length; i++) {
+        for (let j = i + 1; j < passwords.length; j++) {
+          expect(passwords[i]).not.toContain(passwords[j]);
+          expect(passwords[j]).not.toContain(passwords[i]);
+        }
+      }
+    });
+
+    it('should work with only symbols enabled', () => {
+      const password = Crypto.randPassword({
+        length: 15,
+        includeUppercase: false,
+        includeLowercase: false,
+        includeNumbers: false,
+        includeSymbols: true
+      });
+
+      expect(password).toHaveLength(15);
+      expect(/^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(password)).toBe(true);
+    });
+
+    it('should handle edge case with all character types disabled except one', () => {
+      // Test each character type individually
+      const tests = [
+        { includeUppercase: true, pattern: /^[A-Z]+$/ },
+        { includeLowercase: true, pattern: /^[a-z]+$/ },
+        { includeNumbers: true, pattern: /^[0-9]+$/ },
+        { includeSymbols: true, pattern: /^[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/ }
+      ];
+
+      tests.forEach(test => {
+        const options = {
+          length: 10,
+          includeUppercase: false,
+          includeLowercase: false,
+          includeNumbers: false,
+          includeSymbols: false,
+          ...test
+        };
+
+        const password = Crypto.randPassword(options);
+        expect(password).toMatch(test.pattern);
+      });
+    });
+  });
+
 });

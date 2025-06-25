@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import { DEFAULT_CHARSET } from './const';
+import { DEFAULT_CHARSET, LOWERCASE_CHARSET, NUMERIC_CHARSET, SPECIAL_CHARSET, UPPERCASE_CHARSET } from './const';
 
 /**
  * Cryptographically secure random utilities
@@ -359,7 +359,7 @@ export class Crypto {
             'rand', 'randInt', 'randN', 'randIndex', 'randChoice', 'randWeighted',
             'shuffle', 'randString', 'randHex', 'randBase64', 'randBool', 'randBytes',
             'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat',
-            'randNormal', 'randSeeded', 'randSubset', 'randGaussian', 'randWalk'
+            'randNormal', 'randSeeded', 'randSubset', 'randGaussian', 'randWalk', 'randPassword'
         ];
 
         const unsupportedMethods = Crypto.getUnsupportedMethods();
@@ -424,6 +424,55 @@ export class Crypto {
         return walk;
     }
 
+    /**
+     * Generate cryptographically secure password with configurable requirements.
+     * 
+     * Note: This method is different from randString as it focuses specifically on password generation
+     * with built-in character type controls, password-specific features like excluding similar-looking
+     * characters (0O1lI), and ensuring proper character distribution for strong passwords.
+     * While randString is a general-purpose string generator, randPassword is optimized for creating
+     * secure passwords with common password policy requirements.
+     */
+    static randPassword(options: {
+        length: number;
+        includeUppercase?: boolean;
+        includeLowercase?: boolean;
+        includeNumbers?: boolean;
+        includeSymbols?: boolean;
+        excludeSimilar?: boolean;
+        customChars?: string;
+    }): string {
+        const {
+            length,
+            includeUppercase = true,
+            includeLowercase = true,
+            includeNumbers = true,
+            includeSymbols = false,
+            excludeSimilar = false,
+            customChars
+        } = options;
+
+        if (customChars) {
+            return Crypto.randString(length, customChars);
+        }
+
+        let charset = '';
+        if (includeUppercase) charset += UPPERCASE_CHARSET;
+        if (includeLowercase) charset += LOWERCASE_CHARSET;
+        if (includeNumbers) charset += NUMERIC_CHARSET;
+        if (includeSymbols) charset += SPECIAL_CHARSET;
+
+        if (excludeSimilar) {
+            charset = charset.replace(/[0O1lI]/g, '');
+        }
+
+        if (!charset) {
+            throw new Error('At least one character type must be enabled');
+        }
+
+        return Crypto.randString(length, charset);
+    }
+
 }
 
 // Convenience exports - Go-style short names
@@ -449,5 +498,6 @@ export const {
     randSeeded,
     randSubset,
     randGaussian,
-    randWalk
+    randWalk,
+    randPassword
 } = Crypto;
