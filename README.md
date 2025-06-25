@@ -29,6 +29,9 @@ const randomNumber = randInt(1, 100);
 // Generate secure random string
 const token = randString(32);
 
+// Generate secure password
+const password = Crypto.randPassword({ length: 16 });
+
 // Generate UUID
 const id = Crypto.randUUID();
 ```
@@ -64,6 +67,8 @@ const id = Crypto.randUUID();
 - `Crypto.randGaussian(mean, stdDev)` - Similar to randNormal, but with different handling of edge cases
 - `Crypto.randSubset(array, size)` - Select a random subset from an array
 - `Crypto.randWalk(steps, stepSize?)` - Generate random walk sequence (stepSize defaults to 1)
+- `Crypto.randPassword(options)` - Generate secure password with configurable requirements
+
 
 > [!NOTE]
 >
@@ -72,6 +77,8 @@ const id = Crypto.randUUID();
 > - **randSubset**: Allows selection of a random subset from an array, useful for sampling without replacement.
 >
 > - **randWalk**: Generates a sequence representing a random walk starting from position 0, where each step moves by ±stepSize. Returns an array containing all positions including the starting position.
+>
+> - **randPassword vs. randString**: `randPassword` is specifically designed for password generation with built-in character type controls, password-specific features like excluding similar-looking characters (0O1lI), and ensuring proper character distribution for strong passwords. While `randString` is a general-purpose string generator, `randPassword` is optimized for creating secure passwords with common password policy requirements.
 
 ### Character Sets
 ```typescript
