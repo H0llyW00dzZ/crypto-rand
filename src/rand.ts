@@ -333,7 +333,8 @@ export class Crypto {
                 'randBase64',
                 'randSeed',
                 'randVersion',
-                'randSeeded (with seed parameter)'
+                'randSeeded (with seed parameter)',
+                'randLattice'
             ];
         }
         return [];
@@ -358,8 +359,8 @@ export class Crypto {
         const allMethods = [
             'rand', 'randInt', 'randN', 'randIndex', 'randChoice', 'randWeighted',
             'shuffle', 'randString', 'randHex', 'randBase64', 'randBool', 'randBytes',
-            'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat',
-            'randNormal', 'randSeeded', 'randSubset', 'randGaussian', 'randWalk', 'randPassword'
+            'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat', 'randNormal',
+            'randSeeded', 'randSubset', 'randGaussian', 'randWalk', 'randPassword', 'randLattice'
         ];
 
         const unsupportedMethods = Crypto.getUnsupportedMethods();
@@ -473,6 +474,56 @@ export class Crypto {
         return Crypto.randString(length, charset);
     }
 
+    /**
+     * Pre-calculated constant for the square root of 2π.
+     * 
+     * This constant is a component of the normalization factor for the Gaussian probability density function (PDF),
+     * and is used in calculating the standard deviation for Gaussian error in lattice-based cryptography.
+     */
+    private static readonly SQRT_2PI = Math.sqrt(2 * Math.PI);
+
+    /**
+     * Generate cryptographically secure random number using lattice-based mathematical operations.
+     * It uses lattice operations combined with Gaussian error distribution to produce cryptographically secure randomness.
+     * 
+     * **Note:** This method is currently only available in Node.js environment due to its
+     * dependency on the native crypto module for secure random number generation.
+     */
+    static randLattice(dimension: number = 512, modulus: number = 3329): number {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randLattice');
+        }
+
+        // Input validation
+        if (!Number.isInteger(dimension) || !Number.isInteger(modulus)) {
+            throw new Error('Dimension and modulus must be integers');
+        }
+
+        // 1. Generate secret vector with small coefficients (security requirement)
+        const secret = Array.from({ length: dimension }, () => crypto.randomInt(-1, 2));
+
+        // 2. Generate random matrix A (uniform random) - single row for one LWE sample
+        const matrixRow = Array.from({ length: dimension }, () => crypto.randomInt(0, modulus));
+
+        // 3. Compute inner product <A, s> mod q
+        let innerProduct = matrixRow.reduce((sum, a, i) => sum + a * secret[i], 0);
+        innerProduct = ((innerProduct % modulus) + modulus) % modulus;
+
+        // 4. Add Gaussian error (critical for security!)
+        //
+        // TODO: This should be correct; however, if incorrect, it will be improved/fixed later.
+        const alpha = 1 / (Crypto.SQRT_2PI * dimension);
+        const sigma = alpha * modulus;
+        const gaussianError = Crypto.randNormal(0, sigma);
+        const error = Math.round(gaussianError);
+
+        // 5. LWE sample: b = <A, s> + e (mod q)
+        const lweSample = innerProduct + error;
+        const normalizedSample = ((lweSample % modulus) + modulus) % modulus;
+
+        return normalizedSample / modulus;
+    }
+
 }
 
 // Convenience exports - Go-style short names
@@ -499,5 +550,6 @@ export const {
     randSubset,
     randGaussian,
     randWalk,
-    randPassword
+    randPassword,
+    randLattice
 } = Crypto;

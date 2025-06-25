@@ -47,6 +47,9 @@ const id = Crypto.randUUID();
 - Cross-platform compatibility (Node.js + Browser)
 - And much more!
 
+### TODO - Features
+- [ ] Breaking changes: Update target and lib to ES2020 in `tsconfig.json` or later to implement additional random methods such as `randPrime`
+
 ## API Documentation
 
 ### Static Methods
@@ -68,7 +71,7 @@ const id = Crypto.randUUID();
 - `Crypto.randSubset(array, size)` - Select a random subset from an array
 - `Crypto.randWalk(steps, stepSize?)` - Generate random walk sequence (stepSize defaults to 1)
 - `Crypto.randPassword(options)` - Generate secure password with configurable requirements
-
+- `Crypto.randLattice(dimension?, modulus?)` - Generate lattice-based cryptographically secure random number
 
 > [!NOTE]
 >
@@ -79,6 +82,8 @@ const id = Crypto.randUUID();
 > - **randWalk**: Generates a sequence representing a random walk starting from position 0, where each step moves by ±stepSize. Returns an array containing all positions including the starting position.
 >
 > - **randPassword vs. randString**: `randPassword` is specifically designed for password generation with built-in character type controls, password-specific features like excluding similar-looking characters (0O1lI), and ensuring proper character distribution for strong passwords. While `randString` is a general-purpose string generator, `randPassword` is optimized for creating secure passwords with common password policy requirements.
+>
+> - **randLattice**: Generates cryptographically secure random numbers using lattice-based mathematical operations and the Learning With Errors (LWE) problem. Uses high-dimensional vector operations with Gaussian error distribution for enhanced security.
 
 ### Character Sets
 ```typescript
