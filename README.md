@@ -66,7 +66,7 @@ const id = Crypto.randUUID();
 
 > [!NOTE]
 >
-> - **randNormal vs. randGaussian**: Both methods generate normally distributed random numbers using the Box-Muller transform. `randNormal` ensures the logarithm function never receives zero by adjusting its input range, while `randGaussian` uses a direct approach.
+> - **randNormal vs. randGaussian**: Both methods generate normally distributed random numbers using the [Box-Muller transform](https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform). `randNormal` ensures the logarithm function never receives zero by adjusting its input range, while `randGaussian` uses a direct approach.
 >
 > - **randSubset**: Allows selection of a random subset from an array, useful for sampling without replacement.
 
