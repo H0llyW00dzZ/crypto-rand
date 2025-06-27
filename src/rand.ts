@@ -336,7 +336,8 @@ export class Crypto {
                 'randVersion',
                 'randSeeded (with seed parameter)',
                 'randLattice',
-                'randPrime'
+                'randPrime',
+                'randBigInt'
             ];
         }
         return [];
@@ -363,7 +364,7 @@ export class Crypto {
             'shuffle', 'randString', 'randHex', 'randBase64', 'randBool', 'randBytes',
             'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat', 'randNormal',
             'randSeeded', 'randSubset', 'randGaussian', 'randWalk', 'randPassword', 'randLattice',
-            'randPrime'
+            'randPrime', 'randBigInt'
         ];
 
         const unsupportedMethods = Crypto.getUnsupportedMethods();
@@ -553,33 +554,51 @@ export class Crypto {
             throw new Error('Number of iterations must be a positive integer');
         }
 
-        /**
-        * Generate random bits
-        */
-        const generateRandom = (): bigint => {
-            // Calculate bytes needed (bits / 8, rounded up)
-            const byteLength = Math.ceil(bits / 8);
-            const randomBytes = Crypto.randBytes(byteLength);
-
-            // Convert to bigint
-            let num = BigInt('0x' + randomBytes.toString('hex'));
-
-            // Ensure the number has exactly 'bits' bits
-            // Set the most significant bit to 1 to ensure the number has the right bit length
-            num = num | (1n << BigInt(bits - 1));
-            // Ensure the number is odd (all primes except 2 are odd)
-            num = num | 1n;
-
-            return num;
-        };
-
         // Generate prime candidates until a probable prime is found
         let candidate: bigint;
         do {
-            candidate = generateRandom();
+            candidate = Crypto.randBigInt(bits);
         } while (!isProbablePrime(candidate, iterations, Crypto.randBytes));
 
         return candidate;
+    }
+
+    /**
+     * Generate a cryptographically secure random bigint with a specified bit length.
+     * 
+     * This method generates a random bigint with exactly the specified number of bits.
+     * It ensures the most significant bit is set to 1 and the least significant bit is set to 1 (making it odd).
+     * 
+     * **Note:** This method is currently only available in Node.js environment due to its
+     * dependency on the native crypto module for secure random number generation.
+     * 
+     * @param bits - The bit length of the bigint to generate (default: 1024)
+     * @returns A bigint with the specified bit length
+     */
+    static randBigInt(bits: number = 1024): bigint {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randBigInt');
+        }
+
+        // Input validation
+        if (!Number.isInteger(bits) || bits < 2) {
+            throw new Error('Bit length must be an integer greater than or equal to 2');
+        }
+
+        // Calculate bytes needed (bits / 8, rounded up)
+        const byteLength = Math.ceil(bits / 8);
+        const randomBytes = Crypto.randBytes(byteLength);
+
+        // Convert to bigint
+        let num = BigInt('0x' + randomBytes.toString('hex'));
+
+        // Ensure the number has exactly 'bits' bits
+        // Set the most significant bit to 1 to ensure the number has the right bit length
+        num = num | (1n << BigInt(bits - 1));
+        // Ensure the number is odd (all primes except 2 are odd)
+        num = num | 1n;
+
+        return num;
     }
 
 }
@@ -610,5 +629,6 @@ export const {
     randWalk,
     randPassword,
     randLattice,
-    randPrime
+    randPrime,
+    randBigInt
 } = Crypto;

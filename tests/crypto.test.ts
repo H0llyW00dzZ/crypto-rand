@@ -1437,4 +1437,114 @@ describe('Crypto Class', () => {
     });
   });
 
+  describe('randBigInt()', () => {
+    beforeEach(() => {
+      // Ensure we're in Node.js environment for these tests
+      jest.clearAllMocks();
+    });
+
+    describe('basic functionality', () => {
+      test('should return a BigInt', () => {
+        const result = Crypto.randBigInt(32); // Small bit size for faster tests
+        expect(typeof result).toBe('bigint');
+      });
+
+      test('should generate a bigint with specified bit length', () => {
+        const bits = 32;
+        const bigint = Crypto.randBigInt(bits);
+
+        // Check bit length
+        const bitLength = bigint.toString(2).length;
+        expect(bitLength).toBe(bits);
+      });
+
+      test('should set the most significant bit to 1', () => {
+        const bits = 32;
+        const bigint = Crypto.randBigInt(bits);
+
+        // Convert to binary string and check the first bit
+        const binaryString = bigint.toString(2);
+        expect(binaryString.charAt(0)).toBe('1');
+      });
+
+      test('should set the least significant bit to 1 (odd number)', () => {
+        const bigint = Crypto.randBigInt(32);
+
+        // Check if the number is odd
+        expect(bigint % 2n).toBe(1n);
+      });
+    });
+
+    describe('parameter validation', () => {
+      test('should throw error for invalid bit length', () => {
+        expect(() => Crypto.randBigInt(0)).toThrow('Bit length must be an integer greater than or equal to 2');
+        expect(() => Crypto.randBigInt(1)).toThrow('Bit length must be an integer greater than or equal to 2');
+        expect(() => Crypto.randBigInt(1.5)).toThrow('Bit length must be an integer greater than or equal to 2');
+      });
+    });
+
+    describe('browser environment', () => {
+      test('should throw error in browser environment', () => {
+        // Mock browser environment
+        const originalIsBrowser = Crypto['isBrowser'];
+        Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
+
+        expect(() => Crypto.randBigInt()).toThrow(
+          'randBigInt is not available in browser environment. This method requires Node.js crypto module.'
+        );
+
+        // Restore original method
+        Crypto['isBrowser'] = originalIsBrowser;
+      });
+    });
+
+    describe('security properties', () => {
+      test('should generate different bigints on multiple calls', () => {
+        const bigint1 = Crypto.randBigInt(32);
+        const bigint2 = Crypto.randBigInt(32);
+        expect(bigint1).not.toBe(bigint2);
+      });
+
+      test('should handle common cryptographic bit lengths', () => {
+        // Test with small bit lengths for faster tests
+        const bitLengths = [8, 16, 32];
+
+        bitLengths.forEach(bits => {
+          const bigint = Crypto.randBigInt(bits);
+          expect(typeof bigint).toBe('bigint');
+          expect(bigint.toString(2).length).toBe(bits);
+        });
+      });
+    });
+
+    describe('performance', () => {
+      test('should complete in reasonable time for small bit lengths', () => {
+        const startTime = Date.now();
+        Crypto.randBigInt(32);
+        const endTime = Date.now();
+
+        // Should complete within a reasonable time
+        expect(endTime - startTime).toBeLessThan(1000);
+      });
+    });
+
+    describe('relationship with randPrime', () => {
+      test('should be used by randPrime', () => {
+        // Mock randBigInt to track calls
+        const originalRandBigInt = Crypto.randBigInt;
+        Crypto.randBigInt = jest.fn().mockImplementation(originalRandBigInt);
+
+        // Call randPrime which should use randBigInt
+        Crypto.randPrime(32, 5);
+
+        // Verify randBigInt was called
+        expect(Crypto.randBigInt).toHaveBeenCalled();
+        expect(Crypto.randBigInt).toHaveBeenCalledWith(32);
+
+        // Restore original method
+        Crypto.randBigInt = originalRandBigInt;
+      });
+    });
+  });
+
 });
