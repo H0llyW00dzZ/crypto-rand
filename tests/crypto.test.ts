@@ -8,6 +8,7 @@ import {
   SPECIAL_CHARSET,
   FULL_CHARSET
 } from '../src/const';
+import { modPow, modInverse } from '../src/math_helper';
 
 describe('Crypto Class', () => {
   describe('rand()', () => {
@@ -105,7 +106,7 @@ describe('Crypto Class', () => {
     it('should return item from weighted array', () => {
       const items = ['a', 'b', 'c'];
       const weights = [1, 2, 3];
-      
+
       for (let i = 0; i < 20; i++) {
         const result = Crypto.randWeighted(items, weights);
         expect(items).toContain(result);
@@ -123,11 +124,11 @@ describe('Crypto Class', () => {
       const items = ['low', 'high'];
       const weights = [1, 1000]; // Heavily weighted toward 'high'
       const results: string[] = [];
-      
+
       for (let i = 0; i < 100; i++) {
         results.push(Crypto.randWeighted(items, weights));
       }
-      
+
       const highCount = results.filter((r: string) => r === 'high').length;
       expect(highCount).toBeGreaterThan(80); // Should be heavily skewed
     });
@@ -137,7 +138,7 @@ describe('Crypto Class', () => {
     it('should return array with same elements', () => {
       const original = [1, 2, 3, 4, 5];
       const shuffled = Crypto.shuffle(original);
-      
+
       expect(shuffled).toHaveLength(original.length);
       expect(shuffled.sort()).toEqual(original.sort());
     });
@@ -146,18 +147,18 @@ describe('Crypto Class', () => {
       const original = [1, 2, 3, 4, 5];
       const originalCopy = [...original];
       Crypto.shuffle(original);
-      
+
       expect(original).toEqual(originalCopy);
     });
 
     it('should produce different arrangements', () => {
       const original = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
       const arrangements = new Set<string>();
-      
+
       for (let i = 0; i < 20; i++) {
         arrangements.add(JSON.stringify(Crypto.shuffle(original)));
       }
-      
+
       expect(arrangements.size).toBeGreaterThan(10); // Should have variety
     });
   });
@@ -230,7 +231,7 @@ describe('Crypto Class', () => {
       for (let i = 0; i < 1000; i++) {
         results.push(Crypto.randBool(0.8)); // 80% true
       }
-      
+
       const trueCount = results.filter((r: boolean) => r === true).length;
       const trueRatio = trueCount / results.length;
       expect(trueRatio).toBeGreaterThan(0.7); // Should be around 80%
@@ -1237,6 +1238,201 @@ describe('Crypto Class', () => {
           expect(result).toBeDefined();
           expect(typeof result).toBe('number');
         });
+      });
+    });
+  });
+
+  describe('randPrime()', () => {
+    beforeEach(() => {
+      // Ensure we're in Node.js environment for these tests
+      jest.clearAllMocks();
+    });
+
+    describe('basic functionality', () => {
+      test('should return a BigInt', () => {
+        const result = Crypto.randPrime(32); // Small bit size for faster tests
+        expect(typeof result).toBe('bigint');
+      });
+
+      test('should generate a probable prime number', () => {
+        const isProbablePrime = (n: bigint): boolean => {
+          // Simple primality test for testing purposes
+          if (n <= 1n) return false;
+          if (n <= 3n) return true;
+          if (n % 2n === 0n) return false;
+
+          // Check divisibility by odd numbers up to sqrt(n)
+          const sqrt = BigInt(Math.floor(Math.sqrt(Number(n))));
+          for (let i = 3n; i <= sqrt; i += 2n) {
+            if (n % i === 0n) return false;
+          }
+          return true;
+        };
+
+        // Test with small primes for faster verification
+        const prime = Crypto.randPrime(16);
+        expect(isProbablePrime(prime)).toBe(true);
+      });
+
+      test('should generate prime with specified bit length', () => {
+        const bits = 32;
+        const prime = Crypto.randPrime(bits);
+
+        // Check bit length
+        const bitLength = prime.toString(2).length;
+        expect(bitLength).toBe(bits);
+      });
+    });
+
+    describe('parameter validation', () => {
+      test('should throw error for invalid bit length', () => {
+        expect(() => Crypto.randPrime(0)).toThrow('Bit length must be an integer greater than or equal to 2');
+        expect(() => Crypto.randPrime(1)).toThrow('Bit length must be an integer greater than or equal to 2');
+        expect(() => Crypto.randPrime(1.5)).toThrow('Bit length must be an integer greater than or equal to 2');
+      });
+
+      test('should throw error for invalid iteration count', () => {
+        expect(() => Crypto.randPrime(32, 0)).toThrow('Number of iterations must be a positive integer');
+        expect(() => Crypto.randPrime(32, -1)).toThrow('Number of iterations must be a positive integer');
+        expect(() => Crypto.randPrime(32, 1.5)).toThrow('Number of iterations must be a positive integer');
+      });
+    });
+
+    describe('browser environment', () => {
+      test('should throw error in browser environment', () => {
+        // Mock browser environment
+        const originalIsBrowser = Crypto['isBrowser'];
+        Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
+
+        expect(() => Crypto.randPrime()).toThrow(
+          'randPrime is not available in browser environment. This method requires Node.js crypto module.'
+        );
+
+        // Restore original method
+        Crypto['isBrowser'] = originalIsBrowser;
+      });
+    });
+
+    describe('security properties', () => {
+      test('should generate different primes on multiple calls', () => {
+        const prime1 = Crypto.randPrime(32);
+        const prime2 = Crypto.randPrime(32);
+        expect(prime1).not.toBe(prime2);
+      });
+
+      test('should handle common cryptographic bit lengths', () => {
+        // Test with small bit lengths for faster tests
+        const bitLengths = [8, 16, 32];
+
+        bitLengths.forEach(bits => {
+          const prime = Crypto.randPrime(bits);
+          expect(typeof prime).toBe('bigint');
+          expect(prime.toString(2).length).toBe(bits);
+        });
+      });
+    });
+
+    describe('performance', () => {
+      test('should complete in reasonable time for small bit lengths', () => {
+        const startTime = Date.now();
+        Crypto.randPrime(32);
+        const endTime = Date.now();
+
+        // Should complete within a reasonable time
+        expect(endTime - startTime).toBeLessThan(1000);
+      });
+    });
+
+    describe('RSA key generation', () => {
+      test('should generate primes suitable for RSA key generation', () => {
+        // Generate two smaller primes for testing (using 512 bits instead of 1024 for speed)
+        const p = Crypto.randPrime(512);
+        const q = Crypto.randPrime(512);
+
+        // Verify they are different primes
+        expect(p).not.toBe(q);
+
+        // Calculate RSA parameters
+        const n = p * q; // modulus
+        const phi = (p - 1n) * (q - 1n); // Euler's totient function
+
+        // Common RSA public exponent
+        const e = 65537n;
+
+        // Verify e is coprime to phi using GCD
+        const gcd = (a: bigint, b: bigint): bigint => {
+          while (b !== 0n) {
+            const temp = b;
+            b = a % b;
+            a = temp;
+          }
+          return a;
+        };
+
+        expect(gcd(e, phi)).toBe(1n);
+
+        // Calculate private exponent d (using modular multiplicative inverse from math_helper)
+        const d = modInverse(e, phi);
+
+        // Verify that d is the modular multiplicative inverse of e modulo phi
+        expect((d * e) % phi).toBe(1n);
+
+        // Test RSA encryption and decryption
+        const message = 42n; // Sample message to encrypt
+
+        // Encrypt: c ≡ m^e (mod n) (using modPow from math utilities)
+        const ciphertext = modPow(message, e, n);
+
+        // Decrypt: m ≡ c^d (mod n) (using modPow from math utilities)
+        const decrypted = modPow(ciphertext, d, n);
+
+        // Verify that decryption works
+        expect(decrypted).toBe(message);
+
+        // Additional verification: ensure the message is within valid range
+        expect(message).toBeLessThan(n);
+        expect(ciphertext).toBeLessThan(n);
+        expect(decrypted).toBeLessThan(n);
+
+        // Verify that encryption actually changes the message
+        expect(ciphertext).not.toBe(message);
+      });
+
+      test('should generate different primes on multiple calls', () => {
+        const primes = new Set<bigint>();
+
+        // Generate multiple primes to verify uniqueness
+        for (let i = 0; i < 5; i++) {
+          const prime = Crypto.randPrime(256);
+          primes.add(prime);
+        }
+
+        // All primes should be unique (very high probability)
+        expect(primes.size).toBe(5);
+      });
+
+      test('should handle edge cases for RSA parameter validation', () => {
+        const p = Crypto.randPrime(128);
+        const q = Crypto.randPrime(128);
+        const n = p * q;
+        const phi = (p - 1n) * (q - 1n);
+        const e = 65537n;
+
+        // Verify that n has sufficient bit length for security
+        const nBitLength = n.toString(2).length;
+        expect(nBitLength).toBeGreaterThanOrEqual(255); // Should be close to 256 bits
+
+        // Verify that phi is large enough
+        expect(phi).toBeGreaterThan(e);
+
+        // Test with a message that's too large (should be less than n)
+        const largePrime = Crypto.randPrime(256);
+        if (largePrime >= n) {
+          // If message >= n, RSA won't work properly
+          expect(() => {
+            modPow(largePrime, e, n);
+          }).not.toThrow(); // modPow should still work, but result won't be reversible
+        }
       });
     });
   });

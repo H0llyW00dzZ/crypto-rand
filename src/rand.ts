@@ -1,5 +1,6 @@
 import * as crypto from 'crypto';
 import { DEFAULT_CHARSET, LOWERCASE_CHARSET, NUMERIC_CHARSET, SPECIAL_CHARSET, UPPERCASE_CHARSET } from './const';
+import { isProbablePrime } from './math_helper';
 
 /**
  * Cryptographically secure random utilities
@@ -334,7 +335,8 @@ export class Crypto {
                 'randSeed',
                 'randVersion',
                 'randSeeded (with seed parameter)',
-                'randLattice'
+                'randLattice',
+                'randPrime'
             ];
         }
         return [];
@@ -360,7 +362,8 @@ export class Crypto {
             'rand', 'randInt', 'randN', 'randIndex', 'randChoice', 'randWeighted',
             'shuffle', 'randString', 'randHex', 'randBase64', 'randBool', 'randBytes',
             'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat', 'randNormal',
-            'randSeeded', 'randSubset', 'randGaussian', 'randWalk', 'randPassword', 'randLattice'
+            'randSeeded', 'randSubset', 'randGaussian', 'randWalk', 'randPassword', 'randLattice',
+            'randPrime'
         ];
 
         const unsupportedMethods = Crypto.getUnsupportedMethods();
@@ -524,6 +527,61 @@ export class Crypto {
         return normalizedSample / modulus;
     }
 
+    /**
+     * Generate a cryptographically secure random prime number within a specified bit length.
+     * 
+     * This method uses the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) to verify that the generated number is prime.
+     * The implementation follows cryptographic best practices for generating prime numbers securely.
+     * 
+     * **Note:** This method is currently only available in Node.js environment due to its
+     * dependency on the native crypto module for secure random number generation.
+     * 
+     * @param bits - The bit length of the prime number to generate (default: 1024)
+     * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
+     * @returns A bigint representing a probable prime number of the specified bit length
+     */
+    static randPrime(bits: number = 1024, iterations: number = 10): bigint {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randPrime');
+        }
+
+        // Input validation
+        if (!Number.isInteger(bits) || bits < 2) {
+            throw new Error('Bit length must be an integer greater than or equal to 2');
+        }
+        if (!Number.isInteger(iterations) || iterations < 1) {
+            throw new Error('Number of iterations must be a positive integer');
+        }
+
+        /**
+        * Generate random bits
+        */
+        const generateRandom = (): bigint => {
+            // Calculate bytes needed (bits / 8, rounded up)
+            const byteLength = Math.ceil(bits / 8);
+            const randomBytes = Crypto.randBytes(byteLength);
+
+            // Convert to bigint
+            let num = BigInt('0x' + randomBytes.toString('hex'));
+
+            // Ensure the number has exactly 'bits' bits
+            // Set the most significant bit to 1 to ensure the number has the right bit length
+            num = num | (1n << BigInt(bits - 1));
+            // Ensure the number is odd (all primes except 2 are odd)
+            num = num | 1n;
+
+            return num;
+        };
+
+        // Generate prime candidates until a probable prime is found
+        let candidate: bigint;
+        do {
+            candidate = generateRandom();
+        } while (!isProbablePrime(candidate, iterations, Crypto.randBytes));
+
+        return candidate;
+    }
+
 }
 
 // Convenience exports - Go-style short names
@@ -551,5 +609,6 @@ export const {
     randGaussian,
     randWalk,
     randPassword,
-    randLattice
+    randLattice,
+    randPrime
 } = Crypto;
