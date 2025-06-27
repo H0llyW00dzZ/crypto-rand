@@ -28,7 +28,7 @@ describe('Crypto Browser Error Handling', () => {
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();
-    
+
     // Ensure window.crypto is properly set up for each test
     Object.defineProperty(window, 'crypto', {
       value: {
@@ -120,29 +120,30 @@ describe('Crypto Browser Error Handling', () => {
       expect(unsupported).toContain('randSeeded (with seed parameter)');
       expect(unsupported).toContain('randLattice');
       expect(unsupported).toContain('randPrime');
-      expect(unsupported).toHaveLength(7);
+      expect(unsupported).toContain('randBigInt');
+      expect(unsupported).toHaveLength(8);
     });
 
     it('should provide correct environment information', () => {
       const envInfo = Crypto.getEnvironmentInfo();
-      
+
       expect(envInfo.isBrowser).toBe(true);
       expect(envInfo.hasWebCrypto).toBe(true);
       expect(envInfo.hasRandomUUID).toBe(true); // Our mock has randomUUID
-      
+
       // Check supported methods don't include Node.js-only ones
       expect(envInfo.supportedMethods).not.toContain('randHex');
       expect(envInfo.supportedMethods).not.toContain('randBase64');
       expect(envInfo.supportedMethods).not.toContain('randSeed');
       expect(envInfo.supportedMethods).not.toContain('randVersion');
-      
+
       // Check supported methods include browser-compatible ones
       expect(envInfo.supportedMethods).toContain('rand');
       expect(envInfo.supportedMethods).toContain('randInt');
       expect(envInfo.supportedMethods).toContain('randString');
       expect(envInfo.supportedMethods).toContain('randUUID');
       expect(envInfo.supportedMethods).toContain('randBytes');
-      
+
       // Check unsupported methods
       expect(envInfo.unsupportedMethods).toEqual([
         'randHex',
@@ -151,7 +152,8 @@ describe('Crypto Browser Error Handling', () => {
         'randVersion',
         'randSeeded (with seed parameter)',
         'randLattice',
-        'randPrime'
+        'randPrime',
+        'randBigInt'
       ]);
     });
   });
@@ -206,15 +208,15 @@ describe('Crypto Browser Error Handling', () => {
 
     it('should work with array methods in browser', () => {
       const array = [1, 2, 3, 4, 5];
-      
+
       // Test randChoice
       const choice = Crypto.randChoice(array);
       expect(array).toContain(choice);
-      
+
       // Test shuffle
       const shuffled = Crypto.shuffle(array);
       expect(shuffled).toHaveLength(array.length);
-      
+
       // Test randIndex
       const index = Crypto.randIndex(array);
       expect(index).toBeGreaterThanOrEqual(0);
@@ -226,7 +228,7 @@ describe('Crypto Browser Error Handling', () => {
     it('should handle case when Web Crypto API is not available', () => {
       // Store original crypto
       const originalCrypto = window.crypto;
-      
+
       // Remove crypto completely
       Object.defineProperty(window, 'crypto', {
         value: undefined,
@@ -248,7 +250,7 @@ describe('Crypto Browser Error Handling', () => {
     it('should handle case when getRandomValues is not available', () => {
       // Store original
       const originalCrypto = window.crypto;
-      
+
       // Mock crypto without getRandomValues
       Object.defineProperty(window, 'crypto', {
         value: {},
@@ -269,7 +271,7 @@ describe('Crypto Browser Error Handling', () => {
 
     it('should handle randBytes when Web Crypto API is not available', () => {
       const originalCrypto = window.crypto;
-      
+
       Object.defineProperty(window, 'crypto', {
         value: undefined,
         writable: true,
@@ -289,7 +291,7 @@ describe('Crypto Browser Error Handling', () => {
 
     it('should handle randUUID when crypto APIs are not available', () => {
       const originalCrypto = window.crypto;
-      
+
       Object.defineProperty(window, 'crypto', {
         value: undefined,
         writable: true,
@@ -349,7 +351,7 @@ describe('Crypto Browser Error Handling', () => {
       expect(typeof Crypto.randInt).toBe('function');
       expect(typeof Crypto.randString).toBe('function');
       expect(typeof Crypto.randUUID).toBe('function');
-      
+
       // Test that browser detection works properly
       expect(() => Crypto.randHex(10)).toThrow();
       expect(() => Crypto.randBase64(10)).toThrow();
@@ -360,7 +362,7 @@ describe('Crypto Browser Error Handling', () => {
     it('should work with destructured class methods', () => {
       // Test that destructured methods still work (with bound context)
       const { rand, randInt, randString, randUUID } = Crypto;
-      
+
       // These should work because they're browser-compatible
       expect(() => rand.call(Crypto)).not.toThrow();
       expect(() => randInt.call(Crypto, 1, 10)).not.toThrow();
