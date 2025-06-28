@@ -3,6 +3,26 @@
 
 Cryptographically secure random utilities for Node.js and browsers.
 
+> [!IMPORTANT]
+>
+> **FIPS Compliance Disclaimer**
+>
+> This package may not conform to FIPS (Federal Information Processing Standards) requirements for cryptographic modules. Organizations requiring FIPS-validated cryptography should conduct their own compliance assessment before deployment.
+>
+> **Key Considerations:**
+>
+> - **Platform Dependencies**: Cryptographic security relies on underlying platform implementations (Node.js `crypto` module, Web Crypto API) which may not be FIPS-certified across all deployment environments
+>
+> - **Algorithm Implementation**: Certain methods, particularly `randPrime`, utilize probabilistic algorithms (Miller-Rabin primality testing) that may not align with FIPS-approved deterministic validation procedures
+>
+> - **Cross-Platform Design**: Compatibility requirements across Node.js and browser environments necessitate implementation choices that may not satisfy strict FIPS compliance criteria
+>
+> - **Validation Status**: This library has not undergone formal FIPS certification or validation testing
+>
+> **Security Assurance**: Non-compliance with FIPS standards does not indicate cryptographic weakness. This library employs industry-standard secure random number generation and is suitable for general-purpose cryptographic applications where FIPS certification is not mandated.
+>
+> For FIPS-compliant environments, consult your organization's security policies and consider using FIPS-validated cryptographic modules.
+
 ## Installation
 
 ```bash
