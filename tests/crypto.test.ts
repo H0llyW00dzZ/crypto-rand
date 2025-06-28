@@ -1,8 +1,8 @@
 
 import { Crypto } from '../src/rand';
-import { 
-  DEFAULT_CHARSET, 
-  HEX_CHARSET, 
+import {
+  DEFAULT_CHARSET,
+  HEX_CHARSET,
   ALPHANUMERIC_CHARSET,
   NUMERIC_CHARSET,
   SPECIAL_CHARSET,
@@ -1433,6 +1433,272 @@ describe('Crypto Class', () => {
             modPow(largePrime, e, n);
           }).not.toThrow(); // modPow should still work, but result won't be reversible
         }
+      });
+
+      test('should perform RSA encryption and decryption with various message sizes', () => {
+        // Generate RSA key pair
+        const p = Crypto.randPrime(512);
+        const q = Crypto.randPrime(512);
+        const n = p * q;
+        const phi = (p - 1n) * (q - 1n);
+        const e = 65537n;
+        const d = modInverse(e, phi);
+
+        // Test messages of different sizes
+        const testMessages = [
+          1n,
+          42n,
+          123456789n,
+          BigInt(Math.floor(Math.random() * 1000000)), // Random message
+          n - 1n // Maximum valid message (just under modulus)
+        ];
+
+        testMessages.forEach(message => {
+          // Skip if message is too large for this key
+          if (message >= n) return;
+
+          // Encrypt the message
+          const encrypted = modPow(message, e, n);
+
+          // Decrypt the message
+          const decrypted = modPow(encrypted, d, n);
+
+          // Verify decryption worked
+          expect(decrypted).toBe(message);
+
+          // Verify encryption changed the message (unless message is 0, 1, or has special properties)
+          // Note: In RSA, some messages might encrypt to themselves due to mathematical properties
+          if (message > 1n && message < n - 1n) {
+            // For most messages, encryption should change the value
+            // However, we'll only check this for messages that are not edge cases
+            if (encrypted === message) {
+              // This can happen with certain mathematical edge cases in RSA
+              // Just verify that the round-trip works correctly
+              console.warn(`Message ${message} encrypted to itself, which can happen in RSA`);
+            }
+          }
+
+          // Verify ciphertext is within valid range
+          expect(encrypted).toBeGreaterThanOrEqual(0n);
+          expect(encrypted).toBeLessThan(n);
+        });
+      });
+
+      test('should perform RSA digital signature and verification', () => {
+        // Generate RSA key pair for signing
+        const p = Crypto.randPrime(512);
+        const q = Crypto.randPrime(512);
+        const n = p * q;
+        const phi = (p - 1n) * (q - 1n);
+        const e = 65537n;
+        const d = modInverse(e, phi);
+
+        // Test different message hashes (simulating hash values)
+        const messageHashes = [
+          123456789n,
+          987654321n,
+          BigInt(Math.floor(Math.random() * 1000000)),
+          555555555n
+        ];
+
+        messageHashes.forEach(hash => {
+          // Skip if hash is too large for this key
+          if (hash >= n) return;
+
+          // Sign the hash (signature = hash^d mod n)
+          const signature = modPow(hash, d, n);
+
+          // Verify the signature (verification = signature^e mod n)
+          const verified = modPow(signature, e, n);
+
+          // Verification should recover the original hash
+          expect(verified).toBe(hash);
+
+          // Test signature tampering - modify signature slightly
+          const tamperedSignature = signature + 1n;
+          if (tamperedSignature < n) {
+            const tamperedVerification = modPow(tamperedSignature, e, n);
+            // Tampered signature should not verify to original hash
+            expect(tamperedVerification).not.toBe(hash);
+          }
+
+          // Verify signature is within valid range
+          expect(signature).toBeGreaterThanOrEqual(0n);
+          expect(signature).toBeLessThan(n);
+        });
+      });
+
+      test('should handle RSA signature verification with wrong public key', () => {
+        // Generate first RSA key pair
+        const p1 = Crypto.randPrime(512);
+        const q1 = Crypto.randPrime(512);
+        const n1 = p1 * q1;
+        const phi1 = (p1 - 1n) * (q1 - 1n);
+        const e1 = 65537n;
+        const d1 = modInverse(e1, phi1);
+
+        // Generate second RSA key pair
+        const p2 = Crypto.randPrime(512);
+        const q2 = Crypto.randPrime(512);
+        const n2 = p2 * q2;
+        const e2 = 65537n;
+
+        const messageHash = 123456n;
+
+        // Skip if hash is too large for either key
+        if (messageHash >= n1 || messageHash >= n2) return;
+
+        // Sign with first key
+        const signature = modPow(messageHash, d1, n1);
+
+        // Try to verify with second key (should fail)
+        // Note: We need to be careful about modulus size differences
+        if (signature < n2) {
+          const wrongVerification = modPow(signature, e2, n2);
+          expect(wrongVerification).not.toBe(messageHash);
+        }
+      });
+
+      test('should perform RSA operations with 2048-bit keys', () => {
+        // Generate 2048-bit RSA key pair (1024-bit primes each)
+        console.log('Generating 2048-bit RSA key pair...');
+        const startTime = Date.now();
+
+        const p = Crypto.randPrime(1024);
+        const q = Crypto.randPrime(1024);
+
+        // Ensure p and q are different
+        expect(p).not.toBe(q);
+
+        // Calculate RSA parameters
+        const n = p * q; // 2048-bit modulus
+        const phi = (p - 1n) * (q - 1n);
+        const e = 65537n; // Common public exponent
+
+        // Verify key generation time is reasonable (allow up to 30 seconds for 2048-bit)
+        const keyGenTime = Date.now() - startTime;
+        console.log(`2048-bit key generation took ${keyGenTime}ms`);
+        expect(keyGenTime).toBeLessThan(30000);
+
+        // Verify modulus is approximately 2048 bits
+        const nBitLength = n.toString(2).length;
+        expect(nBitLength).toBeGreaterThanOrEqual(2047);
+        expect(nBitLength).toBeLessThanOrEqual(2048);
+
+        // Calculate private exponent
+        const d = modInverse(e, phi);
+
+        // Verify RSA key properties
+        expect((d * e) % phi).toBe(1n);
+
+        console.log('Testing 2048-bit RSA encryption/decryption...');
+
+        // Test encryption and decryption with various message sizes
+        const testMessages = [
+          1n,
+          42n,
+          123456789n,
+          BigInt('0x' + '1'.repeat(64)), // 256-bit message
+          BigInt('0x' + 'a'.repeat(128)), // 512-bit message
+          BigInt('0x' + 'f'.repeat(256)), // 1024-bit message
+        ];
+
+        testMessages.forEach((message, index) => {
+          // Skip if message is too large for this key
+          if (message >= n) {
+            console.log(`Skipping message ${index} (too large for modulus)`);
+            return;
+          }
+
+          // Encrypt: c ≡ m^e (mod n)
+          const encryptStart = performance.now();
+          const ciphertext = modPow(message, e, n);
+          const encryptTime = performance.now() - encryptStart;
+
+          // Decrypt: m ≡ c^d (mod n)
+          const decryptStart = performance.now();
+          const decrypted = modPow(ciphertext, d, n);
+          const decryptTime = performance.now() - decryptStart;
+
+          console.log(`Message ${index}: encrypt=${encryptTime.toFixed(3)}ms, decrypt=${decryptTime.toFixed(3)}ms`);
+
+          // Verify decryption worked
+          expect(decrypted).toBe(message);
+
+          // Verify ciphertext is within valid range
+          expect(ciphertext).toBeGreaterThanOrEqual(0n);
+          expect(ciphertext).toBeLessThan(n);
+
+          // Verify encryption/decryption times are reasonable (allow up to 5 seconds each)
+          expect(encryptTime).toBeLessThan(5000);
+          expect(decryptTime).toBeLessThan(5000);
+        });
+      });
+
+      test('should perform RSA digital signatures with 2048-bit keys', () => {
+        console.log('Testing 2048-bit RSA digital signatures...');
+
+        // Generate 2048-bit RSA key pair
+        const p = Crypto.randPrime(1024);
+        const q = Crypto.randPrime(1024);
+        const n = p * q;
+        const phi = (p - 1n) * (q - 1n);
+        const e = 65537n;
+        const d = modInverse(e, phi);
+
+        // Test signature and verification with various hash sizes
+        const messageHashes = [
+          BigInt('0x' + '1234567890abcdef'.repeat(4)), // 128-bit hash (MD5-like)
+          BigInt('0x' + '1234567890abcdef'.repeat(5)), // 160-bit hash (SHA-1-like)
+          BigInt('0x' + '1234567890abcdef'.repeat(8)), // 256-bit hash (SHA-256-like)
+          BigInt('0x' + '1234567890abcdef'.repeat(12)), // 384-bit hash (SHA-384-like)
+          BigInt('0x' + '1234567890abcdef'.repeat(16)), // 512-bit hash (SHA-512-like)
+        ];
+
+        messageHashes.forEach((hash, index) => {
+          // Skip if hash is too large for this key
+          if (hash >= n) {
+            console.log(`Skipping hash ${index} (too large for modulus)`);
+            return;
+          }
+
+          console.log(`Testing signature with ${hash.toString(2).length}-bit hash...`);
+
+          // Sign the hash: signature = hash^d mod n
+          const signStart = performance.now();
+          const signature = modPow(hash, d, n);
+          const signTime = performance.now() - signStart;
+
+          // Verify the signature: verification = signature^e mod n
+          const verifyStart = performance.now();
+          const verified = modPow(signature, e, n);
+          const verifyTime = performance.now() - verifyStart;
+
+          console.log(`Hash ${index}: sign=${signTime.toFixed(3)}ms, verify=${verifyTime.toFixed(3)}ms`);
+
+          // Verification should recover the original hash
+          expect(verified).toBe(hash);
+
+          // Verify signature is within valid range
+          expect(signature).toBeGreaterThanOrEqual(0n);
+          expect(signature).toBeLessThan(n);
+
+          // Verify signing/verification times are reasonable
+          expect(signTime).toBeLessThan(5000);
+          expect(verifyTime).toBeLessThan(5000);
+
+          // Test signature tampering detection
+          const tamperedSignature = signature + 1n;
+          if (tamperedSignature < n) {
+            const tamperedVerification = modPow(tamperedSignature, e, n);
+            expect(tamperedVerification).not.toBe(hash);
+          }
+
+          // Test with a different signature (should not verify)
+          const wrongSignature = (signature + 12345n) % n;
+          const wrongVerification = modPow(wrongSignature, e, n);
+          expect(wrongVerification).not.toBe(hash);
+        });
       });
     });
   });
