@@ -1,4 +1,5 @@
 
+import * as crypto from 'crypto';
 import { Crypto } from '../src/rand';
 import {
   DEFAULT_CHARSET,
@@ -1699,6 +1700,266 @@ describe('Crypto Class', () => {
           const wrongVerification = modPow(wrongSignature, e, n);
           expect(wrongVerification).not.toBe(hash);
         });
+      });
+
+      // It's no wonder why this performance is somewhat overhead. "Security is not cheap" - ¯\_(ツ)_/¯
+      test('should perform RSAES-OAEP operations with 2048-bit keys', () => {
+        console.log('Testing RSAES-OAEP with 2048-bit RSA key pair...');
+
+        // Generate 2048-bit RSA key pair (1024-bit primes each)
+        const startTime = Date.now();
+
+        // Generate two 1024-bit primes using randPrime
+        const p = Crypto.randPrime(1024);
+        const q = Crypto.randPrime(1024);
+
+        // Ensure p and q are different
+        expect(p).not.toBe(q);
+
+        // Calculate RSA parameters
+        const n = p * q; // 2048-bit modulus
+        const phi = (p - 1n) * (q - 1n);
+        const e = 65537n; // Common public exponent
+        const d = modInverse(e, phi);
+
+        // Verify key generation time is reasonable
+        const keyGenTime = Date.now() - startTime;
+        console.log(`2048-bit key generation took ${keyGenTime}ms`);
+        expect(keyGenTime).toBeLessThan(30000);
+
+        // Create RSA keys from our generated parameters
+        console.log('Creating RSA keys from our generated parameters...');
+
+        // Create private key components
+        const dmp1 = d % (p - 1n); // d mod (p-1)
+        const dmq1 = d % (q - 1n); // d mod (q-1)
+        const coeff = modInverse(q, p); // q^-1 mod p
+
+        // Convert bigints to Buffer for key creation
+        const nBuffer = Buffer.from(n.toString(16).padStart(512, '0'), 'hex');
+        const eBuffer = Buffer.from(e.toString(16).padStart(8, '0'), 'hex');
+        const dBuffer = Buffer.from(d.toString(16).padStart(512, '0'), 'hex');
+        const pBuffer = Buffer.from(p.toString(16).padStart(256, '0'), 'hex');
+        const qBuffer = Buffer.from(q.toString(16).padStart(256, '0'), 'hex');
+        const dmp1Buffer = Buffer.from(dmp1.toString(16).padStart(256, '0'), 'hex');
+        const dmq1Buffer = Buffer.from(dmq1.toString(16).padStart(256, '0'), 'hex');
+        const coeffBuffer = Buffer.from(coeff.toString(16).padStart(256, '0'), 'hex');
+
+        // Create key objects
+        const privateKey = crypto.createPrivateKey({
+          key: {
+            kty: 'RSA',
+            n: nBuffer.toString('base64url'),
+            e: eBuffer.toString('base64url'),
+            d: dBuffer.toString('base64url'),
+            p: pBuffer.toString('base64url'),
+            q: qBuffer.toString('base64url'),
+            dp: dmp1Buffer.toString('base64url'),
+            dq: dmq1Buffer.toString('base64url'),
+            qi: coeffBuffer.toString('base64url')
+          },
+          format: 'jwk'
+        });
+
+        const publicKey = crypto.createPublicKey(privateKey);
+
+        // Test RSAES-OAEP encryption and decryption
+        console.log('Testing RSAES-OAEP encryption/decryption with our generated keys...');
+
+        // Create test message
+        const message = Buffer.from('This is a test message for RSAES-OAEP encryption with 2048-bit RSA key.');
+
+        try {
+          // Encrypt with public key using RSAES-OAEP
+          const encrypted = crypto.publicEncrypt(
+            {
+              key: publicKey,
+              padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+              oaepHash: 'sha256'
+            },
+            message
+          );
+
+          // Decrypt with private key using RSAES-OAEP
+          const decrypted = crypto.privateDecrypt(
+            {
+              key: privateKey,
+              padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+              oaepHash: 'sha256'
+            },
+            encrypted
+          );
+
+          // Verify decryption worked
+          expect(decrypted.toString()).toBe(message.toString());
+          console.log('RSAES-OAEP encryption/decryption successful!');
+
+          // Verify ciphertext is different from plaintext
+          expect(encrypted.toString()).not.toBe(message.toString());
+
+          // Verify ciphertext length is appropriate for RSA key size (256 bytes for 2048-bit key)
+          expect(encrypted.length).toBe(256);
+
+          // Also demonstrate textbook RSA (no padding) for verification
+          console.log('Verifying with textbook RSA (no padding)...');
+
+          // Encrypt a small message using our parameters (textbook RSA)
+          const smallMessage = 12345n;
+          const ciphertext = modPow(smallMessage, e, n);
+
+          // Decrypt
+          const plaintext = modPow(ciphertext, d, n);
+
+          // Verify
+          expect(plaintext).toBe(smallMessage);
+          console.log('Successfully verified that randPrime generates primes suitable for RSA operations');
+
+        } catch (error) {
+          console.error('RSAES-OAEP test failed:', error);
+          throw error;
+        }
+      });
+
+       // It's no wonder why this performance is somewhat overhead. "Security is not cheap" - ¯\_(ツ)_/¯
+      test('should perform RSAES-OAEP operations with 2048-bit keys with wrong private key for decryption', () => {
+        console.log('Testing RSAES-OAEP with 2048-bit RSA key pair and wrong private key for decryption...');
+
+        // Generate first set of primes and RSA parameters
+        console.log('Generating first set of RSA parameters using our randPrime...');
+        const p1 = Crypto.randPrime(1024);
+        const q1 = Crypto.randPrime(1024);
+        const n1 = p1 * q1;
+        const phi1 = (p1 - 1n) * (q1 - 1n);
+        const e1 = 65537n;
+        const d1 = modInverse(e1, phi1);
+        const dmp1_1 = d1 % (p1 - 1n);
+        const dmq1_1 = d1 % (q1 - 1n);
+        const coeff1 = modInverse(q1, p1);
+
+        // Generate second set of primes and RSA parameters (for wrong key)
+        console.log('Generating second set of RSA parameters using our randPrime...');
+        const p2 = Crypto.randPrime(1024);
+        const q2 = Crypto.randPrime(1024);
+        const n2 = p2 * q2;
+        const phi2 = (p2 - 1n) * (q2 - 1n);
+        const e2 = 65537n;
+        const d2 = modInverse(e2, phi2);
+        const dmp1_2 = d2 % (p2 - 1n);
+        const dmq1_2 = d2 % (q2 - 1n);
+        const coeff2 = modInverse(q2, p2);
+
+        // Convert first set of bigints to Buffer for key creation
+        const n1Buffer = Buffer.from(n1.toString(16).padStart(512, '0'), 'hex');
+        const e1Buffer = Buffer.from(e1.toString(16).padStart(8, '0'), 'hex');
+        const d1Buffer = Buffer.from(d1.toString(16).padStart(512, '0'), 'hex');
+        const p1Buffer = Buffer.from(p1.toString(16).padStart(256, '0'), 'hex');
+        const q1Buffer = Buffer.from(q1.toString(16).padStart(256, '0'), 'hex');
+        const dmp1_1Buffer = Buffer.from(dmp1_1.toString(16).padStart(256, '0'), 'hex');
+        const dmq1_1Buffer = Buffer.from(dmq1_1.toString(16).padStart(256, '0'), 'hex');
+        const coeff1Buffer = Buffer.from(coeff1.toString(16).padStart(256, '0'), 'hex');
+
+        // Convert second set of bigints to Buffer for key creation
+        const n2Buffer = Buffer.from(n2.toString(16).padStart(512, '0'), 'hex');
+        const e2Buffer = Buffer.from(e2.toString(16).padStart(8, '0'), 'hex');
+        const d2Buffer = Buffer.from(d2.toString(16).padStart(512, '0'), 'hex');
+        const p2Buffer = Buffer.from(p2.toString(16).padStart(256, '0'), 'hex');
+        const q2Buffer = Buffer.from(q2.toString(16).padStart(256, '0'), 'hex');
+        const dmp1_2Buffer = Buffer.from(dmp1_2.toString(16).padStart(256, '0'), 'hex');
+        const dmq1_2Buffer = Buffer.from(dmq1_2.toString(16).padStart(256, '0'), 'hex');
+        const coeff2Buffer = Buffer.from(coeff2.toString(16).padStart(256, '0'), 'hex');
+
+        // Create first key pair
+        const privateKey1 = crypto.createPrivateKey({
+          key: {
+            kty: 'RSA',
+            n: n1Buffer.toString('base64url'),
+            e: e1Buffer.toString('base64url'),
+            d: d1Buffer.toString('base64url'),
+            p: p1Buffer.toString('base64url'),
+            q: q1Buffer.toString('base64url'),
+            dp: dmp1_1Buffer.toString('base64url'),
+            dq: dmq1_1Buffer.toString('base64url'),
+            qi: coeff1Buffer.toString('base64url')
+          },
+          format: 'jwk'
+        });
+
+        const publicKey1 = crypto.createPublicKey(privateKey1);
+
+        // Create second key pair (wrong key)
+        const wrongPrivateKey = crypto.createPrivateKey({
+          key: {
+            kty: 'RSA',
+            n: n2Buffer.toString('base64url'),
+            e: e2Buffer.toString('base64url'),
+            d: d2Buffer.toString('base64url'),
+            p: p2Buffer.toString('base64url'),
+            q: q2Buffer.toString('base64url'),
+            dp: dmp1_2Buffer.toString('base64url'),
+            dq: dmq1_2Buffer.toString('base64url'),
+            qi: coeff2Buffer.toString('base64url')
+          },
+          format: 'jwk'
+        });
+
+        // Create test message
+        const message = Buffer.from('This is a test message for RSAES-OAEP encryption with 2048-bit RSA key and wrong private key.');
+
+        try {
+          // Encrypt with public key from first pair using RSAES-OAEP
+          const encrypted = crypto.publicEncrypt(
+            {
+              key: publicKey1,
+              padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+              oaepHash: 'sha256'
+            },
+            message
+          );
+
+          // Attempt to decrypt with wrong private key using RSAES-OAEP
+          // This should fail with an error
+          let decryptionFailed = false;
+          try {
+            const decrypted = crypto.privateDecrypt(
+              {
+                key: wrongPrivateKey,
+                padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+                oaepHash: 'sha256'
+              },
+              encrypted
+            );
+
+            // If we get here, decryption didn't throw an error, but the result should be incorrect
+            expect(decrypted.toString()).not.toBe(message.toString());
+            console.log('Decryption with wrong key produced incorrect result as expected');
+          } catch (decryptError) {
+            // Expected behavior - decryption with wrong key should fail
+            decryptionFailed = true;
+            console.log('Decryption with wrong key failed as expected:', decryptError.message);
+          }
+
+          // At least one of the verification methods should pass
+          // Either decryption failed with an error, or it produced incorrect output
+          expect(decryptionFailed).toBe(true);
+
+          // Now verify that the correct key still works
+          const correctlyDecrypted = crypto.privateDecrypt(
+            {
+              key: privateKey1,
+              padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+              oaepHash: 'sha256'
+            },
+            encrypted
+          );
+
+          // Verify correct decryption worked
+          expect(correctlyDecrypted.toString()).toBe(message.toString());
+          console.log('RSAES-OAEP encryption/decryption with correct key successful!');
+
+        } catch (error) {
+          console.error('RSAES-OAEP wrong key test failed:', error);
+          throw error;
+        }
       });
     });
   });
