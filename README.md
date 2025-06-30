@@ -1,6 +1,6 @@
 # crypto-rand
 [![npm version](https://badge.fury.io/js/@h0llyw00dzz%2Fcrypto-rand.svg)](https://badge.fury.io/js/@h0llyw00dzz%2Fcrypto-rand)
-[![Coverage Status](https://coveralls.io/repos/github/H0llyW00dzZ/crypto-rand/badge.svg?branch=main)](https://coveralls.io/github/H0llyW00dzZ/crypto-rand?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/H0llyW00dzZ/crypto-rand/badge.svg)](https://coveralls.io/github/H0llyW00dzZ/crypto-rand)
 
 Cryptographically secure random utilities for Node.js and browsers.
 
