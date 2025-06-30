@@ -18,6 +18,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "coveralls": "jest --coverage && coveralls < coverage/lcov.info",
     "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "keywords": [
@@ -41,6 +42,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.3",
     "babel-jest": "^30.0.0",
+    "coveralls": "^3.1.1",
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
     "typescript": "^5.8.3",
