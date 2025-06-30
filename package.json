@@ -57,6 +57,6 @@
   },
   "homepage": "https://github.com/H0llyW00dzZ/crypto-rand#readme",
   "engines": {
-    "node": ">=14.17"
+    "node": ">=19.0.0"
   }
 }
