@@ -1,6 +1,7 @@
 # crypto-rand
 [![npm version](https://badge.fury.io/js/@h0llyw00dzz%2Fcrypto-rand.svg)](https://badge.fury.io/js/@h0llyw00dzz%2Fcrypto-rand)
 [![Coverage Status](https://coveralls.io/repos/github/H0llyW00dzZ/crypto-rand/badge.svg)](https://coveralls.io/github/H0llyW00dzZ/crypto-rand)
+[![jest tested](https://img.shields.io/badge/Jest-tested-eee.svg?logo=jest&labelColor=99424f)](https://github.com/jestjs/jest)
 
 Cryptographically secure random utilities for Node.js and browsers.
 
