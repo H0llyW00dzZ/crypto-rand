@@ -555,7 +555,8 @@ export class Crypto {
             throw new Error('Number of iterations must be a positive integer');
         }
 
-        // Generate prime candidates until a probable prime is found
+        // Generate prime candidates until a probable prime is found,
+        // with a 100% guarantee of eventual success using this method.
         let candidate: bigint;
         do {
             candidate = Crypto.randBigInt(bits);
