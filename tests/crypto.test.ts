@@ -1935,7 +1935,8 @@ describe('Crypto Class', () => {
           } catch (decryptError) {
             // Expected behavior - decryption with wrong key should fail
             decryptionFailed = true;
-            console.log('Decryption with wrong key failed as expected:', decryptError.message);
+            console.log('Decryption with wrong key failed as expected:', 
+              decryptError instanceof Error ? decryptError.message : String(decryptError));
           }
 
           // At least one of the verification methods should pass
