@@ -263,7 +263,8 @@ export class Crypto {
         }
 
         const randomBytes = crypto.randomBytes(32);
-        const base64Version = randomBytes.toString('base64');
+        let base64Version: string;
+        base64Version = randomBytes.toString('base64');
         return base64Version;
     }
 
