@@ -2,12 +2,7 @@
 import * as crypto from 'crypto';
 import { Crypto } from '../src/rand';
 import {
-  DEFAULT_CHARSET,
-  HEX_CHARSET,
-  ALPHANUMERIC_CHARSET,
-  NUMERIC_CHARSET,
-  SPECIAL_CHARSET,
-  FULL_CHARSET
+  DEFAULT_CHARSET
 } from '../src/const';
 import { modPow, modInverse } from '../src/math_helper';
 
@@ -1084,7 +1079,7 @@ describe('Crypto Class', () => {
           ...hqcParams
         ];
 
-        allParams.forEach(({ dimension, modulus, name }) => {
+        allParams.forEach(({ dimension, modulus }) => {
           expect(() => {
             const result = Crypto.randLattice(dimension, modulus);
             expect(result).toBeDefined();
@@ -1122,9 +1117,10 @@ describe('Crypto Class', () => {
           }
         ];
 
-        securityLevels.forEach(({ level, params }) => {
-          params.forEach(({ dimension, modulus, scheme }) => {
-            const results = Array.from({ length: 10 }, () =>
+        securityLevels.forEach(({ params }) => {
+          params.forEach(({ dimension, modulus }) => {
+            let results: number[];
+            results = Array.from({ length: 10 }, () =>
               Crypto.randLattice(dimension, modulus)
             );
 
@@ -1164,13 +1160,13 @@ describe('Crypto Class', () => {
           { name: 'SPHINCS+-256s', dimension: 256, modulus: 256, type: 'DSA' }
         ];
 
-        nistSchemes.forEach(({ name, dimension, modulus, type }) => {
+        nistSchemes.forEach(({ dimension, modulus, }) => {
           // Generate multiple samples to test consistency
           const samples = Array.from({ length: 20 }, () =>
             Crypto.randLattice(dimension, modulus)
           );
 
-          samples.forEach((sample, index) => {
+          samples.forEach((sample) => {
             expect(sample).toBeGreaterThanOrEqual(0);
             expect(sample).toBeLessThan(1);
             expect(Number.isFinite(sample)).toBe(true);
@@ -1202,7 +1198,7 @@ describe('Crypto Class', () => {
           { name: 'Classic-McEliece-460896', dimension: 460, modulus: 8192 }
         ];
 
-        round4Candidates.forEach(({ name, dimension, modulus }) => {
+        round4Candidates.forEach(({ dimension, modulus }) => {
           expect(() => {
             const result = Crypto.randLattice(dimension, modulus);
             expect(result).toBeDefined();
@@ -1707,7 +1703,8 @@ describe('Crypto Class', () => {
         console.log('Testing RSAES-OAEP with 2048-bit RSA key pair...');
 
         // Generate 2048-bit RSA key pair (1024-bit primes each)
-        const startTime = Date.now();
+        let startTime: number;
+        startTime = Date.now();
 
         // Generate two 1024-bit primes using randPrime
         const p = Crypto.randPrime(1024);
@@ -1820,7 +1817,7 @@ describe('Crypto Class', () => {
         }
       });
 
-       // It's no wonder why this performance is somewhat overhead. "Security is not cheap" - ¯\_(ツ)_/¯
+      // It's no wonder why this performance is somewhat overhead. "Security is not cheap" - ¯\_(ツ)_/¯
       test('should perform RSAES-OAEP operations with 2048-bit keys with wrong private key for decryption', () => {
         console.log('Testing RSAES-OAEP with 2048-bit RSA key pair and wrong private key for decryption...');
 
@@ -1935,7 +1932,7 @@ describe('Crypto Class', () => {
           } catch (decryptError) {
             // Expected behavior - decryption with wrong key should fail
             decryptionFailed = true;
-            console.log('Decryption with wrong key failed as expected:', 
+            console.log('Decryption with wrong key failed as expected:',
               decryptError instanceof Error ? decryptError.message : String(decryptError));
           }
 
