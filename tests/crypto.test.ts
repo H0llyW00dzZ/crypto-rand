@@ -1960,6 +1960,182 @@ describe('Crypto Class', () => {
         }
       });
     });
+
+    // It's no wonder why this performance is somewhat overhead. "Security is not cheap" - ¯\_(ツ)_/¯
+    test('should perform RSASSA-PSS operations with 2048-bit keys', () => {
+      console.log('Testing RSASSA-PSS with 2048-bit RSA key pair...');
+
+      // Generate 2048-bit RSA key pair (1024-bit primes each)
+      let startTime: number;
+      startTime = Date.now();
+
+      // Generate two 1024-bit primes using randPrime
+      const p = Crypto.randPrime(1024);
+      const q = Crypto.randPrime(1024);
+
+      // Ensure p and q are different
+      expect(p).not.toBe(q);
+
+      // Calculate RSA parameters
+      const n = p * q; // 2048-bit modulus
+      const phi = (p - 1n) * (q - 1n);
+      const e = 65537n; // Common public exponent
+      const d = modInverse(e, phi);
+
+      // Verify key generation time is reasonable
+      const keyGenTime = Date.now() - startTime;
+      console.log(`2048-bit key generation took ${keyGenTime}ms`);
+      expect(keyGenTime).toBeLessThan(30000);
+
+      // Create RSA keys from our generated parameters
+      console.log('Creating RSA keys from our generated parameters...');
+
+      // Create private key components
+      const dmp1 = d % (p - 1n); // d mod (p-1)
+      const dmq1 = d % (q - 1n); // d mod (q-1)
+      const coeff = modInverse(q, p); // q^-1 mod p
+
+      // Convert magic bigints to Buffer for key creation
+      const nBuffer = Buffer.from(n.toString(16).padStart(512, '0'), 'hex');
+      const eBuffer = Buffer.from(e.toString(16).padStart(8, '0'), 'hex');
+      const dBuffer = Buffer.from(d.toString(16).padStart(512, '0'), 'hex');
+      const pBuffer = Buffer.from(p.toString(16).padStart(256, '0'), 'hex');
+      const qBuffer = Buffer.from(q.toString(16).padStart(256, '0'), 'hex');
+      const dmp1Buffer = Buffer.from(dmp1.toString(16).padStart(256, '0'), 'hex');
+      const dmq1Buffer = Buffer.from(dmq1.toString(16).padStart(256, '0'), 'hex');
+      const coeffBuffer = Buffer.from(coeff.toString(16).padStart(256, '0'), 'hex');
+
+      // Create key objects
+      const privateKey = crypto.createPrivateKey({
+        key: {
+          kty: 'RSA',
+          n: nBuffer.toString('base64url'),
+          e: eBuffer.toString('base64url'),
+          d: dBuffer.toString('base64url'),
+          p: pBuffer.toString('base64url'),
+          q: qBuffer.toString('base64url'),
+          dp: dmp1Buffer.toString('base64url'),
+          dq: dmq1Buffer.toString('base64url'),
+          qi: coeffBuffer.toString('base64url')
+        },
+        format: 'jwk'
+      });
+
+      const publicKey = crypto.createPublicKey(privateKey);
+
+      // Test RSASSA-PSS signing and verification
+      console.log('Testing RSASSA-PSS signing/verification with our generated keys...');
+
+      // Create test message
+      const message = Buffer.from('This is a test message for RSASSA-PSS signing with 2048-bit RSA key.');
+
+      try {
+        // Sign with private key using RSASSA-PSS
+        const signature = crypto.sign(
+          'sha256',
+          message,
+          {
+            key: privateKey,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          }
+        );
+
+        // Verify with public key using RSASSA-PSS
+        const isVerified = crypto.verify(
+          'sha256',
+          message,
+          {
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          },
+          signature
+        );
+
+        // Verify signature verification worked
+        expect(isVerified).toBe(true);
+        console.log('RSASSA-PSS signing/verification successful!');
+
+        // Test with modified message (should fail verification)
+        const modifiedMessage = Buffer.from('This is a MODIFIED test message for RSASSA-PSS signing with 2048-bit RSA key.');
+        const isModifiedVerified = crypto.verify(
+          'sha256',
+          modifiedMessage,
+          {
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          },
+          signature
+        );
+        expect(isModifiedVerified).toBe(false);
+        console.log('RSASSA-PSS correctly rejected modified message!');
+
+        // Test with wrong public key (should fail verification)
+        console.log('Testing RSASSA-PSS verification with wrong public key...');
+
+        // Generate a different key pair
+        const p2 = Crypto.randPrime(1024);
+        const q2 = Crypto.randPrime(1024);
+        const n2 = p2 * q2;
+        const phi2 = (p2 - 1n) * (q2 - 1n);
+        const e2 = 65537n;
+        const d2 = modInverse(e2, phi2);
+
+        // Create wrong public key
+        const n2Buffer = Buffer.from(n2.toString(16).padStart(512, '0'), 'hex');
+        const e2Buffer = Buffer.from(e2.toString(16).padStart(8, '0'), 'hex');
+
+        const wrongPublicKey = crypto.createPublicKey({
+          key: {
+            kty: 'RSA',
+            n: n2Buffer.toString('base64url'),
+            e: e2Buffer.toString('base64url')
+          },
+          format: 'jwk'
+        });
+
+        // Try to verify with wrong public key
+        const isWrongKeyVerified = crypto.verify(
+          'sha256',
+          message,
+          {
+            key: wrongPublicKey,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          },
+          signature
+        );
+
+        // Verification should fail with wrong key
+        expect(isWrongKeyVerified).toBe(false);
+        console.log('RSASSA-PSS correctly rejected verification with wrong public key!');
+
+        // Verify signature length is appropriate for RSA key size (256 bytes for 2048-bit key)
+        expect(signature.length).toBe(256);
+
+        // Also demonstrate textbook RSA signature (no padding) for verification
+        console.log('Verifying with textbook RSA signature (no padding)...');
+
+        // Create a small hash value for textbook RSA
+        const smallHash = 12345n;
+
+        // Sign with private key (textbook RSA)
+        const textbookSignature = modPow(smallHash, d, n);
+
+        // Verify with public key (textbook RSA)
+        const textbookVerified = modPow(textbookSignature, e, n);
+
+        // Verify textbook signature
+        expect(textbookVerified).toBe(smallHash);
+        console.log('Successfully verified textbook RSA signature');
+
+      } catch (error) {
+        console.error('RSASSA-PSS test failed:', error);
+        throw error;
+      }
+    });
   });
 
   describe('randBigInt()', () => {
