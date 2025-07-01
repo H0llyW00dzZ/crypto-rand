@@ -27,6 +27,11 @@ Cryptographically secure random utilities for Node.js and browsers.
 
 ## Installation
 
+> [!NOTE]
+>
+> The minimum required Node.js version is 19.0.0. It also works well with the latest Node.js versions, as it doesn't rely on external dependencies.
+> It primarily uses the Node.js `crypto` module, which leverages OpenSSL or other cryptographic libraries. For example, on Unix-like systems, Node.js might use `/dev/urandom` or `/dev/random`.
+
 ```bash
 npm install @h0llyw00dzz/crypto-rand
 ```
