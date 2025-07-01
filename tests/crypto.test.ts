@@ -2075,4 +2075,26 @@ describe('Crypto Class', () => {
     });
   });
 
+  describe('randVersion()', () => {
+    it('should generate a base64 string', () => {
+      const result = Crypto.randVersion();
+      expect(typeof result).toBe('string');
+      expect(/^[A-Za-z0-9+/]+=*$/.test(result)).toBe(true);
+    });
+
+    it('should generate a string with correct length', () => {
+      const result = Crypto.randVersion();
+      // 32 bytes in base64 should be 44 characters (including padding)
+      expect(result.length).toBe(44);
+    });
+
+    it('should generate different version strings', () => {
+      const versions = new Set<string>();
+      for (let i = 0; i < 10; i++) {
+        versions.add(Crypto.randVersion());
+      }
+      expect(versions.size).toBe(10);
+    });
+  });
+
 });
