@@ -2079,9 +2079,7 @@ describe('Crypto Class', () => {
         const p2 = Crypto.randPrime(1024);
         const q2 = Crypto.randPrime(1024);
         const n2 = p2 * q2;
-        const phi2 = (p2 - 1n) * (q2 - 1n);
         const e2 = 65537n;
-        const d2 = modInverse(e2, phi2);
 
         // Create wrong public key
         const n2Buffer = Buffer.from(n2.toString(16).padStart(512, '0'), 'hex');
