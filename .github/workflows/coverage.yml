@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         os:
+          # Note: Some operating systems are not supported due to poor compatibility with Coveralls
           [
             ubuntu-latest,
             ubuntu-24.04,
@@ -18,11 +19,7 @@ jobs:
             windows-latest,
             windows-2025,
             windows-2022,
-            windows-2019,
-            macos-13,
             macos-latest,
-            macos-14,
-            macos-15,
           ]
         node-version: [19.x, 20.x, 21.x, 22.x, 23.x, 24.x]
 
