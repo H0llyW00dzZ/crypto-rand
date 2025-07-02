@@ -365,7 +365,7 @@ export class Crypto {
             'shuffle', 'randString', 'randHex', 'randBase64', 'randBool', 'randBytes',
             'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat', 'randNormal',
             'randSeeded', 'randSubset', 'randGaussian', 'randWalk', 'randPassword', 'randLattice',
-            'randPrime', 'randBigInt'
+            'randPrime', 'randBigInt', 'randExponential'
         ];
 
         const unsupportedMethods = Crypto.getUnsupportedMethods();
@@ -603,6 +603,14 @@ export class Crypto {
         return num;
     }
 
+    /**
+     * Generate random number with exponential distribution
+     */
+    static randExponential(lambda: number = 1): number {
+        const u = Crypto.rand();
+        return -Math.log(1 - u) / lambda;
+    }
+
 }
 
 // Convenience exports - Go-style short names
@@ -632,5 +640,6 @@ export const {
     randPassword,
     randLattice,
     randPrime,
-    randBigInt
+    randBigInt,
+    randExponential
 } = Crypto;
