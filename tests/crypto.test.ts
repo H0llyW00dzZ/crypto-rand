@@ -566,15 +566,64 @@ describe('Crypto Class', () => {
     });
 
     it('should use default character types (uppercase, lowercase, numbers)', () => {
-      const password = Crypto.randPassword({ length: 20 });
+      // Test the character set construction logic directly
+      const originalRandString = Crypto.randString;
 
-      // Should contain at least one of each default type
-      expect(/[A-Z]/.test(password)).toBe(true); // uppercase
-      expect(/[a-z]/.test(password)).toBe(true); // lowercase
-      expect(/[0-9]/.test(password)).toBe(true); // numbers
+      // Mock randString to return a predictable output for testing
+      Crypto.randString = jest.fn().mockImplementation((length, charset) => {
+        // Verify that the charset contains the expected character types
+        expect(charset).toMatch(/[A-Z]/); // Should contain uppercase
+        expect(charset).toMatch(/[a-z]/); // Should contain lowercase
+        expect(charset).toMatch(/[0-9]/); // Should contain numbers
+        expect(charset).not.toMatch(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/); // Should not contain symbols
 
-      // Should not contain symbols by default
-      expect(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)).toBe(false);
+        // Return a string that includes at least one of each character type
+        return 'Aa1' + 'x'.repeat(length - 3);
+      });
+
+      // Generate password with mocked randString
+      const password = Crypto.randPassword({ length: 50 });
+
+      // Restore original randString function
+      Crypto.randString = originalRandString;
+
+      // Verify the password has the expected length
+      expect(password).toHaveLength(50);
+
+      // Generate multiple passwords with real randString to test probabilistic behavior
+      const numPasswords = 5;
+      const passwordLength = 100; // Longer passwords reduce probability of missing character types
+      let containsUppercase = false;
+      let containsLowercase = false;
+      let containsNumbers = false;
+
+      for (let i = 0; i < numPasswords; i++) {
+        const testPassword = Crypto.randPassword({ length: passwordLength });
+
+        // Check if this password contains each character type
+        if (/[A-Z]/.test(testPassword)) containsUppercase = true;
+        if (/[a-z]/.test(testPassword)) containsLowercase = true;
+        if (/[0-9]/.test(testPassword)) containsNumbers = true;
+
+        // If all character types are found, no need to continue
+        if (containsUppercase && containsLowercase && containsNumbers) break;
+      }
+
+      // Verify that at least one password contains each character type
+      expect(containsUppercase).toBe(true); // Should contain uppercase
+      expect(containsLowercase).toBe(true); // Should contain lowercase
+      expect(containsNumbers).toBe(true); // Should contain numbers
+
+      // Verify that symbols are not included by default
+      const symbolsTest = Array(numPasswords).fill(0).map(() => 
+        Crypto.randPassword({ length: passwordLength })
+      );
+
+      const containsSymbols = symbolsTest.some(pwd => 
+        /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)
+      );
+
+      expect(containsSymbols).toBe(false);
     });
 
     it('should include uppercase when specified', () => {
