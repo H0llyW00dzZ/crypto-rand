@@ -2317,4 +2317,79 @@ describe('Crypto Class', () => {
     });
   });
 
+  describe('randExponential()', () => {
+    describe('basic functionality', () => {
+      it('should return a number', () => {
+        const result = Crypto.randExponential();
+        expect(typeof result).toBe('number');
+      });
+
+      it('should return a positive number', () => {
+        for (let i = 0; i < 100; i++) {
+          const result = Crypto.randExponential();
+          expect(result).toBeGreaterThanOrEqual(0);
+        }
+      });
+
+      it('should work with default lambda value', () => {
+        const result = Crypto.randExponential();
+        expect(typeof result).toBe('number');
+        expect(result).toBeGreaterThanOrEqual(0);
+      });
+
+      it('should work with custom lambda value', () => {
+        const lambda = 2;
+        const result = Crypto.randExponential(lambda);
+        expect(typeof result).toBe('number');
+        expect(result).toBeGreaterThanOrEqual(0);
+      });
+    });
+
+    describe('statistical properties', () => {
+      it('should follow exponential distribution properties', () => {
+        // For an exponential distribution with parameter lambda,
+        // the mean should be approximately 1/lambda
+        const lambda = 2;
+        const sampleSize = 10000;
+        const samples: number[] = [];
+
+        for (let i = 0; i < sampleSize; i++) {
+          samples.push(Crypto.randExponential(lambda));
+        }
+
+        // Calculate mean
+        const sum = samples.reduce((acc, val) => acc + val, 0);
+        const mean = sum / sampleSize;
+
+        // Expected mean for exponential distribution is 1/lambda
+        const expectedMean = 1 / lambda;
+
+        // Allow for some statistical variation (within 10%)
+        expect(mean).toBeGreaterThan(expectedMean * 0.9);
+        expect(mean).toBeLessThan(expectedMean * 1.1);
+      });
+
+      it('should generate different values on subsequent calls', () => {
+        const results = new Set<number>();
+        for (let i = 0; i < 100; i++) {
+          results.add(Crypto.randExponential());
+        }
+        // Should have high entropy (at least 95% unique values)
+        expect(results.size).toBeGreaterThan(95);
+      });
+    });
+
+    describe('parameter validation', () => {
+      it('should handle different lambda values', () => {
+        const lambdaValues: number[] = [0.5, 1, 2, 5];
+
+        for (const lambda of lambdaValues) {
+          const result = Crypto.randExponential(lambda);
+          expect(typeof result).toBe('number');
+          expect(result).toBeGreaterThanOrEqual(0);
+        }
+      });
+    });
+  });
+
 });

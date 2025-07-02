@@ -102,6 +102,7 @@ const id = Crypto.randUUID();
 - `Crypto.randLattice(dimension?, modulus?)` - Generate lattice-based cryptographically secure random number
 - `Crypto.randPrime(bits?, iterations?)` - Generate cryptographically secure random prime number
 - `Crypto.randBigInt(bits?)` - Generate cryptographically secure random bigint with specified bit length
+- `Crypto.randExponential(lambda?)` - Generate random number with exponential distribution
 
 > [!NOTE]
 >
@@ -118,6 +119,8 @@ const id = Crypto.randUUID();
 > - **randPrime**: Generates cryptographically secure random prime numbers of specified bit length using the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test). This is useful for cryptographic applications like [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) key generation that require large prime numbers.
 >
 > - **randBigInt**: Generates cryptographically secure random bigints with exactly the specified bit length. It ensures the most significant bit is set to 1 (to maintain the exact bit length) and the least significant bit is set to 1 (making it odd). This method is useful for cryptographic operations that require large random integers, and is used internally by `randPrime`.
+>
+> - **randExponential**: Generates random numbers following an [exponential distribution](https://en.wikipedia.org/wiki/Exponential_distribution) with rate parameter `lambda` (default: 1). The exponential distribution is commonly used for modeling time between independent events that occur at a constant average rate, such as arrival times, failure times, or waiting times in queuing theory. The mean of the distribution is 1/λ and the variance is 1/λ².
 
 ### Character Sets
 ```typescript
