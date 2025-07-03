@@ -276,7 +276,7 @@ export class Crypto {
     }
 
     /**
-     * Generate random number with normal distribution using Box-Muller transform.
+     * Generate random number with normal distribution using [Box-Muller transform](https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform).
      * 
      * This method is similar to randGaussian but ensures that the logarithm function
      * never receives zero by converting [0,1) to (0,1).
@@ -286,7 +286,7 @@ export class Crypto {
      * 1. Generate two independent uniform random numbers:
      *    - (u) is adjusted to be in the interval (0, 1) by using 1 - Crypto.rand().
      *    - (v) is a standard uniform random number in [0, 1).
-     * 2. Apply the Box-Muller transform:
+     * 2. Apply the [Box-Muller transform](https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform):
      *    - Compute z = √(-2 × ln(u)) × cos(2π × v)
      *    - This gives z, a standard normally distributed random number (mean = 0, std dev = 1).
      * 3. Scale and shift z to have the desired mean and standard deviation:
@@ -393,12 +393,12 @@ export class Crypto {
     }
 
     /**
-     * Generate random number with Gaussian distribution using Box-Muller transform.
+     * Generate random number with Gaussian distribution using [Box-Muller transform](https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform).
      * 
      * Steps:
      * 
      * 1. Generate two independent uniform random numbers (u₁) and (u₂) in the interval [0, 1).
-     * 2. Apply the Box-Muller transform:
+     * 2. Apply the [Box-Muller transform](https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform):
      *    - Compute z₀ = √(-2 × ln(u₁)) × cos(2π × u₂)
      *    - This gives z₀, a standard normally distributed random number (mean = 0, std dev = 1).
      * 3. Scale and shift z₀ to have the desired mean and standard deviation:
