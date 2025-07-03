@@ -115,7 +115,7 @@ export class Crypto {
     }
 
     /**
-     * Shuffle array using Fisher-Yates algorithm with crypto random.
+     * Shuffle array using [Fisher-Yates algorithm](https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle) with crypto random.
      */
     static shuffle<T>(array: T[]): T[] {
         const shuffled = [...array];
