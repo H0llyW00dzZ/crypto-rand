@@ -758,6 +758,7 @@ describe('Crypto Class', () => {
       expect(passwords.size).toBeGreaterThan(47);
     });
 
+    // This test might fail due to cryptographic randomization, which is inherently unpredictable.
     it('should handle complex character combinations', () => {
       const password = Crypto.randPassword({
         length: 50,
@@ -769,9 +770,8 @@ describe('Crypto Class', () => {
       });
 
       expect(password).toHaveLength(50);
-      expect(/[A-Z]/.test(password)).toBe(true);
-      expect(/[a-z]/.test(password)).toBe(true);
-      expect(/[0-9]/.test(password)).toBe(true);
+      // Combined regex for uppercase, lowercase, and numbers using positive lookaheads
+      expect(/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])/.test(password)).toBe(true);
       expect(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)).toBe(true);
       expect(password).not.toMatch(/[0O1lI]/);
     });
