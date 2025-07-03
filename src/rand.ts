@@ -462,21 +462,80 @@ export class Crypto {
             return Crypto.randString(length, customChars);
         }
 
-        let charset = '';
-        if (includeUppercase) charset += UPPERCASE_CHARSET;
-        if (includeLowercase) charset += LOWERCASE_CHARSET;
-        if (includeNumbers) charset += NUMERIC_CHARSET;
-        if (includeSymbols) charset += SPECIAL_CHARSET;
+        // Define the pattern for similar-looking characters once
+        const similarCharsPattern = /[0O1lI]/g;
 
+        // Build the charset
+        let charset = '';
+        let uppercaseChars = UPPERCASE_CHARSET;
+        let lowercaseChars = LOWERCASE_CHARSET;
+        let numericChars = NUMERIC_CHARSET;
+        let specialChars = SPECIAL_CHARSET;
+
+        // Remove similar-looking characters if requested
         if (excludeSimilar) {
-            charset = charset.replace(/[0O1lI]/g, '');
+            // Consistently remove all similar-looking characters: 0, O, 1, l, I
+            uppercaseChars = uppercaseChars.replace(similarCharsPattern, '');
+            lowercaseChars = lowercaseChars.replace(similarCharsPattern, '');
+            numericChars = numericChars.replace(similarCharsPattern, '');
+            specialChars = specialChars.replace(similarCharsPattern, '');
         }
+
+        // Add character sets to the full charset
+        if (includeUppercase) charset += uppercaseChars;
+        if (includeLowercase) charset += lowercaseChars;
+        if (includeNumbers) charset += numericChars;
+        if (includeSymbols) charset += specialChars;
 
         if (!charset) {
             throw new Error('At least one character type must be enabled');
         }
 
-        return Crypto.randString(length, charset);
+        // Make sure the combined charset also has similar-looking characters removed if requested
+        if (excludeSimilar) {
+            // Ensure all similar-looking characters are removed from the combined charset
+            charset = charset.replace(similarCharsPattern, '');
+        }
+
+        // If length is too short to include all required character types, just use random
+        const requiredTypes = [
+            includeUppercase && uppercaseChars,
+            includeLowercase && lowercaseChars,
+            includeNumbers && numericChars,
+            includeSymbols && specialChars
+        ].filter(Boolean);
+
+        if (length < requiredTypes.length) {
+            return Crypto.randString(length, charset);
+        }
+
+        // Ensure at least one character from each required character set
+        const requiredChars: string[] = [];
+
+        if (includeUppercase) {
+            requiredChars.push(uppercaseChars.charAt(Crypto.randN(uppercaseChars.length)));
+        }
+
+        if (includeLowercase) {
+            requiredChars.push(lowercaseChars.charAt(Crypto.randN(lowercaseChars.length)));
+        }
+
+        if (includeNumbers) {
+            requiredChars.push(numericChars.charAt(Crypto.randN(numericChars.length)));
+        }
+
+        if (includeSymbols) {
+            requiredChars.push(specialChars.charAt(Crypto.randN(specialChars.length)));
+        }
+
+        // Generate the remaining characters randomly
+        const remainingLength = length - requiredChars.length;
+        let password = requiredChars.join('') + Crypto.randString(remainingLength, charset);
+
+        // Shuffle the password to ensure the required characters are not in predictable positions
+        password = Crypto.shuffle(password.split('')).join('');
+
+        return password;
     }
 
     /**
