@@ -615,11 +615,11 @@ describe('Crypto Class', () => {
       expect(containsNumbers).toBe(true); // Should contain numbers
 
       // Verify that symbols are not included by default
-      const symbolsTest = Array(numPasswords).fill(0).map(() => 
+      const symbolsTest = Array(numPasswords).fill(0).map(() =>
         Crypto.randPassword({ length: passwordLength })
       );
 
-      const containsSymbols = symbolsTest.some(pwd => 
+      const containsSymbols = symbolsTest.some(pwd =>
         /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)
       );
 
@@ -1392,15 +1392,21 @@ describe('Crypto Class', () => {
     describe('RSA key generation', () => {
       test('should generate primes suitable for RSA key generation', () => {
         // Generate two smaller primes for testing (using 512 bits instead of 1024 for speed)
-        const p = Crypto.randPrime(512);
-        const q = Crypto.randPrime(512);
+        let p: bigint, q: bigint, n: bigint, phi: bigint;
+        const expectedBitLength: number = 512;
 
-        // Verify they are different primes
-        expect(p).not.toBe(q);
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          p = Crypto.randPrime(expectedBitLength);
+          q = Crypto.randPrime(expectedBitLength);
 
-        // Calculate RSA parameters
-        const n = p * q; // modulus
-        const phi = (p - 1n) * (q - 1n); // Euler's totient function
+          // Ensure p and q are different
+          expect(p).not.toBe(q);
+
+          // Calculate RSA parameters
+          n = p * q; // modulus
+          phi = (p - 1n) * (q - 1n); // Euler's totient function
+        } while (n.toString(2).length !== 2 * expectedBitLength);
 
         // Common RSA public exponent
         const e = 65537n;
@@ -1483,10 +1489,21 @@ describe('Crypto Class', () => {
 
       test('should perform RSA encryption and decryption with various message sizes', () => {
         // Generate RSA key pair
-        const p = Crypto.randPrime(512);
-        const q = Crypto.randPrime(512);
-        const n = p * q;
-        const phi = (p - 1n) * (q - 1n);
+        let p: bigint, q: bigint, n: bigint, phi: bigint;
+        const expectedBitLength: number = 512;
+
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          p = Crypto.randPrime(expectedBitLength);
+          q = Crypto.randPrime(expectedBitLength);
+
+          // Ensure p and q are different
+          expect(p).not.toBe(q);
+
+          n = p * q;
+          phi = (p - 1n) * (q - 1n);
+        } while (n.toString(2).length !== 2 * expectedBitLength);
+
         const e = 65537n;
         const d = modInverse(e, phi);
 
@@ -1532,10 +1549,21 @@ describe('Crypto Class', () => {
 
       test('should perform RSA digital signature and verification', () => {
         // Generate RSA key pair for signing
-        const p = Crypto.randPrime(512);
-        const q = Crypto.randPrime(512);
-        const n = p * q;
-        const phi = (p - 1n) * (q - 1n);
+        let p: bigint, q: bigint, n: bigint, phi: bigint;
+        const expectedBitLength: number = 512;
+
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          p = Crypto.randPrime(expectedBitLength);
+          q = Crypto.randPrime(expectedBitLength);
+
+          // Ensure p and q are different
+          expect(p).not.toBe(q);
+
+          n = p * q;
+          phi = (p - 1n) * (q - 1n);
+        } while (n.toString(2).length !== 2 * expectedBitLength);
+
         const e = 65537n;
         const d = modInverse(e, phi);
 
@@ -1576,17 +1604,38 @@ describe('Crypto Class', () => {
 
       test('should handle RSA signature verification with wrong public key', () => {
         // Generate first RSA key pair
-        const p1 = Crypto.randPrime(512);
-        const q1 = Crypto.randPrime(512);
-        const n1 = p1 * q1;
-        const phi1 = (p1 - 1n) * (q1 - 1n);
+        let p1: bigint, q1: bigint, n1: bigint, phi1: bigint;
+        const expectedBitLength: number = 512;
+
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          p1 = Crypto.randPrime(expectedBitLength);
+          q1 = Crypto.randPrime(expectedBitLength);
+
+          // Ensure p and q are different
+          expect(p1).not.toBe(q1);
+
+          n1 = p1 * q1;
+          phi1 = (p1 - 1n) * (q1 - 1n);
+        } while (n1.toString(2).length !== 2 * expectedBitLength);
+
         const e1 = 65537n;
         const d1 = modInverse(e1, phi1);
 
         // Generate second RSA key pair
-        const p2 = Crypto.randPrime(512);
-        const q2 = Crypto.randPrime(512);
-        const n2 = p2 * q2;
+        let p2: bigint, q2: bigint, n2: bigint;
+
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          p2 = Crypto.randPrime(expectedBitLength);
+          q2 = Crypto.randPrime(expectedBitLength);
+
+          // Ensure p and q are different
+          expect(p2).not.toBe(q2);
+
+          n2 = p2 * q2;
+        } while (n2.toString(2).length !== 2 * expectedBitLength);
+
         const e2 = 65537n;
 
         const messageHash = 123456n;
@@ -1607,23 +1656,30 @@ describe('Crypto Class', () => {
 
       test('should perform RSA operations with 2048-bit keys', () => {
         // Generate 2048-bit RSA key pair (1024-bit primes each)
-        console.log('Generating 2048-bit RSA key pair...');
         const startTime = Date.now();
 
-        const p = Crypto.randPrime(1024);
-        const q = Crypto.randPrime(1024);
+        let p: bigint, q: bigint, n: bigint, phi: bigint;
+        const expectedBitLength: number = 1024;
+        console.log(`Generating ${2 * expectedBitLength}-bit RSA key pair...`);
 
-        // Ensure p and q are different
-        expect(p).not.toBe(q);
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          p = Crypto.randPrime(expectedBitLength);
+          q = Crypto.randPrime(expectedBitLength);
 
-        // Calculate RSA parameters
-        const n = p * q; // 2048-bit modulus
-        const phi = (p - 1n) * (q - 1n);
+          // Ensure p and q are different
+          expect(p).not.toBe(q);
+
+          // Calculate RSA parameters
+          n = p * q; // 2048-bit modulus
+          phi = (p - 1n) * (q - 1n);
+        } while (n.toString(2).length !== 2 * expectedBitLength);
+
         const e = 65537n; // Common public exponent
 
         // Verify key generation time is reasonable (allow up to 30 seconds for 2048-bit)
         const keyGenTime = Date.now() - startTime;
-        console.log(`2048-bit key generation took ${keyGenTime}ms`);
+        console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
         expect(keyGenTime).toBeLessThan(30000);
 
         // Verify modulus is approximately 2048 bits
@@ -1637,7 +1693,7 @@ describe('Crypto Class', () => {
         // Verify RSA key properties
         expect((d * e) % phi).toBe(1n);
 
-        console.log('Testing 2048-bit RSA encryption/decryption...');
+        console.log(`Testing ${n.toString(2).length}-bit RSA encryption/decryption...`);
 
         // Test encryption and decryption with various message sizes
         const testMessages = [
@@ -1682,13 +1738,24 @@ describe('Crypto Class', () => {
       });
 
       test('should perform RSA digital signatures with 2048-bit keys', () => {
-        console.log('Testing 2048-bit RSA digital signatures...');
-
         // Generate 2048-bit RSA key pair
-        const p = Crypto.randPrime(1024);
-        const q = Crypto.randPrime(1024);
-        const n = p * q;
-        const phi = (p - 1n) * (q - 1n);
+        let p: bigint, q: bigint, n: bigint, phi: bigint;
+        const expectedBitLength: number = 1024;
+
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          p = Crypto.randPrime(expectedBitLength);
+          q = Crypto.randPrime(expectedBitLength);
+
+          // Ensure p and q are different
+          expect(p).not.toBe(q);
+
+          n = p * q;
+          phi = (p - 1n) * (q - 1n);
+        } while (n.toString(2).length !== 2 * expectedBitLength);
+
+        console.log(`Testing ${2 * expectedBitLength}-bit RSA digital signatures...`);
+
         const e = 65537n;
         const d = modInverse(e, phi);
 
@@ -1749,28 +1816,35 @@ describe('Crypto Class', () => {
 
       // It's no wonder why this performance is somewhat overhead. "Security is not cheap" - ¯\_(ツ)_/¯
       test('should perform RSAES-OAEP operations with 2048-bit keys', () => {
-        console.log('Testing RSAES-OAEP with 2048-bit RSA key pair...');
-
         // Generate 2048-bit RSA key pair (1024-bit primes each)
+        let p: bigint, q: bigint, n: bigint, phi: bigint;
+        const expectedBitLength: number = 1024;
+
         let startTime: number;
         startTime = Date.now();
 
-        // Generate two 1024-bit primes using randPrime
-        const p = Crypto.randPrime(1024);
-        const q = Crypto.randPrime(1024);
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          // Generate two 1024-bit primes using randPrime
+          p = Crypto.randPrime(expectedBitLength);
+          q = Crypto.randPrime(expectedBitLength);
 
-        // Ensure p and q are different
-        expect(p).not.toBe(q);
+          // Ensure p and q are different
+          expect(p).not.toBe(q);
 
-        // Calculate RSA parameters
-        const n = p * q; // 2048-bit modulus
-        const phi = (p - 1n) * (q - 1n);
+          // Calculate RSA parameters
+          n = p * q; // 2048-bit modulus
+          phi = (p - 1n) * (q - 1n);
+        } while (n.toString(2).length !== 2 * expectedBitLength);
+
+        console.log(`Testing RSAES-OAEP with ${2 * expectedBitLength}-bit RSA key pair...`);
+
         const e = 65537n; // Common public exponent
         const d = modInverse(e, phi);
 
         // Verify key generation time is reasonable
         const keyGenTime = Date.now() - startTime;
-        console.log(`2048-bit key generation took ${keyGenTime}ms`);
+        console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
         expect(keyGenTime).toBeLessThan(30000);
 
         // Create RSA keys from our generated parameters
@@ -1813,7 +1887,7 @@ describe('Crypto Class', () => {
         console.log('Testing RSAES-OAEP encryption/decryption with our generated keys...');
 
         // Create test message
-        const message = Buffer.from('This is a test message for RSAES-OAEP encryption with 2048-bit RSA key.');
+        const message = Buffer.from(`This is a test message for RSAES-OAEP encryption with ${n.toString(2).length}-bit RSA key.`);
 
         try {
           // Encrypt with public key using RSAES-OAEP
@@ -1872,10 +1946,21 @@ describe('Crypto Class', () => {
 
         // Generate first set of primes and RSA parameters
         console.log('Generating first set of RSA parameters using our randPrime...');
-        const p1 = Crypto.randPrime(1024);
-        const q1 = Crypto.randPrime(1024);
-        const n1 = p1 * q1;
-        const phi1 = (p1 - 1n) * (q1 - 1n);
+        let p1: bigint, q1: bigint, n1: bigint, phi1: bigint;
+        const expectedBitLength: number = 1024;
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          p1 = Crypto.randPrime(expectedBitLength);
+          q1 = Crypto.randPrime(expectedBitLength);
+
+          // Ensure p and q are different
+          expect(p1).not.toBe(q1);
+
+          // Calculate RSA parameters
+          n1 = p1 * q1;
+          phi1 = (p1 - 1n) * (q1 - 1n);
+        } while (n1.toString(2).length !== 2 * expectedBitLength);
+
         const e1 = 65537n;
         const d1 = modInverse(e1, phi1);
         const dmp1_1 = d1 % (p1 - 1n);
@@ -1884,10 +1969,20 @@ describe('Crypto Class', () => {
 
         // Generate second set of primes and RSA parameters (for wrong key)
         console.log('Generating second set of RSA parameters using our randPrime...');
-        const p2 = Crypto.randPrime(1024);
-        const q2 = Crypto.randPrime(1024);
-        const n2 = p2 * q2;
-        const phi2 = (p2 - 1n) * (q2 - 1n);
+        let p2: bigint, q2: bigint, n2: bigint, phi2: bigint;
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          p2 = Crypto.randPrime(expectedBitLength);
+          q2 = Crypto.randPrime(expectedBitLength);
+
+          // Ensure p and q are different
+          expect(p2).not.toBe(q2);
+
+          // Calculate RSA parameters
+          n2 = p2 * q2;
+          phi2 = (p2 - 1n) * (q2 - 1n);
+        } while (n2.toString(2).length !== 2 * expectedBitLength);
+
         const e2 = 65537n;
         const d2 = modInverse(e2, phi2);
         const dmp1_2 = d2 % (p2 - 1n);
@@ -1949,7 +2044,7 @@ describe('Crypto Class', () => {
         });
 
         // Create test message
-        const message = Buffer.from('This is a test message for RSAES-OAEP encryption with 2048-bit RSA key and wrong private key.');
+        const message = Buffer.from(`This is a test message for RSAES-OAEP encryption with ${n2.toString(2).length}-bit RSA key and wrong private key.`);
 
         try {
           // Encrypt with public key from first pair using RSAES-OAEP
@@ -2012,28 +2107,34 @@ describe('Crypto Class', () => {
 
     // It's no wonder why this performance is somewhat overhead. "Security is not cheap" - ¯\_(ツ)_/¯
     test('should perform RSASSA-PSS operations with 2048-bit keys', () => {
-      console.log('Testing RSASSA-PSS with 2048-bit RSA key pair...');
-
       // Generate 2048-bit RSA key pair (1024-bit primes each)
       let startTime: number;
       startTime = Date.now();
 
-      // Generate two 1024-bit primes using randPrime
-      const p = Crypto.randPrime(1024);
-      const q = Crypto.randPrime(1024);
+      let p: bigint, q: bigint, n: bigint, phi: bigint;
+      const expectedBitLength: number = 1024;
+      // Loop to ensure modulus n is of the expected bit length
+      do {
+        // Generate two 1024-bit primes using randPrime
+        p = Crypto.randPrime(expectedBitLength);
+        q = Crypto.randPrime(expectedBitLength);
 
-      // Ensure p and q are different
-      expect(p).not.toBe(q);
+        // Ensure p and q are different
+        expect(p).not.toBe(q);
 
-      // Calculate RSA parameters
-      const n = p * q; // 2048-bit modulus
-      const phi = (p - 1n) * (q - 1n);
+        // Calculate RSA parameters
+        n = p * q; // 2048-bit modulus
+        phi = (p - 1n) * (q - 1n);
+      } while (n.toString(2).length !== 2 * expectedBitLength);
+
+      console.log(`Testing RSASSA-PSS with ${2 * expectedBitLength}-bit RSA key pair...`);
+
       const e = 65537n; // Common public exponent
       const d = modInverse(e, phi);
 
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
-      console.log(`2048-bit key generation took ${keyGenTime}ms`);
+      console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
       expect(keyGenTime).toBeLessThan(30000);
 
       // Create RSA keys from our generated parameters
@@ -2076,7 +2177,7 @@ describe('Crypto Class', () => {
       console.log('Testing RSASSA-PSS signing/verification with our generated keys...');
 
       // Create test message
-      const message = Buffer.from('This is a test message for RSASSA-PSS signing with 2048-bit RSA key.');
+      const message = Buffer.from(`This is a test message for RSASSA-PSS signing with ${n.toString(2).length}-bit RSA key.`);
 
       try {
         // Sign with private key using RSASSA-PSS
@@ -2107,7 +2208,7 @@ describe('Crypto Class', () => {
         console.log('RSASSA-PSS signing/verification successful!');
 
         // Test with modified message (should fail verification)
-        const modifiedMessage = Buffer.from('This is a MODIFIED test message for RSASSA-PSS signing with 2048-bit RSA key.');
+        const modifiedMessage = Buffer.from(`This is a MODIFIED test message for RSASSA-PSS signing with ${n.toString(2).length}-bit RSA key.`);
         const isModifiedVerified = crypto.verify(
           'sha256',
           modifiedMessage,
@@ -2125,9 +2226,19 @@ describe('Crypto Class', () => {
         console.log('Testing RSASSA-PSS verification with wrong public key...');
 
         // Generate a different key pair
-        const p2 = Crypto.randPrime(1024);
-        const q2 = Crypto.randPrime(1024);
-        const n2 = p2 * q2;
+        let p2: bigint, q2: bigint, n2: bigint;
+        // Loop to ensure modulus n is of the expected bit length
+        do {
+          p2 = Crypto.randPrime(expectedBitLength);
+          q2 = Crypto.randPrime(expectedBitLength);
+
+          // Ensure p and q are different
+          expect(p2).not.toBe(q2);
+
+          // Calculate RSA parameters
+          n2 = p2 * q2; // 2048-bit modulus
+        } while (n2.toString(2).length !== 2 * expectedBitLength);
+
         const e2 = 65537n;
 
         // Create wrong public key
@@ -2182,6 +2293,63 @@ describe('Crypto Class', () => {
         console.error('RSASSA-PSS test failed:', error);
         throw error;
       }
+    });
+  });
+
+  describe('randPrime bit length tests', () => {
+    test('should generate primes with exactly the specified bit length', () => {
+      // Test with different bit lengths
+      const bitLengths: number[] = [256, 512, 1024, 2048];
+
+      for (const bits of bitLengths) {
+        // Generate a prime with the specified bit length
+        const prime = Crypto.randPrime(bits);
+
+        // Calculate the actual bit length
+        const actualBits = prime.toString(2).length;
+
+        // Verify the bit length is exactly as specified
+        expect(actualBits).toBe(bits);
+
+        // Additional check: the prime should be >= 2^(bits-1) and < 2^bits
+        const minValue = 1n << BigInt(bits - 1);
+        const maxValue = 1n << BigInt(bits);
+
+        expect(prime).toBeGreaterThanOrEqual(minValue);
+        expect(prime).toBeLessThan(maxValue);
+      }
+    });
+
+    test('should regenerate primes if bit length is not as expected', () => {
+      // Mock the randBigInt function to return values with incorrect bit length first
+      const originalRandBigInt = Crypto.randBigInt;
+      let callCount = 0;
+
+      // @ts-ignore - Accessing private method for testing
+      Crypto.randBigInt = jest.fn((bits: number) => {
+        callCount++;
+        if (callCount === 1) {
+          // First call: return a value with one bit less (simulating the issue)
+          return 1n << BigInt(bits - 2); // This has bits-1 bits
+        } else {
+          // Subsequent calls: return a proper value
+          return originalRandBigInt(bits);
+        }
+      });
+
+      // Generate a prime with 256 bits
+      const prime = Crypto.randPrime(256);
+
+      // Verify the bit length is exactly as specified
+      const actualBits = prime.toString(2).length;
+      expect(actualBits).toBe(256);
+
+      // Verify that randBigInt was called more than once (indicating regeneration)
+      expect(callCount).toBeGreaterThan(1);
+
+      // Restore the original function
+      // @ts-ignore - Restoring private method
+      Crypto.randBigInt = originalRandBigInt;
     });
   });
 
