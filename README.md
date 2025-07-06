@@ -272,6 +272,8 @@ e in binary: 0b10000000000000001
 >   phi = (p - 1n) * (q - 1n);
 > } while (n.toString(2).length !== 2 * expectedBitLength);
 > ```
+>
+> It's also worth noting that this issue, where the modulus \( n \) is not as expected (e.g., 1024 bits but returns 1023 bits), is not a bug. In theory, "numbers don't lie."
 
 ## Security
 This library uses Node.js's built-in `crypto` module to provide cryptographically secure random number generation. Unlike `Math.random()`, which uses a pseudorandom number generator that can be predictable, this library ensures true randomness suitable for security-sensitive applications.
