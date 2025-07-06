@@ -255,6 +255,24 @@ e in binary: 0b10000000000000001
 🔒 Ready for cryptographic operations with 1024-bit security
 ```
 
+> [!TIP]
+>
+> If you encounter an issue where the modulus \( n \) is not as expected (e.g., 1024 bits but returns 1023 bits), consider using this approach:
+>
+> ```typescript
+> // Generate first RSA key pair
+> let p: bigint, q: bigint, n: bigint, phi: bigint;
+> const expectedBitLength: number = 512;
+>
+> // Loop to ensure modulus n is of the expected bit length
+> do {
+>   p = Crypto.randPrime(expectedBitLength);
+>   q = Crypto.randPrime(expectedBitLength);
+>   n = p * q;
+>   phi = (p - 1n) * (q - 1n);
+> } while (n.toString(2).length !== 2 * expectedBitLength);
+> ```
+
 ## Security
 This library uses Node.js's built-in `crypto` module to provide cryptographically secure random number generation. Unlike `Math.random()`, which uses a pseudorandom number generator that can be predictable, this library ensures true randomness suitable for security-sensitive applications.
 
