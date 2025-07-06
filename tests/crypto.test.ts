@@ -1942,12 +1942,12 @@ describe('Crypto Class', () => {
 
       // It's no wonder why this performance is somewhat overhead. "Security is not cheap" - ¯\_(ツ)_/¯
       test('should perform RSAES-OAEP operations with 2048-bit keys with wrong private key for decryption', () => {
-        console.log('Testing RSAES-OAEP with 2048-bit RSA key pair and wrong private key for decryption...');
+        let p1: bigint, q1: bigint, n1: bigint, phi1: bigint;
+        const expectedBitLength: number = 1024;
+        console.log(`Testing RSAES-OAEP with ${2 * expectedBitLength}-bit RSA key pair and wrong private key for decryption...`);
 
         // Generate first set of primes and RSA parameters
         console.log('Generating first set of RSA parameters using our randPrime...');
-        let p1: bigint, q1: bigint, n1: bigint, phi1: bigint;
-        const expectedBitLength: number = 1024;
         // Loop to ensure modulus n is of the expected bit length
         do {
           p1 = Crypto.randPrime(expectedBitLength);
