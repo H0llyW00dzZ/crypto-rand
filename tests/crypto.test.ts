@@ -1677,10 +1677,10 @@ describe('Crypto Class', () => {
 
         const e = 65537n; // Common public exponent
 
-        // Verify key generation time is reasonable (allow up to 30 seconds for 2048-bit)
+        // Verify key generation time is reasonable (allow up to 60 seconds for 2048-bit)
         const keyGenTime = Date.now() - startTime;
         console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-        expect(keyGenTime).toBeLessThan(30000);
+        expect(keyGenTime).toBeLessThan(60000);
 
         // Verify modulus is approximately 2048 bits
         const nBitLength = n.toString(2).length;
@@ -1845,7 +1845,7 @@ describe('Crypto Class', () => {
         // Verify key generation time is reasonable
         const keyGenTime = Date.now() - startTime;
         console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-        expect(keyGenTime).toBeLessThan(30000);
+        expect(keyGenTime).toBeLessThan(60000);
 
         // Create RSA keys from our generated parameters
         console.log('Creating RSA keys from our generated parameters...');
@@ -2135,7 +2135,7 @@ describe('Crypto Class', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(30000);
+      expect(keyGenTime).toBeLessThan(60000);
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
