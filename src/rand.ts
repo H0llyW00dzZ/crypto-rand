@@ -1,6 +1,10 @@
 import * as crypto from 'crypto';
+import { promisify } from 'util';
 import { DEFAULT_CHARSET, LOWERCASE_CHARSET, NUMERIC_CHARSET, SPECIAL_CHARSET, UPPERCASE_CHARSET } from './const';
-import { isProbablePrime } from './math_helper';
+import { isProbablePrime, isProbablePrimeAsync } from './math_helper';
+
+// Promisified version of crypto.randomBytes - only created if crypto.randomBytes exists
+const randomBytesAsync = typeof crypto !== 'undefined' && crypto.randomBytes ? promisify(crypto.randomBytes) : undefined;
 
 /**
  * Cryptographically secure random utilities
@@ -43,6 +47,28 @@ export class Crypto {
         } else if (typeof crypto !== 'undefined' && crypto.randomBytes) {
             // Node.js environment
             const randomBytes = crypto.randomBytes(4);
+            const randomUint32 = randomBytes.readUInt32BE(0);
+            return randomUint32 / 0x100000000;
+        } else {
+            throw new Error('No secure random number generator available. Please use in Node.js environment or modern browser with Web Crypto API.');
+        }
+    }
+
+    /**
+     * Generate a cryptographically secure random float between 0 and 1 asynchronously.
+     * Async version of rand().
+     * 
+     * @returns Promise that resolves to a random number between 0 and 1
+     */
+    static async randAsync(): Promise<number> {
+        if (Crypto.hasWebCrypto()) {
+            // Browser environment
+            const array = new Uint32Array(1);
+            window.crypto.getRandomValues(array);
+            return array[0] / 0x100000000;
+        } else if (typeof crypto !== 'undefined' && randomBytesAsync) {
+            // Node.js environment
+            const randomBytes = await randomBytesAsync(4);
             const randomUint32 = randomBytes.readUInt32BE(0);
             return randomUint32 / 0x100000000;
         } else {
@@ -154,6 +180,23 @@ export class Crypto {
     }
 
     /**
+     * Generate random hex string asynchronously.
+     * Async version of randHex().
+     * Note: Only available in Node.js environment.
+     * 
+     * @param length - Length of the hex string to generate
+     * @returns Promise that resolves to a random hex string
+     */
+    static async randHexAsync(length: number): Promise<string> {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randHexAsync');
+        }
+
+        const bytes = await randomBytesAsync!(Math.ceil(length / 2));
+        return bytes.toString('hex').substring(0, length);
+    }
+
+    /**
      * Generate random base64 string.
      * Note: Only available in Node.js environment.
      */
@@ -163,6 +206,23 @@ export class Crypto {
         }
 
         const bytes = crypto.randomBytes(Math.ceil(length * 3 / 4));
+        return bytes.toString('base64').substring(0, length);
+    }
+
+    /**
+     * Generate random base64 string asynchronously.
+     * Async version of randBase64().
+     * Note: Only available in Node.js environment.
+     * 
+     * @param length - Length of the base64 string to generate
+     * @returns Promise that resolves to a random base64 string
+     */
+    static async randBase64Async(length: number): Promise<string> {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randBase64Async');
+        }
+
+        const bytes = await randomBytesAsync!(Math.ceil(length * 3 / 4));
         return bytes.toString('base64').substring(0, length);
     }
 
@@ -185,6 +245,27 @@ export class Crypto {
         } else if (typeof crypto !== 'undefined' && crypto.randomBytes) {
             // Node.js environment
             return crypto.randomBytes(size);
+        } else {
+            throw new Error('No secure random bytes generator available. Please use in Node.js environment or modern browser with Web Crypto API.');
+        }
+    }
+
+    /**
+     * Generate random bytes asynchronously.
+     * Async version of randBytes().
+     * 
+     * @param size - Number of bytes to generate
+     * @returns Promise that resolves to random bytes
+     */
+    static async randBytesAsync(size: number): Promise<Uint8Array | Buffer> {
+        if (Crypto.hasWebCrypto()) {
+            // Browser environment
+            const array = new Uint8Array(size);
+            window.crypto.getRandomValues(array);
+            return array;
+        } else if (typeof crypto !== 'undefined' && randomBytesAsync) {
+            // Node.js environment
+            return await randomBytesAsync(size);
         } else {
             throw new Error('No secure random bytes generator available. Please use in Node.js environment or modern browser with Web Crypto API.');
         }
@@ -254,6 +335,22 @@ export class Crypto {
     }
 
     /**
+     * Generate cryptographically secure seed asynchronously.
+     * Async version of randSeed().
+     * Note: Only available in Node.js environment.
+     * 
+     * @returns Promise that resolves to a random seed number
+     */
+    static async randSeedAsync(): Promise<number> {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randSeedAsync');
+        }
+
+        const bytes = await randomBytesAsync!(4);
+        return bytes.readUInt32BE(0);
+    }
+
+    /**
      * Generate random version string (44 characters base64-like).
      * Note: Only available in Node.js environment.
      */
@@ -263,6 +360,24 @@ export class Crypto {
         }
 
         const randomBytes = crypto.randomBytes(32);
+        let base64Version: string;
+        base64Version = randomBytes.toString('base64');
+        return base64Version;
+    }
+
+    /**
+     * Generate random version string (44 characters base64-like) asynchronously.
+     * Async version of randVersion().
+     * Note: Only available in Node.js environment.
+     * 
+     * @returns Promise that resolves to a random version string
+     */
+    static async randVersionAsync(): Promise<string> {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randVersionAsync');
+        }
+
+        const randomBytes = await randomBytesAsync!(32);
         let base64Version: string;
         base64Version = randomBytes.toString('base64');
         return base64Version;
@@ -338,7 +453,13 @@ export class Crypto {
                 'randSeeded (with seed parameter)',
                 'randLattice',
                 'randPrime',
-                'randBigInt'
+                'randBigInt',
+                'randHexAsync',
+                'randBase64Async',
+                'randSeedAsync',
+                'randVersionAsync',
+                'randPrimeAsync',
+                'randBigIntAsync'
             ];
         }
         return [];
@@ -365,7 +486,10 @@ export class Crypto {
             'shuffle', 'randString', 'randHex', 'randBase64', 'randBool', 'randBytes',
             'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat', 'randNormal',
             'randSeeded', 'randSubset', 'randGaussian', 'randWalk', 'randPassword', 'randLattice',
-            'randPrime', 'randBigInt', 'randExponential'
+            'randPrime', 'randBigInt', 'randExponential',
+            // Async versions
+            'randAsync', 'randBytesAsync', 'randHexAsync', 'randBase64Async', 'randSeedAsync', 'randVersionAsync',
+            'randPrimeAsync', 'randBigIntAsync'
         ];
 
         const unsupportedMethods = Crypto.getUnsupportedMethods();
@@ -625,6 +749,46 @@ export class Crypto {
     }
 
     /**
+     * Generate a cryptographically secure random prime number within a specified bit length asynchronously.
+     * Async version of randPrime().
+     * 
+     * This method uses the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) to verify that the generated number is prime.
+     * The implementation follows cryptographic best practices for generating prime numbers securely.
+     * 
+     * **Note:** This method is currently only available in Node.js environment due to its
+     * dependency on the native crypto module for secure random number generation.
+     * 
+     * @param bits - The bit length of the prime number to generate (default: 1024)
+     * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
+     * @returns A Promise that resolves to a bigint representing a probable prime number of the specified bit length
+     */
+    static async randPrimeAsync(bits: number = 1024, iterations: number = 10): Promise<bigint> {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randPrimeAsync');
+        }
+
+        // Input validation
+        if (!Number.isInteger(bits) || bits < 2) {
+            throw new Error('Bit length must be an integer greater than or equal to 2');
+        }
+        if (!Number.isInteger(iterations) || iterations < 1) {
+            throw new Error('Number of iterations must be a positive integer');
+        }
+
+        // Generate prime candidates until a probable prime is found,
+        // with a 100% guarantee of eventual success using this method.
+        let candidate: bigint;
+        let isPrime: boolean;
+
+        do {
+            candidate = await Crypto.randBigIntAsync(bits);
+            isPrime = await isProbablePrimeAsync(candidate, iterations, Crypto.randBytesAsync);
+        } while (!isPrime);
+
+        return candidate;
+    }
+
+    /**
      * Generate a cryptographically secure random bigint with a specified bit length.
      * 
      * This method generates a random bigint with exactly the specified number of bits.
@@ -649,6 +813,45 @@ export class Crypto {
         // Calculate bytes needed (bits / 8, rounded up)
         const byteLength = Math.ceil(bits / 8);
         const randomBytes = Crypto.randBytes(byteLength);
+
+        // Convert to bigint
+        let num = BigInt('0x' + randomBytes.toString('hex'));
+
+        // Ensure the number has exactly 'bits' bits
+        // Set the most significant bit to 1 to ensure the number has the right bit length
+        num = num | (1n << BigInt(bits - 1));
+        // Ensure the number is odd (all primes except 2 are odd)
+        num = num | 1n;
+
+        return num;
+    }
+
+    /**
+     * Generate a cryptographically secure random bigint with a specified bit length asynchronously.
+     * Async version of randBigInt().
+     * 
+     * This method generates a random bigint with exactly the specified number of bits.
+     * It ensures the most significant bit is set to 1 and the least significant bit is set to 1 (making it odd).
+     * 
+     * **Note:** This method is currently only available in Node.js environment due to its
+     * dependency on the native crypto module for secure random number generation.
+     * 
+     * @param bits - The bit length of the bigint to generate (default: 1024)
+     * @returns A Promise that resolves to a bigint with the specified bit length
+     */
+    static async randBigIntAsync(bits: number = 1024): Promise<bigint> {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randBigIntAsync');
+        }
+
+        // Input validation
+        if (!Number.isInteger(bits) || bits < 2) {
+            throw new Error('Bit length must be an integer greater than or equal to 2');
+        }
+
+        // Calculate bytes needed (bits / 8, rounded up)
+        const byteLength = Math.ceil(bits / 8);
+        const randomBytes = await Crypto.randBytesAsync(byteLength);
 
         // Convert to bigint
         let num = BigInt('0x' + randomBytes.toString('hex'));
@@ -700,5 +903,14 @@ export const {
     randLattice,
     randPrime,
     randBigInt,
-    randExponential
+    randExponential,
+    // Async versions
+    randAsync,
+    randBytesAsync,
+    randHexAsync,
+    randBase64Async,
+    randSeedAsync,
+    randVersionAsync,
+    randPrimeAsync,
+    randBigIntAsync
 } = Crypto;
