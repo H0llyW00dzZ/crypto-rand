@@ -106,3 +106,56 @@ export function modInverse(a: bigint, m: bigint): bigint {
     // Make sure the result is positive
     return (old_s % m + m) % m;
 }
+
+/**
+ * Async version of [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test)
+ * 
+ * @param n - The number to test for primality
+ * @param k - The number of iterations for the test
+ * @param getRandomBytesAsync - Async function to generate random bytes
+ * @returns A Promise that resolves to a boolean indicating whether the number is probably prime
+ */
+export async function isProbablePrimeAsync(
+    n: bigint,
+    k: number,
+    getRandomBytesAsync: (size: number) => Promise<Buffer | Uint8Array>
+): Promise<boolean> {
+    // Handle small numbers
+    if (n <= 1n) return false;
+    if (n <= 3n) return true;
+    if (n % 2n === 0n) return false;
+
+    // Write n-1 as 2ʳ × d where d is odd
+    let r = 0;
+    let d = n - 1n;
+    while (d % 2n === 0n) {
+        d /= 2n;
+        r++;
+    }
+
+    // Witness loop
+    for (let i = 0; i < k; i++) {
+        // Generate a random integer a in the range [2, n-2]
+        const randomBytes = await getRandomBytesAsync(64); // 64 bytes should be enough for most primes
+        let a = BigInt('0x' + randomBytes.toString('hex')) % (n - 4n) + 2n;
+
+        // Compute aᵈ mod n
+        let x = modPow(a, d, n);
+
+        if (x === 1n || x === n - 1n) continue;
+
+        let continueWitness = false;
+        for (let j = 0; j < r - 1; j++) {
+            x = modPow(x, 2n, n);
+            if (x === n - 1n) {
+                continueWitness = true;
+                break;
+            }
+        }
+
+        if (continueWitness) continue;
+        return false;
+    }
+
+    return true;
+}

@@ -1389,6 +1389,8 @@ describe('Crypto Class', () => {
       });
     });
 
+    // Some keyGenTime times have been increased to 120 seconds due to potential overhead or slowness on certain operating systems,
+    // such as Windows hahaha, for non-async operations.
     describe('RSA key generation', () => {
       test('should generate primes suitable for RSA key generation', () => {
         // Generate two smaller primes for testing (using 512 bits instead of 1024 for speed)
@@ -1677,10 +1679,10 @@ describe('Crypto Class', () => {
 
         const e = 65537n; // Common public exponent
 
-        // Verify key generation time is reasonable (allow up to 60 seconds for 2048-bit)
+        // Verify key generation time is reasonable (allow up to 120 seconds for 2048-bit)
         const keyGenTime = Date.now() - startTime;
         console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-        expect(keyGenTime).toBeLessThan(60000);
+        expect(keyGenTime).toBeLessThan(120000);
 
         // Verify modulus is approximately 2048 bits
         const nBitLength = n.toString(2).length;
@@ -1845,7 +1847,7 @@ describe('Crypto Class', () => {
         // Verify key generation time is reasonable
         const keyGenTime = Date.now() - startTime;
         console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-        expect(keyGenTime).toBeLessThan(60000);
+        expect(keyGenTime).toBeLessThan(120000);
 
         // Create RSA keys from our generated parameters
         console.log('Creating RSA keys from our generated parameters...');
@@ -2135,7 +2137,7 @@ describe('Crypto Class', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(60000);
+      expect(keyGenTime).toBeLessThan(120000);
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
@@ -2324,7 +2326,7 @@ describe('Crypto Class', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(60000);
+      expect(keyGenTime).toBeLessThan(120000);
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
@@ -2637,7 +2639,7 @@ describe('Crypto Class', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(60000);
+      expect(keyGenTime).toBeLessThan(120000);
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');

@@ -62,6 +62,20 @@ const password = Crypto.randPassword({ length: 16 });
 
 // Generate UUID
 const id = Crypto.randUUID();
+
+// Using async methods
+async function generateRandomValues() {
+  // Generate secure random number between 0 and 1 asynchronously
+  const randomFloatAsync = await randAsync();
+
+  // Generate secure random bytes asynchronously
+  const randomBytes = await randBytesAsync(16);
+
+  // Generate secure random hex string asynchronously
+  const randomHex = await Crypto.randHexAsync(32);
+
+  console.log({ randomFloatAsync, randomBytes, randomHex });
+}
 ```
 
 ## Features
@@ -73,6 +87,7 @@ const id = Crypto.randUUID();
 - Weighted random choices
 - Normal distribution random numbers
 - Cross-platform compatibility (Node.js + Browser)
+- Asynchronous methods for non-blocking operations
 - And much more!
 
 ### TODO - Features
@@ -104,6 +119,62 @@ const id = Crypto.randUUID();
 - `Crypto.randPrime(bits?, iterations?)` - Generate cryptographically secure random prime number
 - `Crypto.randBigInt(bits?)` - Generate cryptographically secure random bigint with specified bit length
 - `Crypto.randExponential(lambda?)` - Generate random number with exponential distribution
+
+### Async Methods
+- `Crypto.randAsync()` - Async version of rand()
+- `Crypto.randBytesAsync(size)` - Async version of randBytes()
+- `Crypto.randHexAsync(length)` - Async version of randHex()
+- `Crypto.randBase64Async(length)` - Async version of randBase64()
+- `Crypto.randSeedAsync()` - Async version of randSeed()
+- `Crypto.randVersionAsync()` - Async version of randVersion()
+- `Crypto.randPrimeAsync(bits?, iterations?)` - Async version of randPrime()
+- `Crypto.randBigIntAsync(bits?)` - Async version of randBigInt()
+
+> [!TIP]
+> **Benefits of Async Methods**
+>
+> Async methods provide several advantages when generating cryptographically secure random values:
+>
+> - **Non-blocking operation**: Async methods don't block the main thread, improving application responsiveness
+> - **Parallel execution**: Multiple async operations can run concurrently with `Promise.all()`
+> - **Better performance**: For large or frequent random number generation, async methods can offer better throughput
+> - **Modern JavaScript patterns**: Works well with async/await syntax for cleaner code
+> - **Improved RSA operations**: Using `randPrimeAsync` and `randBigIntAsync` allows for non-blocking prime generation for RSA key pairs
+>
+> Use async methods when generating large amounts of random data or when you need to maintain UI responsiveness in applications.
+>
+> **Example: Async RSA Key Generation**
+>
+> ```typescript
+> import { randPrimeAsync } from '@h0llyw00dzz/crypto-rand';
+> import { modInverse } from '@h0llyw00dzz/crypto-rand'; // If available, or implement your own
+>
+> async function generateRSAKeyPair(bitLength = 1024) {
+>   console.log(`Generating ${2 * bitLength}-bit RSA key pair asynchronously...`);
+>   
+>   // Generate two primes concurrently
+>   let p, q, n, phi;
+>   
+>   // Loop to ensure modulus n is of the expected bit length
+>   do {
+>     [p, q] = await Promise.all([
+>       randPrimeAsync(bitLength),
+>       randPrimeAsync(bitLength)
+>     ]);
+>     
+>     n = p * q; // modulus
+>     phi = (p - 1n) * (q - 1n); // Euler's totient
+>   } while (n.toString(2).length !== 2 * bitLength);
+>   
+>   const e = 65537n; // Common public exponent
+>   const d = modInverse(e, phi); // Private exponent
+>   
+>   return {
+>     publicKey: { e, n },
+>     privateKey: { d, n, p, q }
+>   };
+> }
+> ```
 
 > [!NOTE]
 >

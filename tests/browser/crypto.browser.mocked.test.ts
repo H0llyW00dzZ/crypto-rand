@@ -121,7 +121,13 @@ describe('Crypto Browser Error Handling', () => {
       expect(unsupported).toContain('randLattice');
       expect(unsupported).toContain('randPrime');
       expect(unsupported).toContain('randBigInt');
-      expect(unsupported).toHaveLength(8);
+      expect(unsupported).toContain('randBase64Async');
+      expect(unsupported).toContain('randBase64Async');
+      expect(unsupported).toContain('randSeedAsync');
+      expect(unsupported).toContain('randVersionAsync');
+      expect(unsupported).toContain('randPrimeAsync');
+      expect(unsupported).toContain('randBigIntAsync');
+      expect(unsupported).toHaveLength(14);
     });
 
     it('should provide correct environment information', () => {
@@ -153,7 +159,13 @@ describe('Crypto Browser Error Handling', () => {
         'randSeeded (with seed parameter)',
         'randLattice',
         'randPrime',
-        'randBigInt'
+        'randBigInt',
+        'randHexAsync',
+        'randBase64Async',
+        'randSeedAsync',
+        'randVersionAsync',
+        'randPrimeAsync',
+        'randBigIntAsync'
       ]);
     });
   });
