@@ -1158,4 +1158,682 @@ describe('Crypto Async Methods', () => {
       }
     });
   });
+
+  describe('RSAES-OAEP operations with PEM format', () => {
+    // These tests use 2048-bit keys (1024-bit primes each)
+    jest.setTimeout(120000); // Increase timeout for prime generation with larger bit sizes
+
+    it('should perform RSAES-OAEP operations with async prime generation and PEM format', async () => {
+      // Generate 2048-bit RSA key pair (1024-bit primes each)
+      let p: bigint, q: bigint, n: bigint, phi: bigint;
+      const expectedBitLength: number = 1024;
+
+      let startTime: number;
+      startTime = Date.now();
+
+      // Loop to ensure modulus n is of the expected bit length
+      do {
+        // Generate two primes asynchronously
+        [p, q] = await Promise.all([
+          randPrimeAsync(expectedBitLength),
+          randPrimeAsync(expectedBitLength)
+        ]);
+
+        // Ensure p and q are different
+        expect(p).not.toBe(q);
+
+        // Calculate RSA parameters
+        n = p * q; // 2048-bit modulus
+        phi = (p - 1n) * (q - 1n); // Euler's totient function
+      } while (n.toString(2).length !== 2 * expectedBitLength);
+
+      console.log(`Testing RSAES-OAEP with ${2 * expectedBitLength}-bit RSA key pair and PEM format...`);
+
+      // Common RSA public exponent
+      const e = 65537n;
+      const d = modInverse(e, phi);
+
+      // Verify key generation time is reasonable
+      const keyGenTime = Date.now() - startTime;
+      console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
+      expect(keyGenTime).toBeLessThan(60000);
+
+      // Create RSA keys from our generated parameters
+      console.log('Creating RSA keys from our generated parameters...');
+
+      // Create private key components
+      const dmp1 = d % (p - 1n); // d mod (p-1)
+      const dmq1 = d % (q - 1n); // d mod (q-1)
+      const coeff = modInverse(q, p); // q^-1 mod p
+
+      // Convert bigints to Buffer for key creation
+      const nBuffer = Buffer.from(n.toString(16).padStart(512, '0'), 'hex');
+      const eBuffer = Buffer.from(e.toString(16).padStart(8, '0'), 'hex');
+      const dBuffer = Buffer.from(d.toString(16).padStart(512, '0'), 'hex');
+      const pBuffer = Buffer.from(p.toString(16).padStart(256, '0'), 'hex');
+      const qBuffer = Buffer.from(q.toString(16).padStart(256, '0'), 'hex');
+      const dmp1Buffer = Buffer.from(dmp1.toString(16).padStart(256, '0'), 'hex');
+      const dmq1Buffer = Buffer.from(dmq1.toString(16).padStart(256, '0'), 'hex');
+      const coeffBuffer = Buffer.from(coeff.toString(16).padStart(256, '0'), 'hex');
+
+      // Create key objects in JWK format first
+      const jwkPrivateKey = crypto.createPrivateKey({
+        key: {
+          kty: 'RSA',
+          n: nBuffer.toString('base64url'),
+          e: eBuffer.toString('base64url'),
+          d: dBuffer.toString('base64url'),
+          p: pBuffer.toString('base64url'),
+          q: qBuffer.toString('base64url'),
+          dp: dmp1Buffer.toString('base64url'),
+          dq: dmq1Buffer.toString('base64url'),
+          qi: coeffBuffer.toString('base64url')
+        },
+        format: 'jwk'
+      });
+
+      // Export keys to PEM format
+      const privateKeyPem = jwkPrivateKey.export({
+        type: 'pkcs8',
+        format: 'pem'
+      });
+
+      const jwkPublicKey = crypto.createPublicKey(jwkPrivateKey);
+      const publicKeyPem = jwkPublicKey.export({
+        type: 'spki',
+        format: 'pem'
+      });
+
+      // Create key objects from PEM format
+      const privateKey = crypto.createPrivateKey(privateKeyPem);
+      const publicKey = crypto.createPublicKey(publicKeyPem);
+
+      // Test RSAES-OAEP encryption and decryption with PEM keys
+      console.log('Testing RSAES-OAEP encryption/decryption with our PEM format keys...');
+
+      // Create test message - keep it small enough for the key size with OAEP padding
+      // For a 2048-bit key, the maximum message size with OAEP padding is approximately 190 bytes
+      const message = Buffer.from(`This is a test message for RSAES-OAEP encryption with ${n.toString(2).length}-bit RSA key from PEM.`);
+
+      try {
+        // Encrypt with public key using RSAES-OAEP
+        const encrypted = crypto.publicEncrypt(
+          {
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            oaepHash: 'sha256'
+          },
+          message
+        );
+
+        // Decrypt with private key using RSAES-OAEP
+        const decrypted = crypto.privateDecrypt(
+          {
+            key: privateKey,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            oaepHash: 'sha256'
+          },
+          encrypted
+        );
+
+        // Verify decryption worked
+        expect(decrypted.toString()).toBe(message.toString());
+        console.log('RSAES-OAEP encryption/decryption with PEM keys successful!');
+
+        // Verify ciphertext is different from plaintext
+        expect(encrypted.toString()).not.toBe(message.toString());
+
+        // Verify ciphertext length is appropriate for RSA key size (256 bytes for 2048-bit key)
+        expect(encrypted.length).toBe(256);
+
+      } catch (error) {
+        console.error('RSAES-OAEP test with PEM keys failed:', error);
+        throw error;
+      }
+    });
+
+    it('should handle RSAES-OAEP operations with wrong private key in PEM format', async () => {
+      // Generate first RSA key pair
+      console.log('Generating first RSA key pair...');
+      let p1: bigint, q1: bigint, n1: bigint, phi1: bigint;
+      const expectedBitLength: number = 1024;
+
+      // Loop to ensure modulus n is of the expected bit length
+      do {
+        // Generate two primes asynchronously
+        [p1, q1] = await Promise.all([
+          randPrimeAsync(expectedBitLength),
+          randPrimeAsync(expectedBitLength)
+        ]);
+
+        // Ensure p and q are different
+        expect(p1).not.toBe(q1);
+
+        // Calculate RSA parameters
+        n1 = p1 * q1; // 2048-bit modulus
+        phi1 = (p1 - 1n) * (q1 - 1n); // Euler's totient function
+      } while (n1.toString(2).length !== 2 * expectedBitLength);
+
+      const e1 = 65537n; // Common public exponent
+      const d1 = modInverse(e1, phi1);
+
+      // Generate second RSA key pair
+      console.log('Generating second RSA key pair...');
+      let p2: bigint, q2: bigint, n2: bigint, phi2: bigint;
+
+      // Loop to ensure modulus n is of the expected bit length
+      do {
+        // Generate two primes asynchronously
+        [p2, q2] = await Promise.all([
+          randPrimeAsync(expectedBitLength),
+          randPrimeAsync(expectedBitLength)
+        ]);
+
+        // Ensure p and q are different
+        expect(p2).not.toBe(q2);
+
+        // Calculate RSA parameters
+        n2 = p2 * q2; // 2048-bit modulus
+        phi2 = (p2 - 1n) * (q2 - 1n); // Euler's totient function
+      } while (n2.toString(2).length !== 2 * expectedBitLength);
+
+      const e2 = 65537n; // Common public exponent
+      const d2 = modInverse(e2, phi2);
+
+      console.log(`Testing RSAES-OAEP with wrong key using ${2 * expectedBitLength}-bit RSA key pair from PEM format...`);
+
+      // Create first key pair
+      // Create private key components
+      const dmp1_1 = d1 % (p1 - 1n); // d mod (p-1)
+      const dmq1_1 = d1 % (q1 - 1n); // d mod (q-1)
+      const coeff1 = modInverse(q1, p1); // q^-1 mod p
+
+      // Convert bigints to Buffer for key creation
+      const n1Buffer = Buffer.from(n1.toString(16).padStart(512, '0'), 'hex');
+      const e1Buffer = Buffer.from(e1.toString(16).padStart(8, '0'), 'hex');
+      const d1Buffer = Buffer.from(d1.toString(16).padStart(512, '0'), 'hex');
+      const p1Buffer = Buffer.from(p1.toString(16).padStart(256, '0'), 'hex');
+      const q1Buffer = Buffer.from(q1.toString(16).padStart(256, '0'), 'hex');
+      const dmp1_1Buffer = Buffer.from(dmp1_1.toString(16).padStart(256, '0'), 'hex');
+      const dmq1_1Buffer = Buffer.from(dmq1_1.toString(16).padStart(256, '0'), 'hex');
+      const coeff1Buffer = Buffer.from(coeff1.toString(16).padStart(256, '0'), 'hex');
+
+      // Create key objects in JWK format first
+      const jwkPrivateKey1 = crypto.createPrivateKey({
+        key: {
+          kty: 'RSA',
+          n: n1Buffer.toString('base64url'),
+          e: e1Buffer.toString('base64url'),
+          d: d1Buffer.toString('base64url'),
+          p: p1Buffer.toString('base64url'),
+          q: q1Buffer.toString('base64url'),
+          dp: dmp1_1Buffer.toString('base64url'),
+          dq: dmq1_1Buffer.toString('base64url'),
+          qi: coeff1Buffer.toString('base64url')
+        },
+        format: 'jwk'
+      });
+
+      // Export keys to PEM format
+      const privateKeyPem1 = jwkPrivateKey1.export({
+        type: 'pkcs8',
+        format: 'pem'
+      });
+
+      const jwkPublicKey1 = crypto.createPublicKey(jwkPrivateKey1);
+      const publicKeyPem1 = jwkPublicKey1.export({
+        type: 'spki',
+        format: 'pem'
+      });
+
+      // Create key objects from PEM format
+      const privateKey1 = crypto.createPrivateKey(privateKeyPem1);
+      const publicKey1 = crypto.createPublicKey(publicKeyPem1);
+
+      // Create second key pair
+      // Create private key components
+      const dmp1_2 = d2 % (p2 - 1n); // d mod (p-1)
+      const dmq1_2 = d2 % (q2 - 1n); // d mod (q-1)
+      const coeff2 = modInverse(q2, p2); // q^-1 mod p
+
+      // Convert bigints to Buffer for key creation
+      const n2Buffer = Buffer.from(n2.toString(16).padStart(512, '0'), 'hex');
+      const e2Buffer = Buffer.from(e2.toString(16).padStart(8, '0'), 'hex');
+      const d2Buffer = Buffer.from(d2.toString(16).padStart(512, '0'), 'hex');
+      const p2Buffer = Buffer.from(p2.toString(16).padStart(256, '0'), 'hex');
+      const q2Buffer = Buffer.from(q2.toString(16).padStart(256, '0'), 'hex');
+      const dmp1_2Buffer = Buffer.from(dmp1_2.toString(16).padStart(256, '0'), 'hex');
+      const dmq1_2Buffer = Buffer.from(dmq1_2.toString(16).padStart(256, '0'), 'hex');
+      const coeff2Buffer = Buffer.from(coeff2.toString(16).padStart(256, '0'), 'hex');
+
+      // Create key objects in JWK format first
+      const jwkPrivateKey2 = crypto.createPrivateKey({
+        key: {
+          kty: 'RSA',
+          n: n2Buffer.toString('base64url'),
+          e: e2Buffer.toString('base64url'),
+          d: d2Buffer.toString('base64url'),
+          p: p2Buffer.toString('base64url'),
+          q: q2Buffer.toString('base64url'),
+          dp: dmp1_2Buffer.toString('base64url'),
+          dq: dmq1_2Buffer.toString('base64url'),
+          qi: coeff2Buffer.toString('base64url')
+        },
+        format: 'jwk'
+      });
+
+      // Export keys to PEM format
+      const privateKeyPem2 = jwkPrivateKey2.export({
+        type: 'pkcs8',
+        format: 'pem'
+      });
+
+      // Create key objects from PEM format
+      const privateKey2 = crypto.createPrivateKey(privateKeyPem2);
+
+      // Test RSAES-OAEP encryption and decryption with wrong PEM keys
+      console.log('Testing RSAES-OAEP encryption/decryption with wrong PEM format keys...');
+
+      // Create test message
+      const message = Buffer.from(`This is a test message for RSAES-OAEP encryption with ${n1.toString(2).length}-bit RSA key from PEM.`);
+
+      try {
+        // Encrypt with correct public key using RSAES-OAEP
+        const encrypted = crypto.publicEncrypt(
+          {
+            key: publicKey1,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            oaepHash: 'sha256'
+          },
+          message
+        );
+
+        // Attempt to decrypt with wrong private key using RSAES-OAEP
+        let decryptionFailed = false;
+        try {
+          const wrongDecrypted = crypto.privateDecrypt(
+            {
+              key: privateKey2,
+              padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+              oaepHash: 'sha256'
+            },
+            encrypted
+          );
+
+          // If we get here, decryption didn't throw an error, but the result should be incorrect
+          expect(wrongDecrypted.toString()).not.toBe(message.toString());
+          console.log('Decryption with wrong key produced incorrect result (unexpected behavior)');
+        } catch (decryptError) {
+          // Expected behavior - decryption with wrong key should fail with an error
+          decryptionFailed = true;
+          console.log('Decryption with wrong private key correctly failed with error:',
+            decryptError instanceof Error ? decryptError.message : String(decryptError));
+        }
+
+        // Verify that decryption with wrong key failed
+        expect(decryptionFailed).toBe(true);
+        console.log('RSAES-OAEP decryption with wrong PEM key correctly failed!');
+
+        // Verify correct decryption works
+        const correctlyDecrypted = crypto.privateDecrypt(
+          {
+            key: privateKey1,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            oaepHash: 'sha256'
+          },
+          encrypted
+        );
+
+        // Verify correct decryption worked
+        expect(correctlyDecrypted.toString()).toBe(message.toString());
+        console.log('RSAES-OAEP encryption/decryption with correct PEM key successful!');
+
+      } catch (error) {
+        console.error('RSAES-OAEP wrong key test with PEM keys failed:', error);
+        throw error;
+      }
+    });
+  });
+
+  describe('RSASSA-PSS operations with PEM format', () => {
+    // These tests use 2048-bit keys (1024-bit primes each)
+    jest.setTimeout(120000); // Increase timeout for prime generation with larger bit sizes
+
+    it('should perform RSASSA-PSS operations with async prime generation and PEM format', async () => {
+      // Generate 2048-bit RSA key pair (1024-bit primes each)
+      let startTime: number;
+      startTime = Date.now();
+
+      let p: bigint, q: bigint, n: bigint, phi: bigint;
+      const expectedBitLength: number = 1024;
+
+      // Loop to ensure modulus n is of the expected bit length
+      do {
+        // Generate two primes asynchronously
+        [p, q] = await Promise.all([
+          randPrimeAsync(expectedBitLength),
+          randPrimeAsync(expectedBitLength)
+        ]);
+
+        // Ensure p and q are different
+        expect(p).not.toBe(q);
+
+        // Calculate RSA parameters
+        n = p * q; // 2048-bit modulus
+        phi = (p - 1n) * (q - 1n); // Euler's totient function
+      } while (n.toString(2).length !== 2 * expectedBitLength);
+
+      console.log(`Testing RSASSA-PSS with ${2 * expectedBitLength}-bit RSA key pair from PEM format...`);
+
+      const e = 65537n; // Common public exponent
+      const d = modInverse(e, phi);
+
+      // Verify key generation time is reasonable
+      const keyGenTime = Date.now() - startTime;
+      console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
+      expect(keyGenTime).toBeLessThan(60000);
+
+      // Create RSA keys from our generated parameters
+      console.log('Creating RSA keys from our generated parameters...');
+
+      // Create private key components
+      const dmp1 = d % (p - 1n); // d mod (p-1)
+      const dmq1 = d % (q - 1n); // d mod (q-1)
+      const coeff = modInverse(q, p); // q^-1 mod p
+
+      // Convert bigints to Buffer for key creation
+      const nBuffer = Buffer.from(n.toString(16).padStart(512, '0'), 'hex');
+      const eBuffer = Buffer.from(e.toString(16).padStart(8, '0'), 'hex');
+      const dBuffer = Buffer.from(d.toString(16).padStart(512, '0'), 'hex');
+      const pBuffer = Buffer.from(p.toString(16).padStart(256, '0'), 'hex');
+      const qBuffer = Buffer.from(q.toString(16).padStart(256, '0'), 'hex');
+      const dmp1Buffer = Buffer.from(dmp1.toString(16).padStart(256, '0'), 'hex');
+      const dmq1Buffer = Buffer.from(dmq1.toString(16).padStart(256, '0'), 'hex');
+      const coeffBuffer = Buffer.from(coeff.toString(16).padStart(256, '0'), 'hex');
+
+      // Create key objects in JWK format first
+      const jwkPrivateKey = crypto.createPrivateKey({
+        key: {
+          kty: 'RSA',
+          n: nBuffer.toString('base64url'),
+          e: eBuffer.toString('base64url'),
+          d: dBuffer.toString('base64url'),
+          p: pBuffer.toString('base64url'),
+          q: qBuffer.toString('base64url'),
+          dp: dmp1Buffer.toString('base64url'),
+          dq: dmq1Buffer.toString('base64url'),
+          qi: coeffBuffer.toString('base64url')
+        },
+        format: 'jwk'
+      });
+
+      // Export keys to PEM format
+      const privateKeyPem = jwkPrivateKey.export({
+        type: 'pkcs8',
+        format: 'pem'
+      });
+
+      const jwkPublicKey = crypto.createPublicKey(jwkPrivateKey);
+      const publicKeyPem = jwkPublicKey.export({
+        type: 'spki',
+        format: 'pem'
+      });
+
+      // Create key objects from PEM format
+      const privateKey = crypto.createPrivateKey(privateKeyPem);
+      const publicKey = crypto.createPublicKey(publicKeyPem);
+
+      // Test RSASSA-PSS signing and verification with PEM keys
+      console.log('Testing RSASSA-PSS signing/verification with our PEM format keys...');
+
+      // Create test message
+      const message = Buffer.from(`This is a test message for RSASSA-PSS signing with ${n.toString(2).length}-bit RSA key from PEM.`);
+
+      try {
+        // Sign with private key using RSASSA-PSS
+        const signature = crypto.sign(
+          'sha256',
+          message,
+          {
+            key: privateKey,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          }
+        );
+
+        // Verify with public key using RSASSA-PSS
+        const isVerified = crypto.verify(
+          'sha256',
+          message,
+          {
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          },
+          signature
+        );
+
+        // Verify signature verification worked
+        expect(isVerified).toBe(true);
+        console.log('RSASSA-PSS signing/verification with PEM keys successful!');
+
+        // Test with modified message (should fail verification)
+        const modifiedMessage = Buffer.from(`This is a MODIFIED test message for RSASSA-PSS signing with ${n.toString(2).length}-bit RSA key from PEM.`);
+        const isModifiedVerified = crypto.verify(
+          'sha256',
+          modifiedMessage,
+          {
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          },
+          signature
+        );
+
+        // Verify modified message fails verification
+        expect(isModifiedVerified).toBe(false);
+        console.log('RSASSA-PSS correctly rejected modified message with PEM keys!');
+
+      } catch (error) {
+        console.error('RSASSA-PSS test with PEM keys failed:', error);
+        throw error;
+      }
+    });
+
+    it('should fail RSASSA-PSS verification with wrong public key in PEM format', async () => {
+      // Generate first RSA key pair
+      console.log('Generating first RSA key pair...');
+      let p1: bigint, q1: bigint, n1: bigint, phi1: bigint;
+      const expectedBitLength: number = 1024;
+
+      // Loop to ensure modulus n is of the expected bit length
+      do {
+        // Generate two primes asynchronously
+        [p1, q1] = await Promise.all([
+          randPrimeAsync(expectedBitLength),
+          randPrimeAsync(expectedBitLength)
+        ]);
+
+        // Ensure p and q are different
+        expect(p1).not.toBe(q1);
+
+        // Calculate RSA parameters
+        n1 = p1 * q1; // 2048-bit modulus
+        phi1 = (p1 - 1n) * (q1 - 1n); // Euler's totient function
+      } while (n1.toString(2).length !== 2 * expectedBitLength);
+
+      const e1 = 65537n; // Common public exponent
+      const d1 = modInverse(e1, phi1);
+
+      // Generate second RSA key pair
+      console.log('Generating second RSA key pair...');
+      let p2: bigint, q2: bigint, n2: bigint, phi2: bigint;
+
+      // Loop to ensure modulus n is of the expected bit length
+      do {
+        // Generate two primes asynchronously
+        [p2, q2] = await Promise.all([
+          randPrimeAsync(expectedBitLength),
+          randPrimeAsync(expectedBitLength)
+        ]);
+
+        // Ensure p and q are different
+        expect(p2).not.toBe(q2);
+
+        // Calculate RSA parameters
+        n2 = p2 * q2; // 2048-bit modulus
+        phi2 = (p2 - 1n) * (q2 - 1n); // Euler's totient function
+      } while (n2.toString(2).length !== 2 * expectedBitLength);
+
+      const e2 = 65537n; // Common public exponent
+      const d2 = modInverse(e2, phi2);
+
+      console.log(`Testing RSASSA-PSS with wrong key using ${2 * expectedBitLength}-bit RSA key pair from PEM format...`);
+
+      // Create first key pair
+      // Create private key components
+      const dmp1_1 = d1 % (p1 - 1n); // d mod (p-1)
+      const dmq1_1 = d1 % (q1 - 1n); // d mod (q-1)
+      const coeff1 = modInverse(q1, p1); // q^-1 mod p
+
+      // Convert bigints to Buffer for key creation
+      const n1Buffer = Buffer.from(n1.toString(16).padStart(512, '0'), 'hex');
+      const e1Buffer = Buffer.from(e1.toString(16).padStart(8, '0'), 'hex');
+      const d1Buffer = Buffer.from(d1.toString(16).padStart(512, '0'), 'hex');
+      const p1Buffer = Buffer.from(p1.toString(16).padStart(256, '0'), 'hex');
+      const q1Buffer = Buffer.from(q1.toString(16).padStart(256, '0'), 'hex');
+      const dmp1_1Buffer = Buffer.from(dmp1_1.toString(16).padStart(256, '0'), 'hex');
+      const dmq1_1Buffer = Buffer.from(dmq1_1.toString(16).padStart(256, '0'), 'hex');
+      const coeff1Buffer = Buffer.from(coeff1.toString(16).padStart(256, '0'), 'hex');
+
+      // Create key objects in JWK format first
+      const jwkPrivateKey1 = crypto.createPrivateKey({
+        key: {
+          kty: 'RSA',
+          n: n1Buffer.toString('base64url'),
+          e: e1Buffer.toString('base64url'),
+          d: d1Buffer.toString('base64url'),
+          p: p1Buffer.toString('base64url'),
+          q: q1Buffer.toString('base64url'),
+          dp: dmp1_1Buffer.toString('base64url'),
+          dq: dmq1_1Buffer.toString('base64url'),
+          qi: coeff1Buffer.toString('base64url')
+        },
+        format: 'jwk'
+      });
+
+      // Export keys to PEM format
+      const privateKeyPem1 = jwkPrivateKey1.export({
+        type: 'pkcs8',
+        format: 'pem'
+      });
+
+      const jwkPublicKey1 = crypto.createPublicKey(jwkPrivateKey1);
+      const publicKeyPem1 = jwkPublicKey1.export({
+        type: 'spki',
+        format: 'pem'
+      });
+
+      // Create key objects from PEM format
+      const privateKey1 = crypto.createPrivateKey(privateKeyPem1);
+      const publicKey1 = crypto.createPublicKey(publicKeyPem1);
+
+      // Create second key pair
+      // Create private key components
+      const dmp1_2 = d2 % (p2 - 1n); // d mod (p-1)
+      const dmq1_2 = d2 % (q2 - 1n); // d mod (q-1)
+      const coeff2 = modInverse(q2, p2); // q^-1 mod p
+
+      // Convert bigints to Buffer for key creation
+      const n2Buffer = Buffer.from(n2.toString(16).padStart(512, '0'), 'hex');
+      const e2Buffer = Buffer.from(e2.toString(16).padStart(8, '0'), 'hex');
+      const d2Buffer = Buffer.from(d2.toString(16).padStart(512, '0'), 'hex');
+      const p2Buffer = Buffer.from(p2.toString(16).padStart(256, '0'), 'hex');
+      const q2Buffer = Buffer.from(q2.toString(16).padStart(256, '0'), 'hex');
+      const dmp1_2Buffer = Buffer.from(dmp1_2.toString(16).padStart(256, '0'), 'hex');
+      const dmq1_2Buffer = Buffer.from(dmq1_2.toString(16).padStart(256, '0'), 'hex');
+      const coeff2Buffer = Buffer.from(coeff2.toString(16).padStart(256, '0'), 'hex');
+
+      // Create key objects in JWK format first
+      const jwkPrivateKey2 = crypto.createPrivateKey({
+        key: {
+          kty: 'RSA',
+          n: n2Buffer.toString('base64url'),
+          e: e2Buffer.toString('base64url'),
+          d: d2Buffer.toString('base64url'),
+          p: p2Buffer.toString('base64url'),
+          q: q2Buffer.toString('base64url'),
+          dp: dmp1_2Buffer.toString('base64url'),
+          dq: dmq1_2Buffer.toString('base64url'),
+          qi: coeff2Buffer.toString('base64url')
+        },
+        format: 'jwk'
+      });
+
+      // Export keys to PEM format
+      const jwkPublicKey2 = crypto.createPublicKey(jwkPrivateKey2);
+      const publicKeyPem2 = jwkPublicKey2.export({
+        type: 'spki',
+        format: 'pem'
+      });
+
+      // Create key objects from PEM format
+      const publicKey2 = crypto.createPublicKey(publicKeyPem2);
+
+      // Test RSASSA-PSS signing and verification with wrong PEM keys
+      console.log('Testing RSASSA-PSS signing/verification with wrong PEM format keys...');
+
+      // Create test message
+      const message = Buffer.from(`This is a test message for RSASSA-PSS signing with ${n1.toString(2).length}-bit RSA key from PEM.`);
+
+      try {
+        // Sign with correct private key using RSASSA-PSS
+        const signature = crypto.sign(
+          'sha256',
+          message,
+          {
+            key: privateKey1,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          }
+        );
+
+        // Attempt to verify with wrong public key using RSASSA-PSS
+        const isVerifiedWrong = crypto.verify(
+          'sha256',
+          message,
+          {
+            key: publicKey2,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          },
+          signature
+        );
+
+        // Verify signature verification failed with wrong key
+        expect(isVerifiedWrong).toBe(false);
+        console.log('RSASSA-PSS correctly rejected verification with wrong PEM public key!');
+
+        // Verify with correct public key using RSASSA-PSS
+        const isVerifiedCorrect = crypto.verify(
+          'sha256',
+          message,
+          {
+            key: publicKey1,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          },
+          signature
+        );
+
+        // Verify signature verification worked with correct key
+        expect(isVerifiedCorrect).toBe(true);
+        console.log('RSASSA-PSS verification with correct PEM public key successful!');
+
+      } catch (error) {
+        console.error('RSASSA-PSS wrong key test with PEM keys failed:', error);
+        throw error;
+      }
+    });
+  });
 });
