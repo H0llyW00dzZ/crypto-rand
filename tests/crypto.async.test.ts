@@ -68,7 +68,7 @@ describe('Crypto Async Methods', () => {
       // Different thresholds based on operating system
       // Windows needs a tighter threshold for upper bound
       // macOS needs a lower threshold (>65% vs >70% for others) due to its random number generation characteristics
-      const upperThreshold = process.platform === 'win32' ? 1.29 : 1.30;
+      const upperThreshold = process.platform === 'win32' ? 1.2 : 1.3;
       const lowerThreshold = process.platform === 'darwin' ? 0.6 : 0.7;
 
       buckets.forEach(count => {
