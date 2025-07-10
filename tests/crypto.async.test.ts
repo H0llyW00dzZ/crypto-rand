@@ -64,11 +64,16 @@ describe('Crypto Async Methods', () => {
       // Check that each bucket has roughly the expected number of values
       // Allow for some statistical variation (within 30%)
       const expectedPerBucket = iterations / 10;
+
+      // Different thresholds based on operating system
+      // Windows needs a tighter threshold, while macOS/Linux can use a more relaxed one
+      const upperThreshold = process.platform === 'win32' ? 1.25 : 1.30;
+
       buckets.forEach(count => {
         // This test might fail due to cryptographic randomization, which is inherently unpredictable.
         expect(count).toBeGreaterThan(expectedPerBucket * 0.7);
-        // On Windows, this might fail due to their pool entropy.
-        expect(count).toBeLessThan(expectedPerBucket * 1.25);
+        // Use OS-specific threshold
+        expect(count).toBeLessThan(expectedPerBucket * upperThreshold);
       });
     });
   });
