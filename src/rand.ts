@@ -63,28 +63,14 @@ export class Crypto {
     static async randAsync(): Promise<number> {
         if (Crypto.hasWebCrypto()) {
             // Browser environment
-            // Use 7 bytes (56 bits) for better distribution
-            const array = new Uint8Array(7);
+            const array = new Uint32Array(1);
             window.crypto.getRandomValues(array);
-
-            // Convert to a number between 0 and 1 with high precision
-            let result = 0;
-            let divisor = 1;
-            for (let i = 0; i < array.length; i++) {
-                result += array[i] / (divisor *= 256);
-            }
-            return result;
+            return array[0] / 0x100000000;
         } else if (typeof crypto !== 'undefined' && randomBytesAsync) {
             // Node.js environment
-            const randomBytes = await randomBytesAsync(7);
-
-            // Convert to a number between 0 and 1 with high precision
-            let result = 0;
-            let divisor = 1;
-            for (let i = 0; i < randomBytes.length; i++) {
-                result += randomBytes[i] / (divisor *= 256);
-            }
-            return result;
+            const randomBytes = await randomBytesAsync(4);
+            const randomUint32 = randomBytes.readUInt32BE(0);
+            return randomUint32 / 0x100000000;
         } else {
             throw new Error('No secure random number generator available. Please use in Node.js environment or modern browser with Web Crypto API.');
         }
