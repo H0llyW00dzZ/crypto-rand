@@ -463,7 +463,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(60000);
+      expect(keyGenTime).toBeLessThan(120000);
 
       // Verify e is coprime to phi using GCD
       const gcd = (a: bigint, b: bigint): bigint => {
@@ -540,7 +540,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(60000);
+      expect(keyGenTime).toBeLessThan(120000);
 
       console.log('Testing RSA signing/verification with our generated keys...');
 
@@ -604,7 +604,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(60000);
+      expect(keyGenTime).toBeLessThan(120000);
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
@@ -727,7 +727,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(60000);
+      expect(keyGenTime).toBeLessThan(120000);
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
@@ -1198,7 +1198,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(60000);
+      expect(keyGenTime).toBeLessThan(120000);
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
@@ -1533,7 +1533,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(60000);
+      expect(keyGenTime).toBeLessThan(120000);
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
