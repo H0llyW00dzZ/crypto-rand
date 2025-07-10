@@ -67,7 +67,8 @@ describe('Crypto Async Methods', () => {
       buckets.forEach(count => {
         // This test might fail due to cryptographic randomization, which is inherently unpredictable.
         expect(count).toBeGreaterThan(expectedPerBucket * 0.7);
-        expect(count).toBeLessThan(expectedPerBucket * 1.3);
+        // On Windows, this might fail due to their pool entropy.
+        expect(count).toBeLessThan(expectedPerBucket * 1.2);
       });
     });
   });
