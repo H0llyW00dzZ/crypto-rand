@@ -65,6 +65,7 @@ describe('Crypto Async Methods', () => {
       // Allow for some statistical variation (within 30%)
       const expectedPerBucket = iterations / 10;
       buckets.forEach(count => {
+        // This test might fail due to cryptographic randomization, which is inherently unpredictable.
         expect(count).toBeGreaterThan(expectedPerBucket * 0.7);
         expect(count).toBeLessThan(expectedPerBucket * 1.3);
       });
