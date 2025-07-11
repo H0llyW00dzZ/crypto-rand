@@ -93,6 +93,7 @@ async function generateRandomValues() {
 ### TODO - Features
 - [x] ~~Breaking changes: Update target and lib to ES2020 in `tsconfig.json` or later to implement additional random methods such as `randPrime`~~ (Implemented in current version)
 - [ ] Add more [post-quantum cryptography](https://en.wikipedia.org/wiki/Post-quantum_cryptography) methods
+- [ ] Implement a source [CPRNG](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator) from [TPM 2.0](https://en.wikipedia.org/wiki/Trusted_Platform_Module) using C++ addons, as it is feasible and the maximum bytes are likely 32 bytes (typical for [TPM 2.0](https://en.wikipedia.org/wiki/Trusted_Platform_Module))
 
 ## API Documentation
 
