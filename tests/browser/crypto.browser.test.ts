@@ -70,6 +70,30 @@ describe('Crypto in browser environment (detailed)', () => {
         });
     });
 
+    // Test async random bytes generation
+    describe('Async random bytes generation', () => {
+        it('should use window.crypto.getRandomValues for async bytes generation', async () => {
+            const spy = jest.spyOn(window.crypto, 'getRandomValues');
+            const bytes = await Crypto.randBytesAsync(16);
+            expect(spy).toHaveBeenCalled();
+            expect(bytes.length).toBe(16);
+            expect(bytes instanceof Uint8Array).toBe(true);
+            spy.mockRestore();
+        });
+    });
+
+    // Test async rand generation
+    describe('Async rand generation', () => {
+        it('should use window.crypto.getRandomValues for async bytes generation', async () => {
+            const spy = jest.spyOn(window.crypto, 'getRandomValues');
+            const value = await Crypto.randAsync();
+            expect(spy).toHaveBeenCalled();
+            expect(value).toBeGreaterThanOrEqual(0);
+            expect(value).toBeLessThan(1);
+            spy.mockRestore();
+        });
+    });
+
     // Test UUID generation
     describe('UUID generation', () => {
         it('should use browser API for UUID generation when available', () => {

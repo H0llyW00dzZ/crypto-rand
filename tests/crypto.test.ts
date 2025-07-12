@@ -386,6 +386,37 @@ describe('Crypto Class', () => {
       const sampleStdDev = Math.sqrt(variance);
       expect(sampleStdDev).toBeCloseTo(stdDev, 0);
     });
+
+    it('should use default parameters when not provided', () => {
+      // Default mean = 0, stdDev = 1
+      const samples = Array.from({ length: 1000 }, () => Crypto.randGaussian());
+      const sampleMean = samples.reduce((sum, value) => sum + value, 0) / samples.length;
+      const variance = samples.reduce((sum, value) => sum + Math.pow(value - sampleMean, 2), 0) / samples.length;
+      const sampleStdDev = Math.sqrt(variance);
+
+      expect(sampleMean).toBeCloseTo(0, 0);
+      expect(sampleStdDev).toBeCloseTo(1, 0);
+    });
+
+    it('should handle zero standard deviation', () => {
+      const mean = 10;
+      const stdDev = 0;
+      const samples = Array.from({ length: 10 }, () => Crypto.randGaussian(mean, stdDev));
+
+      // With stdDev = 0, all values should be exactly the mean
+      for (const sample of samples) {
+        expect(sample).toBeCloseTo(mean, 5);
+      }
+    });
+
+    it('should generate different values on subsequent calls', () => {
+      const values = new Set();
+      for (let i = 0; i < 100; i++) {
+        values.add(Crypto.randGaussian());
+      }
+      // With 100 calls, we should get close to 100 unique values
+      expect(values.size).toBeGreaterThan(95);
+    });
   });
 
   describe('randWalk()', () => {
@@ -1399,8 +1430,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p = Crypto.randPrime(expectedBitLength);
-          q = Crypto.randPrime(expectedBitLength);
+          p = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1496,8 +1527,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p = Crypto.randPrime(expectedBitLength);
-          q = Crypto.randPrime(expectedBitLength);
+          p = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1556,8 +1587,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p = Crypto.randPrime(expectedBitLength);
-          q = Crypto.randPrime(expectedBitLength);
+          p = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1611,8 +1642,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p1 = Crypto.randPrime(expectedBitLength);
-          q1 = Crypto.randPrime(expectedBitLength);
+          p1 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q1 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p1).not.toBe(q1);
@@ -1629,8 +1660,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p2 = Crypto.randPrime(expectedBitLength);
-          q2 = Crypto.randPrime(expectedBitLength);
+          p2 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q2 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p2).not.toBe(q2);
@@ -1666,8 +1697,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p = Crypto.randPrime(expectedBitLength);
-          q = Crypto.randPrime(expectedBitLength);
+          p = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1746,8 +1777,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p = Crypto.randPrime(expectedBitLength);
-          q = Crypto.randPrime(expectedBitLength);
+          p = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1828,8 +1859,8 @@ describe('Crypto Class', () => {
         // Loop to ensure modulus n is of the expected bit length
         do {
           // Generate two 1024-bit primes using randPrime
-          p = Crypto.randPrime(expectedBitLength);
-          q = Crypto.randPrime(expectedBitLength);
+          p = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1952,8 +1983,8 @@ describe('Crypto Class', () => {
         console.log('Generating first set of RSA parameters using our randPrime...');
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p1 = Crypto.randPrime(expectedBitLength);
-          q1 = Crypto.randPrime(expectedBitLength);
+          p1 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q1 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p1).not.toBe(q1);
@@ -1974,8 +2005,8 @@ describe('Crypto Class', () => {
         let p2: bigint, q2: bigint, n2: bigint, phi2: bigint;
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p2 = Crypto.randPrime(expectedBitLength);
-          q2 = Crypto.randPrime(expectedBitLength);
+          p2 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q2 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p2).not.toBe(q2);
@@ -2118,8 +2149,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p = Crypto.randPrime(expectedBitLength);
-        q = Crypto.randPrime(expectedBitLength);
+        p = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+        q = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
         // Ensure p and q are different
         expect(p).not.toBe(q);
@@ -2231,8 +2262,8 @@ describe('Crypto Class', () => {
         let p2: bigint, q2: bigint, n2: bigint;
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p2 = Crypto.randPrime(expectedBitLength);
-          q2 = Crypto.randPrime(expectedBitLength);
+          p2 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+          q2 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
           // Ensure p and q are different
           expect(p2).not.toBe(q2);
@@ -2307,8 +2338,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p = Crypto.randPrime(expectedBitLength);
-        q = Crypto.randPrime(expectedBitLength);
+        p = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+        q = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
         // Ensure p and q are different
         expect(p).not.toBe(q);
@@ -2428,8 +2459,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p1 = Crypto.randPrime(expectedBitLength);
-        q1 = Crypto.randPrime(expectedBitLength);
+        p1 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+        q1 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
         // Ensure p and q are different
         expect(p1).not.toBe(q1);
@@ -2449,8 +2480,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p2 = Crypto.randPrime(expectedBitLength);
-        q2 = Crypto.randPrime(expectedBitLength);
+        p2 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+        q2 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
         // Ensure p and q are different
         expect(p2).not.toBe(q2);
@@ -2620,8 +2651,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p = Crypto.randPrime(expectedBitLength);
-        q = Crypto.randPrime(expectedBitLength);
+        p = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+        q = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
         // Ensure p and q are different
         expect(p).not.toBe(q);
@@ -2755,8 +2786,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p1 = Crypto.randPrime(expectedBitLength);
-        q1 = Crypto.randPrime(expectedBitLength);
+        p1 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+        q1 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
         // Ensure p and q are different
         expect(p1).not.toBe(q1);
@@ -2776,8 +2807,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p2 = Crypto.randPrime(expectedBitLength);
-        q2 = Crypto.randPrime(expectedBitLength);
+        p2 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
+        q2 = Crypto.randPrime(expectedBitLength, 50); // Increase the iterations to 50 to prevent errors in modInverse.
 
         // Ensure p and q are different
         expect(p2).not.toBe(q2);
