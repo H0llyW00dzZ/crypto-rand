@@ -301,6 +301,28 @@ describe('Crypto Browser Error Handling', () => {
       });
     });
 
+    it('should handle randBytesAsync when Web Crypto API is not available', async () => {
+      const originalCrypto = window.crypto;
+
+      // Temporarily remove crypto from window
+      Object.defineProperty(window, 'crypto', {
+        value: undefined,
+        writable: true,
+        configurable: true
+      });
+
+      await expect(Crypto.randBytesAsync(16)).rejects.toThrow(
+        'No secure random bytes generator available. Please use in Node.js environment or modern browser with Web Crypto API.'
+      );
+
+      // Restore original crypto
+      Object.defineProperty(window, 'crypto', {
+        value: originalCrypto,
+        writable: true,
+        configurable: true
+      });
+    });
+
     it('should handle randUUID when crypto APIs are not available', () => {
       const originalCrypto = window.crypto;
 

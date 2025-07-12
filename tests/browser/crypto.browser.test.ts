@@ -80,23 +80,6 @@ describe('Crypto in browser environment (detailed)', () => {
             expect(bytes instanceof Uint8Array).toBe(true);
             spy.mockRestore();
         });
-
-        it('should throw error when Web Crypto API is not available', async () => {
-            // Create a mock implementation of randBytesAsync that simulates the error case
-            const mockRandBytesAsync = jest.spyOn(Crypto, 'randBytesAsync').mockImplementation(async () => {
-                throw new Error('No secure random bytes generator available. Please use in Node.js environment or modern browser with Web Crypto API.');
-            });
-
-            try {
-                // Expect the method to throw the specific error
-                await expect(Crypto.randBytesAsync(16)).rejects.toThrow(
-                    'No secure random bytes generator available. Please use in Node.js environment or modern browser with Web Crypto API.'
-                );
-            } finally {
-                // Restore original method
-                mockRandBytesAsync.mockRestore();
-            }
-        });
     });
 
     // Test UUID generation
