@@ -93,7 +93,7 @@ async function generateRandomValues() {
 ### TODO - Features
 - [x] ~~Breaking changes: Update target and lib to ES2020 in `tsconfig.json` or later to implement additional random methods such as `randPrime`~~ (Implemented in current version)
 - [ ] Add more [post-quantum cryptography](https://en.wikipedia.org/wiki/Post-quantum_cryptography) methods
-- [ ] Implement a source [CPRNG](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator) from [TPM 2.0](https://en.wikipedia.org/wiki/Trusted_Platform_Module) using C/C++ addons, as it is feasible and the maximum bytes are likely 32 bytes (typical for [TPM 2.0](https://en.wikipedia.org/wiki/Trusted_Platform_Module))
+- [ ] Implement a source for a [CSPRNG/CPRNG](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator) using [TPM 2.0](https://en.wikipedia.org/wiki/Trusted_Platform_Module) with [C/C++ addons](https://nodejs.org/docs/latest/api/n-api.html). This is feasible, as the maximum output is likely 32 bytes, which is typical for [TPM 2.0](https://en.wikipedia.org/wiki/Trusted_Platform_Module). Tested on [ROG STRIX B450-F GAMING II](https://rog.asus.com/id/motherboards/rog-strix/rog-strix-b450-f-gaming-ii-model/), the maximum is 32 bytes.
 
 ## API Documentation
 
