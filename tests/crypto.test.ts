@@ -386,6 +386,37 @@ describe('Crypto Class', () => {
       const sampleStdDev = Math.sqrt(variance);
       expect(sampleStdDev).toBeCloseTo(stdDev, 0);
     });
+
+    it('should use default parameters when not provided', () => {
+      // Default mean = 0, stdDev = 1
+      const samples = Array.from({ length: 1000 }, () => Crypto.randGaussian());
+      const sampleMean = samples.reduce((sum, value) => sum + value, 0) / samples.length;
+      const variance = samples.reduce((sum, value) => sum + Math.pow(value - sampleMean, 2), 0) / samples.length;
+      const sampleStdDev = Math.sqrt(variance);
+
+      expect(sampleMean).toBeCloseTo(0, 0);
+      expect(sampleStdDev).toBeCloseTo(1, 0);
+    });
+
+    it('should handle zero standard deviation', () => {
+      const mean = 10;
+      const stdDev = 0;
+      const samples = Array.from({ length: 10 }, () => Crypto.randGaussian(mean, stdDev));
+
+      // With stdDev = 0, all values should be exactly the mean
+      for (const sample of samples) {
+        expect(sample).toBeCloseTo(mean, 5);
+      }
+    });
+
+    it('should generate different values on subsequent calls', () => {
+      const values = new Set();
+      for (let i = 0; i < 100; i++) {
+        values.add(Crypto.randGaussian());
+      }
+      // With 100 calls, we should get close to 100 unique values
+      expect(values.size).toBeGreaterThan(95);
+    });
   });
 
   describe('randWalk()', () => {
