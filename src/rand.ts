@@ -265,7 +265,7 @@ export class Crypto {
             return array;
         } else if (typeof crypto !== 'undefined' && randomBytesAsync) {
             // Node.js environment
-            return await randomBytesAsync(size);
+            return randomBytesAsync(size); // Adding await here is redundant
         } else {
             throw new Error('No secure random bytes generator available. Please use in Node.js environment or modern browser with Web Crypto API.');
         }
