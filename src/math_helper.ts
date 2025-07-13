@@ -1,6 +1,7 @@
 /**
  * Internal math utilities for cryptographic operations.
- * These functions are intended for internal use only within the crypto-rand package.
+ * These functions are intended for internal use only within the crypto-rand package,
+ * such as for testing purposes.
  */
 import * as crypto from 'crypto';
 
@@ -80,6 +81,9 @@ export function modPow(base: bigint, exponent: bigint, modulus: bigint): bigint 
 
 /**
  * Calculate the [modular multiplicative inverse](https://en.wikipedia.org/wiki/Modular_multiplicative_inverse) using the [Extended Euclidean Algorithm](https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm)
+ * 
+ * **Note:** This is a helper function primarily intended for testing purposes.
+ * Not recommended for production use as it may be vulnerable to timing attacks.
  * 
  * @param a - The number to find the inverse for
  * @param m - The modulus

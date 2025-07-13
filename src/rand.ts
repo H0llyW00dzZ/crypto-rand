@@ -740,6 +740,12 @@ export class Crypto {
 
         // Generate prime candidates until a probable prime is found,
         // with a 100% guarantee of eventual success using this method.
+        //
+        // Note: This variable-time loop is safe from timing attacks because:
+        // 1. The timing only reveals information about how many candidates were tested before finding a prime
+        // 2. It does NOT leak information about the specific value of the final prime that is returned
+        // 3. Each candidate is generated independently using secure random number generation
+        // 4. The statistical distribution of the search process is independent of the specific prime value
         let candidate: bigint;
         do {
             candidate = Crypto.randBigInt(bits);
@@ -777,6 +783,12 @@ export class Crypto {
 
         // Generate prime candidates until a probable prime is found,
         // with a 100% guarantee of eventual success using this method.
+        //
+        // Note: This variable-time loop is safe from timing attacks because:
+        // 1. The timing only reveals information about how many candidates were tested before finding a prime
+        // 2. It does NOT leak information about the specific value of the final prime that is returned
+        // 3. Each candidate is generated independently using secure random number generation
+        // 4. The statistical distribution of the search process is independent of the specific prime value
         let candidate: bigint;
         let isPrime: boolean;
 
