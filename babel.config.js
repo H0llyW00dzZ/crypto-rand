@@ -3,7 +3,7 @@ module.exports = (api) => {
   const isTest = api.env("test");
   // Get browser environment from api.caller.
   const isBrowser = api.caller(
-    (caller) => caller && caller.name === "babel-jest"
+    (caller) => caller && caller.envName === "jsdom"
   );
 
   return {
