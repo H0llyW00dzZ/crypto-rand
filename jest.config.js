@@ -11,11 +11,13 @@ module.exports = {
         "<rootDir>/tests/*.test.ts",
         "<rootDir>/tests/!(browser)/**/*.test.ts",
       ],
+      setupFiles: ["<rootDir>/env.js"],
     },
     {
       displayName: "browser",
       testEnvironment: "jsdom",
       testMatch: ["<rootDir>/tests/browser/**/*.test.ts"],
+      setupFiles: ["<rootDir>/env.js"],
     },
   ],
 };

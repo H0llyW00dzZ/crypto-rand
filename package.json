@@ -15,7 +15,9 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
-    "test": "jest",
+    "test": "npm run test:node && npm run test:browser",
+    "test:node": "cross-env BROWSER_ENV=false jest --selectProjects=node",
+    "test:browser": "cross-env BROWSER_ENV=true jest --selectProjects=browser",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "coveralls": "jest --coverage && coveralls < coverage/lcov.info",
