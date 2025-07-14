@@ -16,11 +16,11 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "test": "npm run test:node && npm run test:browser",
-    "test:node": "cross-env BROWSER_ENV=false jest --selectProjects=node",
-    "test:browser": "cross-env BROWSER_ENV=true jest --selectProjects=browser",
+    "test:node": "cross-env TEST_HACK_CRYPTO_BROWSER_ENV=false jest --selectProjects=node",
+    "test:browser": "cross-env TEST_HACK_CRYPTO_BROWSER_ENV=true jest --selectProjects=browser",
     "test:watch": "jest --watch",
-    "test:coverage": "cross-env BROWSER_ENV=false jest --coverage --selectProjects=node && cross-env BROWSER_ENV=true jest --coverage --selectProjects=browser",
-    "coveralls": "cross-env BROWSER_ENV=false jest --coverage --selectProjects=node && cross-env BROWSER_ENV=true jest --coverage --selectProjects=browser && coveralls < coverage/lcov.info",
+    "test:coverage": "cross-env TEST_HACK_CRYPTO_BROWSER_ENV=false jest --coverage --selectProjects=node && cross-env TEST_HACK_CRYPTO_BROWSER_ENV=true jest --coverage --selectProjects=browser",
+    "coveralls": "cross-env TEST_HACK_CRYPTO_BROWSER_ENV=false jest --coverage --selectProjects=node && cross-env TEST_HACK_CRYPTO_BROWSER_ENV=true jest --coverage --selectProjects=browser && coveralls < coverage/lcov.info",
     "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "keywords": [
