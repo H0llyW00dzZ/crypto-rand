@@ -1,20 +1,21 @@
 module.exports = {
-  testEnvironment: 'node',
-  testMatch: ['**/*.test.ts'],
   transform: {
-    '^.+\\.tsx?$': 'babel-jest'
+    "^.+\\.tsx?$": "babel-jest",
   },
   projects: [
     {
-      displayName: 'node',
-      testEnvironment: 'node',
+      displayName: "node",
+      testEnvironment: "node",
       // More specific testMatch to exclude browser tests
-      testMatch: ['<rootDir>/tests/*.test.ts', '<rootDir>/tests/!(browser)/**/*.test.ts'],
+      testMatch: [
+        "<rootDir>/tests/*.test.ts",
+        "<rootDir>/tests/!(browser)/**/*.test.ts",
+      ],
     },
     {
-      displayName: 'browser',
-      testEnvironment: 'jsdom',
-      testMatch: ['<rootDir>/tests/browser/**/*.test.ts'],
-    }
-  ]
+      displayName: "browser",
+      testEnvironment: "jsdom",
+      testMatch: ["<rootDir>/tests/browser/**/*.test.ts"],
+    },
+  ],
 };
