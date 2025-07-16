@@ -8,30 +8,30 @@ Cryptographically secure random utilities for Node.js and browsers.
 
 > [!IMPORTANT]
 >
-> **FIPS Compliance Disclaimer**
+> **[FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) Compliance Disclaimer**
 >
-> This package may not conform to FIPS (Federal Information Processing Standards) requirements for cryptographic modules. Organizations requiring FIPS-validated cryptography should conduct their own compliance assessment before deployment.
+> This package may not conform to [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) (Federal Information Processing Standards) requirements for cryptographic modules. Organizations requiring [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-validated cryptography should conduct their own compliance assessment before deployment.
 >
 > **Key Considerations:**
 >
-> - **Platform Dependencies**: Cryptographic security relies on underlying platform implementations (Node.js `crypto` module, Web Crypto API) which may not be FIPS-certified across all deployment environments
+> - **Platform Dependencies**: Cryptographic security relies on underlying platform implementations ([Node.js `crypto` module](https://nodejs.org/docs/latest/api/crypto.html), [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)) which may not be [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-certified across all deployment environments
 >
-> - **Algorithm Implementation**: Certain methods, particularly `randPrime`, utilize probabilistic algorithms (Miller-Rabin primality testing) that may not align with FIPS-approved deterministic validation procedures
+> - **Algorithm Implementation**: Certain methods, particularly `randPrime`/`randPrimeAsync`, utilize probabilistic algorithms ([Miller-Rabin primality](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) testing) that may not align with [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-approved deterministic validation procedures
 >
-> - **Cross-Platform Design**: Compatibility requirements across Node.js and browser environments necessitate implementation choices that may not satisfy strict FIPS compliance criteria
+> - **Cross-Platform Design**: Compatibility requirements across Node.js and browser environments necessitate implementation choices that may not satisfy strict [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) compliance criteria
 >
-> - **Validation Status**: This library has not undergone formal FIPS certification or validation testing
+> - **Validation Status**: This library has not undergone formal [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) certification or validation testing
 >
-> **Security Assurance**: Non-compliance with FIPS standards does not indicate cryptographic weakness. This library employs industry-standard secure random number generation and is suitable for general-purpose cryptographic applications where FIPS certification is not mandated.
+> **Security Assurance**: Non-compliance with [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) standards does not indicate cryptographic weakness. This library employs industry-standard secure random number generation and is suitable for general-purpose cryptographic applications where [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) certification is not mandated.
 >
-> For FIPS-compliant environments, consult your organization's security policies and consider using FIPS-validated cryptographic modules.
+> For [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-compliant environments, consult your organization's security policies and consider using [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-validated cryptographic modules.
 
 ## Installation
 
 > [!NOTE]
 >
 > The minimum required Node.js version is 19.0.0. It also works well with the latest Node.js versions, as it doesn't rely on external dependencies.
-> It primarily uses the Node.js `crypto` module, which leverages OpenSSL or other cryptographic libraries. For example, on Unix-like systems, Node.js might use `/dev/urandom` or `/dev/random`.
+> It primarily uses the Node.js `crypto` module, which leverages [OpenSSL](https://www.openssl.org/) or other cryptographic libraries. For example, on Unix-like systems, Node.js might use [`/dev/urandom`](https://en.wikipedia.org/wiki//dev/random) or [`/dev/random`](https://en.wikipedia.org/wiki//dev/random).
 
 ```bash
 npm install @h0llyw00dzz/crypto-rand
