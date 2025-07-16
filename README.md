@@ -121,7 +121,7 @@ async function generateRandomValues() {
 - `Crypto.randBigInt(bits?)` - Generate cryptographically secure random bigint with specified bit length
 - `Crypto.randExponential(lambda?)` - Generate random number with exponential distribution
 
-### Async Methods
+### Static Async Methods
 - `Crypto.randAsync()` - Async version of rand()
 - `Crypto.randBytesAsync(size)` - Async version of randBytes()
 - `Crypto.randHexAsync(length)` - Async version of randHex()
