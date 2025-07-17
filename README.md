@@ -1,4 +1,5 @@
 # crypto-rand
+
 ![Node.js min version](https://img.shields.io/badge/node-%3E%3D19.0.0-brightgreen?logo=node.js)
 [![npm version](https://badge.fury.io/js/@h0llyw00dzz%2Fcrypto-rand.svg)](https://badge.fury.io/js/@h0llyw00dzz%2Fcrypto-rand)
 [![🧪 Test Coverage](https://github.com/H0llyW00dzZ/crypto-rand/actions/workflows/coverage.yml/badge.svg?branch=master)](https://github.com/H0llyW00dzZ/crypto-rand/actions/workflows/coverage.yml)
