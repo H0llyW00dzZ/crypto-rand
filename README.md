@@ -5,6 +5,14 @@
 [![Coverage Status](https://coveralls.io/repos/github/H0llyW00dzZ/crypto-rand/badge.svg)](https://coveralls.io/github/H0llyW00dzZ/crypto-rand)
 [![jest tested](https://img.shields.io/badge/Jest-tested-eee.svg?logo=jest&labelColor=99424f)](https://github.com/jestjs/jest)
 
+<p align="center">
+  <img src="https://i.imgur.com/Xd6X6bT.png" alt="crypto-rand logo" width="500">
+  <br>
+  <i>Image Copyright © <a href="https://github.com/H0llyW00dzZ">H0llyW00dzZ</a>. All rights reserved.</i>
+  <br>
+  <i>Image used with permission from the copyright holder.</i>
+</p>
+
 Cryptographically secure random utilities for Node.js and browsers.
 
 > [!IMPORTANT]
