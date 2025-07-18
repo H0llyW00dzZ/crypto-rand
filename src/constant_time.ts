@@ -30,6 +30,7 @@ export function constantTimeCompare(
     const bufferB = typeof b === 'string' ? Buffer.from(b) : Buffer.from(b);
 
     // If lengths are different, return false immediately
+    // This looks bad because it returns directly.
     if (bufferA.length !== bufferB.length) {
         return false;
     }
