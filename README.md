@@ -13,7 +13,6 @@
   <i>Image used with permission from the copyright holder.</i>
 </p>
 
-
 Cryptographically secure random utilities for Node.js and browsers.
 
 > [!IMPORTANT]
