@@ -12,10 +12,10 @@
  * for cryptographic operations to prevent timing attacks where an attacker could
  * determine secret values by measuring the time it takes to compare them.
  * 
- * **Note:** This implementation is essentially the same as previous constant-time comparison functions (SHA: ***c815de9e64ad079a5c298fb3ebab895fd6457c60***),
+ * **Note:** This implementation is essentially the same as previous constant-time comparison functions (SHA: ***8575fdccff6aa7bedabb638cfb8a7394e0f9e1a4***),
  * using the standard pattern of bitwise operations to ensure timing consistency.
  * 
- * **TODO:** Consider reverting this later to roll back to SHA: ***c815de9e64ad079a5c298fb3ebab895fd6457c60***.
+ * **TODO:** Consider reverting this later to roll back to SHA: ***8575fdccff6aa7bedabb638cfb8a7394e0f9e1a4***.
  * 
  * @param a - First value to compare
  * @param b - Second value to compare
