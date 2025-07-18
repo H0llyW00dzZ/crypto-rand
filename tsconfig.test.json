@@ -6,5 +6,5 @@
     "noImplicitAny": false,
     "strictNullChecks": true,
   },
-  "include": ["src/**/*", "tests/**/*"]
+  "include": ["src/tests/**/*"]
 }
