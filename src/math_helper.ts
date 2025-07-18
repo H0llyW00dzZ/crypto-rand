@@ -13,7 +13,11 @@ import * as crypto from 'crypto';
  * @param getRandomBytes - Function to generate random bytes (defaults to crypto.randomBytes)
  * @returns A boolean indicating whether the number is probably prime
  */
-export function isProbablePrime(n: bigint, k: number, getRandomBytes: (size: number) => Buffer | Uint8Array = crypto.randomBytes): boolean {
+export function isProbablePrime(
+    n: bigint,
+    k: number,
+    getRandomBytes: (size: number) => Buffer | Uint8Array = crypto.randomBytes
+): boolean {
     // Handle small numbers
     if (n <= 1n) return false;
     if (n <= 3n) return true;
