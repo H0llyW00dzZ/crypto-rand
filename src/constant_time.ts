@@ -12,6 +12,11 @@
  * for cryptographic operations to prevent timing attacks where an attacker could
  * determine secret values by measuring the time it takes to compare them.
  * 
+ * **Note:** This implementation is essentially the same as previous constant-time comparison functions (SHA: ***c815de9e64ad079a5c298fb3ebab895fd6457c60***),
+ * using the standard pattern of bitwise operations to ensure timing consistency.
+ * 
+ * **TODO:** Consider reverting this later to roll back to SHA: ***c815de9e64ad079a5c298fb3ebab895fd6457c60***.
+ * 
  * @param a - First value to compare
  * @param b - Second value to compare
  * @returns A boolean indicating whether the values are equal
@@ -24,27 +29,20 @@ export function constantTimeCompare(
     const bufferA = typeof a === 'string' ? Buffer.from(a) : Buffer.from(a);
     const bufferB = typeof b === 'string' ? Buffer.from(b) : Buffer.from(b);
 
-    // If lengths are different, return false but still do the comparison
-    // to ensure constant time operation
-    const result = bufferA.length === bufferB.length ? 1 : 0;
+    // If lengths are different, return false immediately
+    if (bufferA.length !== bufferB.length) {
+        return false;
+    }
 
     // Use a single variable to accumulate differences
-    // This ensures we always process all bytes regardless of mismatches
     let diff = 0;
 
-    // Compare all bytes from the shorter buffer
-    const minLength = Math.min(bufferA.length, bufferB.length);
-    for (let i = 0; i < minLength; i++) {
-        // Use bitwise XOR to detect differences (0 if same, non-zero if different)
-        // and bitwise OR to accumulate any differences
+    // Compare all bytes
+    for (let i = 0; i < bufferA.length; i++) {
+        // Use bitwise XOR to detect differences and bitwise OR to accumulate them
         diff |= bufferA[i] ^ bufferB[i];
     }
 
-    // If lengths are different, ensure diff is non-zero
-    if (bufferA.length !== bufferB.length) {
-        diff |= 1;
-    }
-
-    // Return true only if no differences were found and lengths are equal
-    return diff === 0 && result === 1;
+    // Return true only if no differences were found
+    return diff === 0;
 }
