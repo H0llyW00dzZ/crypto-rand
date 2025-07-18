@@ -5,10 +5,18 @@ on:
     branches: [master]
     paths-ignore:
       - '**/README.md'
+      - '**/.npmignore'
+      - '**/.gitignore'
+      - '**/.dockerignore'
+      - '**/LICENSE'
   pull_request:
     branches: [master]
     paths-ignore:
       - '**/README.md'
+      - '**/.npmignore'
+      - '**/.gitignore'
+      - '**/.dockerignore'
+      - '**/LICENSE'
 
 jobs:
   build:
