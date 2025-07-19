@@ -1378,7 +1378,7 @@ describe('Crypto Class', () => {
 
     describe('basic functionality', () => {
       test('should return a BigInt', () => {
-        const result = Crypto.randPrime(32); // Small bit size for faster tests
+        const result = Crypto.randPrime(32, 27); // Small bit size for faster tests
         expect(typeof result).toBe('bigint');
       });
 
@@ -1398,13 +1398,13 @@ describe('Crypto Class', () => {
         };
 
         // Test with small primes for faster verification
-        const prime = Crypto.randPrime(16);
+        const prime = Crypto.randPrime(16, 27);
         expect(isProbablePrime(prime)).toBe(true);
       });
 
       test('should generate prime with specified bit length', () => {
         const bits = 32;
-        const prime = Crypto.randPrime(bits);
+        const prime = Crypto.randPrime(bits, 27);
 
         // Check bit length
         const bitLength = prime.toString(2).length;
@@ -1443,8 +1443,8 @@ describe('Crypto Class', () => {
 
     describe('security properties', () => {
       test('should generate different primes on multiple calls', () => {
-        const prime1 = Crypto.randPrime(32);
-        const prime2 = Crypto.randPrime(32);
+        const prime1 = Crypto.randPrime(32, 27);
+        const prime2 = Crypto.randPrime(32, 27);
         expect(prime1).not.toBe(prime2);
       });
 
@@ -1453,7 +1453,7 @@ describe('Crypto Class', () => {
         const bitLengths = [8, 16, 32];
 
         bitLengths.forEach(bits => {
-          const prime = Crypto.randPrime(bits);
+          const prime = Crypto.randPrime(bits, 27);
           expect(typeof prime).toBe('bigint');
           expect(prime.toString(2).length).toBe(bits);
         });
@@ -1463,7 +1463,7 @@ describe('Crypto Class', () => {
     describe('performance', () => {
       test('should complete in reasonable time for small bit lengths', () => {
         const startTime = Date.now();
-        Crypto.randPrime(32);
+        Crypto.randPrime(32, 27);
         const endTime = Date.now();
 
         // Should complete within a reasonable time
@@ -1495,7 +1495,9 @@ describe('Crypto Class', () => {
         // Common RSA public exponent
         const e = 65537n;
 
-        // Verify e is coprime to phi using GCD
+        // Verify that e is coprime to phi using GCD.
+        //
+        // Note: This may fail on some operating systems and could likely fail with 512 bits.
         const gcd = (a: bigint, b: bigint): bigint => {
           while (b !== 0n) {
             const temp = b;
@@ -1548,8 +1550,8 @@ describe('Crypto Class', () => {
       });
 
       test('should handle edge cases for RSA parameter validation', () => {
-        const p = Crypto.randPrime(128);
-        const q = Crypto.randPrime(128);
+        const p = Crypto.randPrime(128, 27);
+        const q = Crypto.randPrime(128, 27);
         const n = p * q;
         const phi = (p - 1n) * (q - 1n);
         const e = 65537n;
@@ -1562,7 +1564,7 @@ describe('Crypto Class', () => {
         expect(phi).toBeGreaterThan(e);
 
         // Test with a message that's too large (should be less than n)
-        const largePrime = Crypto.randPrime(256);
+        const largePrime = Crypto.randPrime(256, 27);
         if (largePrime >= n) {
           // If message >= n, RSA won't work properly
           expect(() => {
@@ -3056,7 +3058,7 @@ describe('Crypto Class', () => {
       });
 
       // Generate a prime with 256 bits
-      const prime = Crypto.randPrime(256);
+      const prime = Crypto.randPrime(256, 27);
 
       // Verify the bit length is exactly as specified
       const actualBits = prime.toString(2).length;
