@@ -366,7 +366,7 @@ F75A29BB758360582AB1F4ED5CD9F17C6272BBD90C4E0EBBAD8E44370C4ED376A9C70EA43518E3A6
 > It's also worth noting that this issue, where the modulus \( n \) is not as expected (e.g., 1024 bits but returns 1023 bits), is not a bug. In theory, "numbers don't lie."
 
 ## Security
-This library uses Node.js's built-in `crypto` module to provide cryptographically secure random number generation. Unlike `Math.random()`, which uses a pseudorandom number generator that can be predictable, this library ensures true randomness suitable for security-sensitive applications.
+This library uses Node.js's built-in [`crypto` module](https://nodejs.org/docs/latest/api/crypto.html) to provide [cryptographically secure random number generation](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator). Unlike `Math.random()`, which uses a pseudorandom number generator that can be predictable, this library ensures true randomness suitable for security-sensitive applications.
 
 ## Browser Compatibility
 This package supports both Node.js and browser environments out of the box. It automatically detects the environment and uses the appropriate cryptographic API:
