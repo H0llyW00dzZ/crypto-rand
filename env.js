@@ -21,6 +21,60 @@ if (!isBrowser) {
       console.log(createSeparator(20));
       console.log(`  Model: ${cpuModel}`);
       console.log(`  Cores: ${cpuCores}`);
+      // Speed may not display in CI/CD workflows.
+      // However, it does show on a local PC.
+      // Tested on an overclocked PC:
+      // ● Console
+      //
+      // console.log
+      //   Running in nodejs environment.
+      //
+      //   at Object.<anonymous> (env.js:5:9)
+      //
+      // console.log
+      //   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      //
+      //   at Object.<anonymous> (env.js:19:15)
+      //
+      // console.log
+      //   CPU Information:
+      //
+      //   at Object.<anonymous> (env.js:20:15)
+      //
+      // console.log
+      //   ━━━━━━━━━━━━━━━━━━━━
+      //
+      //   at Object.<anonymous> (env.js:21:15)
+      //
+      // console.log
+      //     Model: AMD Ryzen 9 3900X 12-Core Processor
+      //
+      //   at Object.<anonymous> (env.js:22:15)
+      //
+      // console.log
+      //     Cores: 24
+      //
+      //   at Object.<anonymous> (env.js:23:15)
+      //
+      // console.log
+      //     Speed: 4054 MHz
+      //
+      //   at Object.<anonymous> (env.js:24:15)
+      //
+      // console.log
+      //     Architecture: x64
+      //
+      //   at Object.<anonymous> (env.js:25:15)
+      //
+      // console.log
+      //     Total Memory: 16 GB
+      //
+      //   at Object.<anonymous> (env.js:26:15)
+      //
+      // console.log
+      //   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      //
+      //   at Object.<anonymous> (env.js:27:15)
       console.log(`  Speed: ${cpuSpeed} MHz`);
       console.log(`  Architecture: ${os.arch()}`);
       console.log(
