@@ -1495,7 +1495,9 @@ describe('Crypto Class', () => {
         // Common RSA public exponent
         const e = 65537n;
 
-        // Verify e is coprime to phi using GCD
+        // Verify that e is coprime to phi using GCD.
+        //
+        // Note: This may fail on some operating systems and could likely fail with 512 bits.
         const gcd = (a: bigint, b: bigint): bigint => {
           while (b !== 0n) {
             const temp = b;
