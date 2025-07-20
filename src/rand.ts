@@ -722,7 +722,7 @@ export class Crypto {
      * dependency on the native crypto module for secure random number generation.
      * 
      * @param bits - The bit length of the prime number to generate (default: 1024)
-     * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
+     * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (a.k.a accuracy 🎯, default: 10)
      * @returns A bigint representing a probable prime number of the specified bit length
      */
     static randPrime(bits: number = 1024, iterations: number = 10): bigint {
@@ -765,7 +765,7 @@ export class Crypto {
      * dependency on the native crypto module for secure random number generation.
      * 
      * @param bits - The bit length of the prime number to generate (default: 1024)
-     * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
+     * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (a.k.a accuracy 🎯, default: 10)
      * @returns A Promise that resolves to a bigint representing a probable prime number of the specified bit length
      */
     static async randPrimeAsync(bits: number = 1024, iterations: number = 10): Promise<bigint> {
