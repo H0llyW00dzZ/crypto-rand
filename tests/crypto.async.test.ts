@@ -1,6 +1,10 @@
 import * as crypto from 'crypto';
 import { Crypto, randAsync, randBytesAsync, randHexAsync, randBase64Async, randSeedAsync, randVersionAsync, randPrimeAsync, randBigIntAsync } from '../src/rand';
 import { modPow, modInverse } from '../src/math_helper';
+import {
+  expectedBitLength,
+  expectedAccuracy
+} from '../src/const_test';
 
 describe('Crypto Async Methods', () => {
   // Skip tests if not in Node.js environment
@@ -368,7 +372,7 @@ describe('Crypto Async Methods', () => {
 
     it('should generate a number with the correct bit length', async () => {
       const bits = 32;
-      const prime = await randPrimeAsync(bits);
+      const prime = await randPrimeAsync(bits, expectedAccuracy);
 
       // Check bit length
       const bitLength = prime.toString(2).length;
@@ -378,8 +382,8 @@ describe('Crypto Async Methods', () => {
 
     it('should generate different primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
-        randPrimeAsync(16),
-        randPrimeAsync(16)
+        randPrimeAsync(16, expectedAccuracy),
+        randPrimeAsync(16, expectedAccuracy)
       ]);
 
       expect(prime1).not.toBe(prime2);
@@ -498,14 +502,13 @@ describe('Crypto Async Methods', () => {
       startTime = Date.now();
 
       let p: bigint, q: bigint, n: bigint, phi: bigint;
-      const expectedBitLength: number = 1024;
 
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -574,14 +577,13 @@ describe('Crypto Async Methods', () => {
       startTime = Date.now();
 
       let p: bigint, q: bigint, n: bigint, phi: bigint;
-      const expectedBitLength: number = 1024;
 
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -635,7 +637,6 @@ describe('Crypto Async Methods', () => {
     it('should perform RSAES-OAEP operations with async prime generation', async () => {
       // Generate 2048-bit RSA key pair (1024-bit primes each)
       let p: bigint, q: bigint, n: bigint, phi: bigint;
-      const expectedBitLength: number = 1024;
 
       let startTime: number;
       startTime = Date.now();
@@ -644,8 +645,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -762,14 +763,13 @@ describe('Crypto Async Methods', () => {
       startTime = Date.now();
 
       let p: bigint, q: bigint, n: bigint, phi: bigint;
-      const expectedBitLength: number = 1024;
 
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -885,14 +885,13 @@ describe('Crypto Async Methods', () => {
       // Generate first RSA key pair
       console.log('Generating first RSA key pair...');
       let p1: bigint, q1: bigint, n1: bigint, phi1: bigint;
-      const expectedBitLength: number = 1024;
 
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -947,8 +946,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -1052,14 +1051,13 @@ describe('Crypto Async Methods', () => {
       // Generate first RSA key pair
       console.log('Generating first RSA key pair...');
       let p1: bigint, q1: bigint, n1: bigint, phi1: bigint;
-      const expectedBitLength: number = 1024;
 
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -1114,8 +1112,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -1229,7 +1227,6 @@ describe('Crypto Async Methods', () => {
     it('should perform RSAES-OAEP operations with async prime generation and PEM format', async () => {
       // Generate 2048-bit RSA key pair (1024-bit primes each)
       let p: bigint, q: bigint, n: bigint, phi: bigint;
-      const expectedBitLength: number = 1024;
 
       let startTime: number;
       startTime = Date.now();
@@ -1238,8 +1235,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -1359,14 +1356,13 @@ describe('Crypto Async Methods', () => {
       // Generate first RSA key pair
       console.log('Generating first RSA key pair...');
       let p1: bigint, q1: bigint, n1: bigint, phi1: bigint;
-      const expectedBitLength: number = 1024;
 
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -1388,8 +1384,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -1568,14 +1564,13 @@ describe('Crypto Async Methods', () => {
       startTime = Date.now();
 
       let p: bigint, q: bigint, n: bigint, phi: bigint;
-      const expectedBitLength: number = 1024;
 
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -1707,14 +1702,13 @@ describe('Crypto Async Methods', () => {
       // Generate first RSA key pair
       console.log('Generating first RSA key pair...');
       let p1: bigint, q1: bigint, n1: bigint, phi1: bigint;
-      const expectedBitLength: number = 1024;
 
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
@@ -1736,8 +1730,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 27),
-          randPrimeAsync(expectedBitLength, 27)
+          randPrimeAsync(expectedBitLength, expectedAccuracy),
+          randPrimeAsync(expectedBitLength, expectedAccuracy)
         ]);
 
         // Ensure p and q are different
