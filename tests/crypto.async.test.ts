@@ -378,12 +378,12 @@ describe('Crypto Async Methods', () => {
 
     it('should generate different primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
-        // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+        // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
         // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
         //
         // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-        randPrimeAsync(16, 2700),
-        randPrimeAsync(16, 2700)
+        randPrimeAsync(16, 480),
+        randPrimeAsync(16, 480)
       ]);
 
       expect(prime1).not.toBe(prime2);
@@ -508,12 +508,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -588,12 +588,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -656,12 +656,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -784,12 +784,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -911,12 +911,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -971,12 +971,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -1086,12 +1086,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -1146,12 +1146,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -1274,12 +1274,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -1405,12 +1405,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -1432,12 +1432,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -1622,12 +1622,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -1765,12 +1765,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
@@ -1792,12 +1792,12 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          // Increase the iterations to 2700 for the perfect p × q in the async do-while loop,
+          // Increase the iterations to 480 for the perfect p × q in the async do-while loop,
           // as Wikipedia suggests: "The numbers p and q should not be 'too close'." 🎰🎰🎰
           //
           // Note: This process may take a long time 😂 because the default entropy in OpenSSL can be quite poor.
-          randPrimeAsync(expectedBitLength, 2700),
-          randPrimeAsync(expectedBitLength, 2700)
+          randPrimeAsync(expectedBitLength, 480),
+          randPrimeAsync(expectedBitLength, 480)
         ]);
 
         // Ensure p and q are different
