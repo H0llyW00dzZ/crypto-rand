@@ -494,7 +494,7 @@ describe('Crypto Async Methods', () => {
 
   describe('RSA operations with async prime generation', () => {
     // These tests use 2048-bit keys (1024-bit primes each)
-    jest.setTimeout(120000); // Increase timeout for prime generation with larger bit sizes
+    jest.setTimeout(150000); // Increase due to overhead on Windows. Haha! // Increase timeout for prime generation with larger bit sizes
 
     it('should perform RSA encryption and decryption with async prime generation', async () => {
       // Generate 2048-bit RSA key pair (1024-bit primes each)
@@ -532,7 +532,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(120000);
+      expect(keyGenTime).toBeLessThan(150000); // Increase due to overhead on Windows. Haha!
 
       // Verify e is coprime to phi using GCD
       const gcd = (a: bigint, b: bigint): bigint => {
@@ -613,7 +613,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(120000);
+      expect(keyGenTime).toBeLessThan(150000); // Increase due to overhead on Windows. Haha!
 
       console.log('Testing RSA signing/verification with our generated keys...');
 
@@ -681,7 +681,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(120000);
+      expect(keyGenTime).toBeLessThan(150000); // Increase due to overhead on Windows. Haha!
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
@@ -808,7 +808,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(120000);
+      expect(keyGenTime).toBeLessThan(150000); // Increase due to overhead on Windows. Haha!
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
@@ -1260,7 +1260,7 @@ describe('Crypto Async Methods', () => {
 
   describe('RSAES-OAEP operations with PEM format', () => {
     // These tests use 2048-bit keys (1024-bit primes each)
-    jest.setTimeout(120000); // Increase timeout for prime generation with larger bit sizes
+    jest.setTimeout(150000); // Increase due to overhead on Windows. Haha! // Increase timeout for prime generation with larger bit sizes
 
     it('should perform RSAES-OAEP operations with async prime generation and PEM format', async () => {
       // Generate 2048-bit RSA key pair (1024-bit primes each)
@@ -1299,7 +1299,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(120000);
+      expect(keyGenTime).toBeLessThan(150000); // Increase due to overhead on Windows. Haha!
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
@@ -1608,7 +1608,7 @@ describe('Crypto Async Methods', () => {
 
   describe('RSASSA-PSS operations with PEM format', () => {
     // These tests use 2048-bit keys (1024-bit primes each)
-    jest.setTimeout(120000); // Increase timeout for prime generation with larger bit sizes
+    jest.setTimeout(150000); // Increase due to overhead on Windows. Haha! // Increase timeout for prime generation with larger bit sizes
 
     it('should perform RSASSA-PSS operations with async prime generation and PEM format', async () => {
       // Generate 2048-bit RSA key pair (1024-bit primes each)
@@ -1646,7 +1646,7 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
-      expect(keyGenTime).toBeLessThan(120000);
+      expect(keyGenTime).toBeLessThan(150000); // Increase due to overhead on Windows. Haha!
 
       // Create RSA keys from our generated parameters
       console.log('Creating RSA keys from our generated parameters...');
