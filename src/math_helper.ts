@@ -13,7 +13,7 @@ import * as crypto from 'crypto';
  * demonstrating that these libraries were not implemented with an adversarial context in mind." ¯\_(ツ)_/¯
  * 
  * @param n - The number to test for primality
- * @param k - The number of iterations for the test
+ * @param k - The number of iterations for the test (a.k.a accuracy 🎯)
  * @param getRandomBytes - Function to generate random bytes (defaults to crypto.randomBytes)
  * @returns A boolean indicating whether the number is probably prime
  */
@@ -127,7 +127,7 @@ export function modInverse(a: bigint, m: bigint): bigint {
  * demonstrating that these libraries were not implemented with an adversarial context in mind." ¯\_(ツ)_/¯
  * 
  * @param n - The number to test for primality
- * @param k - The number of iterations for the test
+ * @param k - The number of iterations for the test (a.k.a accuracy 🎯)
  * @param getRandomBytesAsync - Async function to generate random bytes
  * @returns A Promise that resolves to a boolean indicating whether the number is probably prime
  */
