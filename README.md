@@ -381,3 +381,39 @@ This package supports both Node.js and browser environments out of the box. It a
 - Safari 7+
 - Edge 12+
 - Modern mobile browsers with Web Crypto API support
+
+## Performance
+
+This library provides [cryptographically secure random number generation](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator) with a focus on both security and performance. However, there are some important performance considerations to be aware of:
+
+### General Performance Considerations
+
+- **Cryptographic Operations Overhead**: [Cryptographically secure random number generation](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator) is inherently more computationally intensive than non-secure alternatives like `Math.random()`. This is a necessary [trade-off](https://en.wikipedia.org/wiki/Trade-off) for security.
+
+- **Synchronous vs. Asynchronous Methods**: For most small operations, synchronous methods provide adequate performance. For larger operations or when generating multiple values, consider using asynchronous methods to avoid blocking the main thread.
+
+### Static Async Methods and Concurrency
+
+- **Concurrency vs. Parallelism**: While Node.js is single-threaded by nature, static async methods in this library guarantee concurrency but not 100% guarantee parallelism. This means:
+  - Multiple async operations can make progress concurrently within the event loop
+  - Operations don't block each other, improving overall throughput
+  - However, they don't execute in parallel on multiple CPU cores simultaneously
+
+- **Event Loop Efficiency**: Async methods allow the event loop to handle other tasks while waiting for cryptographic operations to complete, making your application more responsive.
+
+### [Prime Number](https://en.wikipedia.org/wiki/Prime_number) Generation Performance
+
+- **Key Size Recommendations**:
+  - **2048-bit keys** offer a good balance between security and performance for most applications. This is the recommended size for general use.
+  - **4096-bit keys**, while providing stronger security, come with significant performance penalties (often 5-8x slower than 2048-bit operations) and are recommended only for highly sensitive applications where maximum security is required.
+
+- **randPrime/randPrimeAsync Performance**:
+  - Prime generation is computationally intensive, especially at larger bit sizes
+  - Using `randPrimeAsync` is strongly recommended for prime generation to avoid blocking the main thread
+
+### Performance Optimization Tips
+
+- Use `Promise.all()` with async methods when generating multiple random values
+- For [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) key generation, consider using 2048-bit keys unless you have specific security requirements
+- When generating large amounts of random data, use the async methods and process the data in chunks
+- For performance-critical applications, consider implementing caching strategies for expensive operations like prime generation
