@@ -406,6 +406,8 @@ This library provides [cryptographically secure random number generation](https:
 - **Key Size Recommendations**:
   - **2048-bit keys** offer a good balance between security and performance for most applications. This is the recommended size for general use.
   - **4096-bit keys**, while providing stronger security, come with significant performance penalties (often 5-8x slower than 2048-bit operations) and are recommended only for highly sensitive applications where maximum security is required.
+> [!NOTE]
+> `4096-bit keys` are often 5-8 times slower than `2048-bit` operations. This is not only during prime generation using probabilistic algorithms like [Miller-Rabin](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test), but also when performing encryption/decryption or signing/verifying operations.
 
 - **randPrime/randPrimeAsync Performance**:
   - Prime generation is computationally intensive, especially at larger bit sizes
