@@ -146,7 +146,7 @@ async function generateRandomValues() {
 > Async methods provide several advantages when generating cryptographically secure random values:
 >
 > - **Non-blocking operation**: Async methods don't block the main thread, improving application responsiveness
-> - **Parallel execution**: Multiple async operations can run concurrently with `Promise.all()`
+> - **Concurrent execution**: Multiple async operations can run simultaneously with `Promise.all()`. However, this doesn't guarantee true parallelism. [Read more here](README.md#static-async-methods-and-concurrency).
 > - **Better performance**: For large or frequent random number generation, async methods can offer better throughput
 > - **Modern JavaScript patterns**: Works well with async/await syntax for cleaner code
 > - **Improved RSA operations**: Using `randPrimeAsync` and `randBigIntAsync` allows for non-blocking prime generation for RSA key pairs
