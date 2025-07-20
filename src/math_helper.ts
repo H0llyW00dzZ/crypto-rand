@@ -8,6 +8,10 @@ import * as crypto from 'crypto';
 /**
  * [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test)
  * 
+ * **Note:** If you understand how this works, it's unlike the situation described in Wikipedia: "For instance, in 2018, Albrecht et al.
+ * were able to construct composite numbers that many cryptographic libraries, such as OpenSSL and GNU GMP, declared as prime,
+ * demonstrating that these libraries were not implemented with an adversarial context in mind." ¯\_(ツ)_/¯
+ * 
  * @param n - The number to test for primality
  * @param k - The number of iterations for the test
  * @param getRandomBytes - Function to generate random bytes (defaults to crypto.randomBytes)
@@ -117,6 +121,10 @@ export function modInverse(a: bigint, m: bigint): bigint {
 
 /**
  * Async version of [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test)
+ * 
+ * **Note:** If you understand how this works, it's unlike the situation described in Wikipedia: "For instance, in 2018, Albrecht et al.
+ * were able to construct composite numbers that many cryptographic libraries, such as OpenSSL and GNU GMP, declared as prime,
+ * demonstrating that these libraries were not implemented with an adversarial context in mind." ¯\_(ツ)_/¯
  * 
  * @param n - The number to test for primality
  * @param k - The number of iterations for the test
