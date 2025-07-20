@@ -494,7 +494,7 @@ describe('Crypto Async Methods', () => {
 
   describe('RSA operations with async prime generation', () => {
     // These tests use 2048-bit keys (1024-bit primes each)
-    jest.setTimeout(150000); // Increase due to overhead on Windows. Haha! // Increase timeout for prime generation with larger bit sizes
+    jest.setTimeout(150000); // Increase due to overhead on Windows. Haha!
 
     it('should perform RSA encryption and decryption with async prime generation', async () => {
       // Generate 2048-bit RSA key pair (1024-bit primes each)
@@ -1260,7 +1260,7 @@ describe('Crypto Async Methods', () => {
 
   describe('RSAES-OAEP operations with PEM format', () => {
     // These tests use 2048-bit keys (1024-bit primes each)
-    jest.setTimeout(150000); // Increase due to overhead on Windows. Haha! // Increase timeout for prime generation with larger bit sizes
+    jest.setTimeout(150000); // Increase due to overhead on Windows. Haha!
 
     it('should perform RSAES-OAEP operations with async prime generation and PEM format', async () => {
       // Generate 2048-bit RSA key pair (1024-bit primes each)
@@ -1608,7 +1608,7 @@ describe('Crypto Async Methods', () => {
 
   describe('RSASSA-PSS operations with PEM format', () => {
     // These tests use 2048-bit keys (1024-bit primes each)
-    jest.setTimeout(150000); // Increase due to overhead on Windows. Haha! // Increase timeout for prime generation with larger bit sizes
+    jest.setTimeout(150000); // Increase due to overhead on Windows. Haha!
 
     it('should perform RSASSA-PSS operations with async prime generation and PEM format', async () => {
       // Generate 2048-bit RSA key pair (1024-bit primes each)
