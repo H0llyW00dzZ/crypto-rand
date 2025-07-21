@@ -1378,7 +1378,7 @@ describe('Crypto Class', () => {
 
     describe('basic functionality', () => {
       test('should return a BigInt', () => {
-        const result = Crypto.randPrime(32, 27); // Small bit size for faster tests
+        const result = Crypto.randPrime(32, 41); // Small bit size for faster tests
         expect(typeof result).toBe('bigint');
       });
 
@@ -1398,13 +1398,13 @@ describe('Crypto Class', () => {
         };
 
         // Test with small primes for faster verification
-        const prime = Crypto.randPrime(16, 27);
+        const prime = Crypto.randPrime(16, 41);
         expect(isProbablePrime(prime)).toBe(true);
       });
 
       test('should generate prime with specified bit length', () => {
         const bits = 32;
-        const prime = Crypto.randPrime(bits, 27);
+        const prime = Crypto.randPrime(bits, 41);
 
         // Check bit length
         const bitLength = prime.toString(2).length;
@@ -1443,8 +1443,8 @@ describe('Crypto Class', () => {
 
     describe('security properties', () => {
       test('should generate different primes on multiple calls', () => {
-        const prime1 = Crypto.randPrime(32, 27);
-        const prime2 = Crypto.randPrime(32, 27);
+        const prime1 = Crypto.randPrime(32, 41);
+        const prime2 = Crypto.randPrime(32, 41);
         expect(prime1).not.toBe(prime2);
       });
 
@@ -1453,7 +1453,7 @@ describe('Crypto Class', () => {
         const bitLengths = [8, 16, 32];
 
         bitLengths.forEach(bits => {
-          const prime = Crypto.randPrime(bits, 27);
+          const prime = Crypto.randPrime(bits, 41);
           expect(typeof prime).toBe('bigint');
           expect(prime.toString(2).length).toBe(bits);
         });
@@ -1463,7 +1463,7 @@ describe('Crypto Class', () => {
     describe('performance', () => {
       test('should complete in reasonable time for small bit lengths', () => {
         const startTime = Date.now();
-        Crypto.randPrime(32, 27);
+        Crypto.randPrime(32, 41);
         const endTime = Date.now();
 
         // Should complete within a reasonable time
@@ -1481,8 +1481,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1550,8 +1550,8 @@ describe('Crypto Class', () => {
       });
 
       test('should handle edge cases for RSA parameter validation', () => {
-        const p = Crypto.randPrime(128, 27);
-        const q = Crypto.randPrime(128, 27);
+        const p = Crypto.randPrime(128, 41);
+        const q = Crypto.randPrime(128, 41);
         const n = p * q;
         const phi = (p - 1n) * (q - 1n);
         const e = 65537n;
@@ -1564,7 +1564,7 @@ describe('Crypto Class', () => {
         expect(phi).toBeGreaterThan(e);
 
         // Test with a message that's too large (should be less than n)
-        const largePrime = Crypto.randPrime(256, 27);
+        const largePrime = Crypto.randPrime(256, 41);
         if (largePrime >= n) {
           // If message >= n, RSA won't work properly
           expect(() => {
@@ -1580,8 +1580,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1640,8 +1640,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1695,8 +1695,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p1 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q1 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p1 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q1 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p1).not.toBe(q1);
@@ -1713,8 +1713,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p2 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q2 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p2 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q2 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p2).not.toBe(q2);
@@ -1750,8 +1750,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1830,8 +1830,8 @@ describe('Crypto Class', () => {
 
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -1912,8 +1912,8 @@ describe('Crypto Class', () => {
         // Loop to ensure modulus n is of the expected bit length
         do {
           // Generate two 1024-bit primes using randPrime
-          p = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p).not.toBe(q);
@@ -2036,8 +2036,8 @@ describe('Crypto Class', () => {
         console.log('Generating first set of RSA parameters using our randPrime...');
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p1 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q1 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p1 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q1 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p1).not.toBe(q1);
@@ -2058,8 +2058,8 @@ describe('Crypto Class', () => {
         let p2: bigint, q2: bigint, n2: bigint, phi2: bigint;
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p2 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q2 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p2 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q2 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p2).not.toBe(q2);
@@ -2202,8 +2202,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-        q = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+        p = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+        q = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
         // Ensure p and q are different
         expect(p).not.toBe(q);
@@ -2315,8 +2315,8 @@ describe('Crypto Class', () => {
         let p2: bigint, q2: bigint, n2: bigint;
         // Loop to ensure modulus n is of the expected bit length
         do {
-          p2 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-          q2 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+          p2 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+          q2 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
           // Ensure p and q are different
           expect(p2).not.toBe(q2);
@@ -2391,8 +2391,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-        q = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+        p = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+        q = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
         // Ensure p and q are different
         expect(p).not.toBe(q);
@@ -2512,8 +2512,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p1 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-        q1 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+        p1 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+        q1 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
         // Ensure p and q are different
         expect(p1).not.toBe(q1);
@@ -2533,8 +2533,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p2 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-        q2 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+        p2 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+        q2 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
         // Ensure p and q are different
         expect(p2).not.toBe(q2);
@@ -2704,8 +2704,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-        q = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+        p = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+        q = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
         // Ensure p and q are different
         expect(p).not.toBe(q);
@@ -2839,8 +2839,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p1 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-        q1 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+        p1 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+        q1 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
         // Ensure p and q are different
         expect(p1).not.toBe(q1);
@@ -2860,8 +2860,8 @@ describe('Crypto Class', () => {
       // Loop to ensure modulus n is of the expected bit length
       do {
         // Generate two 1024-bit primes using randPrime
-        p2 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
-        q2 = Crypto.randPrime(expectedBitLength, 27); // Reduce the iterations to 27 and see how it goes. 🎰🎰🎰
+        p2 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
+        q2 = Crypto.randPrime(expectedBitLength, 41); // Increase the iterations to 41 and see how it goes. 🎰🎰🎰
 
         // Ensure p and q are different
         expect(p2).not.toBe(q2);
@@ -3058,7 +3058,7 @@ describe('Crypto Class', () => {
       });
 
       // Generate a prime with 256 bits
-      const prime = Crypto.randPrime(256, 27);
+      const prime = Crypto.randPrime(256, 41);
 
       // Verify the bit length is exactly as specified
       const actualBits = prime.toString(2).length;
