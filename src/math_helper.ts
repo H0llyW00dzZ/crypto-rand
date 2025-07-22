@@ -41,7 +41,6 @@ export function isProbablePrime(
  * @param k - The number of iterations for the test (higher values increase accuracy)
  * @param getRandomBytes - Function to generate random bytes for witness selection
  * @returns A boolean indicating whether the number is probably prime
- * @internal
  */
 function isProbablePrimeStandard(
     n: bigint,
@@ -62,7 +61,7 @@ function isProbablePrimeStandard(
         r++;
     }
 
-    // Witness loop
+    // ⚙️ Witness loop
     for (let i = 0; i < k; i++) {
         // Generate a random integer a in the range [2, n-2]
         const randomBytes = getRandomBytes(64); // 64 bytes should be enough for most primes
@@ -121,7 +120,7 @@ export function isProbablePrimeEnhanced(
         a++;
     }
 
-    // Witness loop (step 4 in FIPS 186-5)
+    // ⚙️ Witness loop (step 4 in FIPS 186-5)
     //
     // Note: This does not return multiple results with indicators, such as returning false with a reason STRING like "PROVABLY COMPOSITE WITH FACTOR," etc.
     // This is designed to be simple and straightforward, avoiding the complexity overhead of handling multiple results.
@@ -292,7 +291,6 @@ export async function isProbablePrimeAsync(
  * @param k - The number of iterations for the test (higher values increase accuracy)
  * @param getRandomBytesAsync - Async function to generate random bytes for witness selection
  * @returns A Promise that resolves to a boolean indicating whether the number is probably prime
- * @internal
  */
 async function isProbablePrimeStandardAsync(
     n: bigint,
@@ -313,7 +311,7 @@ async function isProbablePrimeStandardAsync(
         r++;
     }
 
-    // Witness loop
+    // ⚙️ Witness loop
     for (let i = 0; i < k; i++) {
         // Generate a random integer a in the range [2, n-2]
         const randomBytes = await getRandomBytesAsync(64); // 64 bytes should be enough for most primes
@@ -373,7 +371,7 @@ export async function isProbablePrimeEnhancedAsync(
         a++;
     }
 
-    // Witness loop (step 4 in FIPS 186-5)
+    // ⚙️ Witness loop (step 4 in FIPS 186-5)
     //
     // Note: This does not return multiple results with indicators, such as returning false with a reason STRING like "PROVABLY COMPOSITE WITH FACTOR," etc.
     // This is designed to be simple and straightforward, avoiding the complexity overhead of handling multiple results.
