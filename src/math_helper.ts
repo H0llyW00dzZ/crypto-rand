@@ -48,6 +48,7 @@ function isProbablePrimeStandard(
     k: number,
     getRandomBytes: (size: number) => Buffer | Uint8Array
 ): boolean {
+
     // Handle small numbers
     if (n <= 1n) return false;
     if (n <= 3n) return true;
@@ -106,6 +107,7 @@ export function isProbablePrimeEnhanced(
     k: number,
     getRandomBytes: (size: number) => Buffer | Uint8Array = crypto.randomBytes
 ): boolean {
+
     // Handle small numbers
     if (n <= 1n) return false;
     if (n <= 3n) return true;
@@ -294,6 +296,7 @@ async function isProbablePrimeStandardAsync(
     k: number,
     getRandomBytesAsync: (size: number) => Promise<Buffer | Uint8Array>
 ): Promise<boolean> {
+
     // Handle small numbers
     if (n <= 1n) return false;
     if (n <= 3n) return true;
@@ -353,6 +356,7 @@ export async function isProbablePrimeEnhancedAsync(
     k: number,
     getRandomBytesAsync: (size: number) => Promise<Buffer | Uint8Array>
 ): Promise<boolean> {
+
     // Handle small numbers
     if (n <= 1n) return false;
     if (n <= 3n) return true;
