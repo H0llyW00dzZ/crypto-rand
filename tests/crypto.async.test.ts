@@ -1,6 +1,6 @@
 import * as crypto from 'crypto';
 import { Crypto, randAsync, randBytesAsync, randHexAsync, randBase64Async, randSeedAsync, randVersionAsync, randPrimeAsync, randBigIntAsync } from '../src/rand';
-import { modPow, modInverse } from '../src/math_helper';
+import { modPow, modInverse, gcd } from '../src/math_helper';
 
 describe('Crypto Async Methods', () => {
   // Skip tests if not in Node.js environment
@@ -535,15 +535,6 @@ describe('Crypto Async Methods', () => {
       expect(keyGenTime).toBeLessThan(150000); // Increase due to overhead on Windows. Haha!
 
       // Verify e is coprime to phi using GCD
-      const gcd = (a: bigint, b: bigint): bigint => {
-        while (b !== 0n) {
-          const temp = b;
-          b = a % b;
-          a = temp;
-        }
-        return a;
-      };
-
       expect(gcd(e, phi)).toBe(1n);
 
       // Calculate private exponent d (using modular multiplicative inverse)
@@ -608,6 +599,12 @@ describe('Crypto Async Methods', () => {
 
       // Common RSA public exponent
       const e = 65537n;
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e, phi)).toBe(1n);
+
       const d = modInverse(e, phi); // private exponent
 
       // Verify key generation time is reasonable
@@ -676,6 +673,12 @@ describe('Crypto Async Methods', () => {
 
       // Common RSA public exponent
       const e = 65537n;
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e, phi)).toBe(1n);
+
       const d = modInverse(e, phi);
 
       // Verify key generation time is reasonable
@@ -803,6 +806,12 @@ describe('Crypto Async Methods', () => {
       console.log(`Testing RSASSA-PSS with ${2 * expectedBitLength}-bit RSA key pair...`);
 
       const e = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e, phi)).toBe(1n);
+
       const d = modInverse(e, phi);
 
       // Verify key generation time is reasonable
@@ -928,6 +937,12 @@ describe('Crypto Async Methods', () => {
       } while (n1.toString(2).length !== 2 * expectedBitLength);
 
       const e1 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e1, phi1)).toBe(1n);
+
       const d1 = modInverse(e1, phi1);
 
       // Create private key components
@@ -988,6 +1003,12 @@ describe('Crypto Async Methods', () => {
       } while (n2.toString(2).length !== 2 * expectedBitLength);
 
       const e2 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e2, phi2)).toBe(1n);
+
       const d2 = modInverse(e2, phi2);
 
       // Create private key components
@@ -1103,6 +1124,12 @@ describe('Crypto Async Methods', () => {
       } while (n1.toString(2).length !== 2 * expectedBitLength);
 
       const e1 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e1, phi1)).toBe(1n);
+
       const d1 = modInverse(e1, phi1);
 
       // Create private key components
@@ -1163,6 +1190,12 @@ describe('Crypto Async Methods', () => {
       } while (n2.toString(2).length !== 2 * expectedBitLength);
 
       const e2 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e2, phi2)).toBe(1n);
+
       const d2 = modInverse(e2, phi2);
 
       // Create private key components
@@ -1294,6 +1327,12 @@ describe('Crypto Async Methods', () => {
 
       // Common RSA public exponent
       const e = 65537n;
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e, phi)).toBe(1n);
+
       const d = modInverse(e, phi);
 
       // Verify key generation time is reasonable
@@ -1422,6 +1461,12 @@ describe('Crypto Async Methods', () => {
       } while (n1.toString(2).length !== 2 * expectedBitLength);
 
       const e1 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e1, phi1)).toBe(1n);
+
       const d1 = modInverse(e1, phi1);
 
       // Generate second RSA key pair
@@ -1449,6 +1494,12 @@ describe('Crypto Async Methods', () => {
       } while (n2.toString(2).length !== 2 * expectedBitLength);
 
       const e2 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e2, phi2)).toBe(1n);
+
       const d2 = modInverse(e2, phi2);
 
       console.log(`Testing RSAES-OAEP with wrong key using ${2 * expectedBitLength}-bit RSA key pair from PEM format...`);
@@ -1641,6 +1692,12 @@ describe('Crypto Async Methods', () => {
       console.log(`Testing RSASSA-PSS with ${2 * expectedBitLength}-bit RSA key pair from PEM format...`);
 
       const e = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e, phi)).toBe(1n);
+
       const d = modInverse(e, phi);
 
       // Verify key generation time is reasonable
@@ -1782,6 +1839,12 @@ describe('Crypto Async Methods', () => {
       } while (n1.toString(2).length !== 2 * expectedBitLength);
 
       const e1 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e1, phi1)).toBe(1n);
+
       const d1 = modInverse(e1, phi1);
 
       // Generate second RSA key pair
@@ -1809,6 +1872,12 @@ describe('Crypto Async Methods', () => {
       } while (n2.toString(2).length !== 2 * expectedBitLength);
 
       const e2 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e2, phi2)).toBe(1n);
+
       const d2 = modInverse(e2, phi2);
 
       console.log(`Testing RSASSA-PSS with wrong key using ${2 * expectedBitLength}-bit RSA key pair from PEM format...`);

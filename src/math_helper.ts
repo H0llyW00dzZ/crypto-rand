@@ -175,3 +175,19 @@ export async function isProbablePrimeAsync(
 
     return true;
 }
+
+/**
+ * Calculate the [greatest common divisor](https://en.wikipedia.org/wiki/Greatest_common_divisor) (GCD) of two numbers using the [Euclidean algorithm](https://en.wikipedia.org/wiki/Greatest_common_divisor#Euclidean_algorithm)
+ * 
+ * @param a - First number
+ * @param b - Second number
+ * @returns The greatest common divisor of a and b
+ */
+export function gcd(a: bigint, b: bigint): bigint {
+    while (b !== 0n) {
+        const temp = b;
+        b = a % b;
+        a = temp;
+    }
+    return a;
+}

@@ -4,7 +4,7 @@ import { Crypto } from '../src/rand';
 import {
   DEFAULT_CHARSET
 } from '../src/const';
-import { modPow, modInverse } from '../src/math_helper';
+import { modPow, modInverse, gcd } from '../src/math_helper';
 
 describe('Crypto Class', () => {
   describe('rand()', () => {
@@ -1498,15 +1498,6 @@ describe('Crypto Class', () => {
         // Verify that e is coprime to phi using GCD.
         //
         // Note: This may fail on some operating systems and could likely fail with 512 bits.
-        const gcd = (a: bigint, b: bigint): bigint => {
-          while (b !== 0n) {
-            const temp = b;
-            b = a % b;
-            a = temp;
-          }
-          return a;
-        };
-
         expect(gcd(e, phi)).toBe(1n);
 
         // Calculate private exponent d (using modular multiplicative inverse from math_helper)
@@ -1556,6 +1547,11 @@ describe('Crypto Class', () => {
         const phi = (p - 1n) * (q - 1n);
         const e = 65537n;
 
+        // Verify that e is coprime to phi using GCD.
+        //
+        // Note: This may fail on some operating systems and could likely fail with 512 bits.
+        expect(gcd(e, phi)).toBe(1n);
+
         // Verify that n has sufficient bit length for security
         const nBitLength = n.toString(2).length;
         expect(nBitLength).toBeGreaterThanOrEqual(255); // Should be close to 256 bits
@@ -1591,6 +1587,12 @@ describe('Crypto Class', () => {
         } while (n.toString(2).length !== 2 * expectedBitLength);
 
         const e = 65537n;
+
+        // Verify that e is coprime to phi using GCD.
+        //
+        // Note: This may fail on some operating systems and could likely fail with 512 bits.
+        expect(gcd(e, phi)).toBe(1n);
+
         const d = modInverse(e, phi);
 
         // Test messages of different sizes
@@ -1651,6 +1653,12 @@ describe('Crypto Class', () => {
         } while (n.toString(2).length !== 2 * expectedBitLength);
 
         const e = 65537n;
+
+        // Verify that e is coprime to phi using GCD.
+        //
+        // Note: This may fail on some operating systems and could likely fail with 512 bits.
+        expect(gcd(e, phi)).toBe(1n);
+
         const d = modInverse(e, phi);
 
         // Test different message hashes (simulating hash values)
@@ -1706,6 +1714,12 @@ describe('Crypto Class', () => {
         } while (n1.toString(2).length !== 2 * expectedBitLength);
 
         const e1 = 65537n;
+
+        // Verify that e is coprime to phi using GCD.
+        //
+        // Note: This may fail on some operating systems and could likely fail with 512 bits.
+        expect(gcd(e1, phi1)).toBe(1n);
+
         const d1 = modInverse(e1, phi1);
 
         // Generate second RSA key pair
@@ -1762,6 +1776,11 @@ describe('Crypto Class', () => {
         } while (n.toString(2).length !== 2 * expectedBitLength);
 
         const e = 65537n; // Common public exponent
+
+        // Verify that e is coprime to phi using GCD.
+        //
+        // Note: This may fail on some operating systems and could likely fail with 512 bits.
+        expect(gcd(e, phi)).toBe(1n);
 
         // Verify key generation time is reasonable (allow up to 120 seconds for 2048-bit)
         const keyGenTime = Date.now() - startTime;
@@ -1843,6 +1862,12 @@ describe('Crypto Class', () => {
         console.log(`Testing ${2 * expectedBitLength}-bit RSA digital signatures...`);
 
         const e = 65537n;
+
+        // Verify that e is coprime to phi using GCD.
+        //
+        // Note: This may fail on some operating systems and could likely fail with 512 bits.
+        expect(gcd(e, phi)).toBe(1n);
+
         const d = modInverse(e, phi);
 
         // Test signature and verification with various hash sizes
@@ -1926,6 +1951,12 @@ describe('Crypto Class', () => {
         console.log(`Testing RSAES-OAEP with ${2 * expectedBitLength}-bit RSA key pair...`);
 
         const e = 65537n; // Common public exponent
+
+        // Verify that e is coprime to phi using GCD.
+        //
+        // Note: This may fail on some operating systems and could likely fail with 512 bits.
+        expect(gcd(e, phi)).toBe(1n);
+
         const d = modInverse(e, phi);
 
         // Verify key generation time is reasonable
@@ -2048,6 +2079,12 @@ describe('Crypto Class', () => {
         } while (n1.toString(2).length !== 2 * expectedBitLength);
 
         const e1 = 65537n;
+
+        // Verify that e is coprime to phi using GCD.
+        //
+        // Note: This may fail on some operating systems and could likely fail with 512 bits.
+        expect(gcd(e1, phi1)).toBe(1n);
+
         const d1 = modInverse(e1, phi1);
         const dmp1_1 = d1 % (p1 - 1n);
         const dmq1_1 = d1 % (q1 - 1n);
@@ -2216,6 +2253,12 @@ describe('Crypto Class', () => {
       console.log(`Testing RSASSA-PSS with ${2 * expectedBitLength}-bit RSA key pair...`);
 
       const e = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e, phi)).toBe(1n);
+
       const d = modInverse(e, phi);
 
       // Verify key generation time is reasonable
@@ -2405,6 +2448,12 @@ describe('Crypto Class', () => {
       console.log(`Testing RSAES-OAEP with ${2 * expectedBitLength}-bit RSA key pair from PEM format...`);
 
       const e = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e, phi)).toBe(1n);
+
       const d = modInverse(e, phi);
 
       // Verify key generation time is reasonable
@@ -2526,6 +2575,12 @@ describe('Crypto Class', () => {
       console.log(`Testing RSAES-OAEP with wrong key using ${2 * expectedBitLength}-bit RSA key pair from PEM format...`);
 
       const e1 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e1, phi1)).toBe(1n);
+
       const d1 = modInverse(e1, phi1);
 
       // Generate second RSA key pair (for wrong key)
@@ -2545,6 +2600,12 @@ describe('Crypto Class', () => {
       } while (n2.toString(2).length !== 2 * expectedBitLength);
 
       const e2 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e2, phi2)).toBe(1n);
+
       const d2 = modInverse(e2, phi2);
 
       // Create first key pair components
@@ -2718,6 +2779,12 @@ describe('Crypto Class', () => {
       console.log(`Testing RSASSA-PSS with ${2 * expectedBitLength}-bit RSA key pair from PEM format...`);
 
       const e = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e, phi)).toBe(1n);
+
       const d = modInverse(e, phi);
 
       // Verify key generation time is reasonable
@@ -2853,6 +2920,12 @@ describe('Crypto Class', () => {
       console.log(`Testing RSASSA-PSS with wrong key using ${2 * expectedBitLength}-bit RSA key pair from PEM format...`);
 
       const e1 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e1, phi1)).toBe(1n);
+
       const d1 = modInverse(e1, phi1);
 
       // Generate second RSA key pair (for wrong key)
@@ -2872,6 +2945,12 @@ describe('Crypto Class', () => {
       } while (n2.toString(2).length !== 2 * expectedBitLength);
 
       const e2 = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e2, phi2)).toBe(1n);
+
       const d2 = modInverse(e2, phi2);
 
       // Create first key pair components
