@@ -102,6 +102,7 @@ async function generateRandomValues() {
 - Normal distribution random numbers
 - Cross-platform compatibility (Node.js + Browser)
 - Asynchronous methods for non-blocking operations
+- Written in [TypeScript](https://www.typescriptlang.org/) for static typing (well-known) and better maintainability
 - And much more!
 
 ### TODO - Features
