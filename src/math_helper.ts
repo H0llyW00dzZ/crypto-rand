@@ -122,6 +122,9 @@ export function isProbablePrimeEnhanced(
     }
 
     // Witness loop (step 4 in FIPS 186-5)
+    //
+    // Note: This does not return multiple results with indicators, such as returning false with a reason STRING like "PROVABLY COMPOSITE WITH FACTOR," etc.
+    // This is designed to be simple and straightforward, avoiding the complexity of handling multiple results.
     for (let i = 0; i < k; i++) {
         // Generate a random integer b in the range [2, n-2] (steps 4.1 and 4.2)
         let b: bigint;
@@ -338,18 +341,18 @@ async function isProbablePrimeStandardAsync(
 }
 
 /**
- * Asynchronous implementation of the enhanced Miller-Rabin primality test following FIPS 186-5 standard
+ * Asynchronous implementation of the enhanced [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) following [FIPS 186-5](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf) standard
  * 
  * This function is the asynchronous version of `isProbablePrimeEnhanced`, implementing the enhanced
- * version of the Miller-Rabin primality test as specified in the 
+ * version of the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) as specified in the 
  * [FIPS 186-5](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf) standard.
- * It provides stronger guarantees than the standard Miller-Rabin test by including additional
- * checks such as GCD verification between random witnesses and the tested number.
+ * It provides stronger guarantees than the standard [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) by including additional
+ * checks such as [GCD](https://en.wikipedia.org/wiki/Greatest_common_divisor) verification between random witnesses and the tested number.
  * 
  * @param n - The number to test for primality
  * @param k - The number of iterations for the test (higher values increase accuracy)
  * @param getRandomBytesAsync - Async function to generate random bytes for witness selection
- * @returns A Promise that resolves to a boolean indicating whether the number is probably prime according to FIPS 186-5 criteria
+ * @returns A Promise that resolves to a boolean indicating whether the number is probably prime according to [FIPS 186-5](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf) criteria
  */
 export async function isProbablePrimeEnhancedAsync(
     n: bigint,
@@ -371,6 +374,9 @@ export async function isProbablePrimeEnhancedAsync(
     }
 
     // Witness loop (step 4 in FIPS 186-5)
+    //
+    // Note: This does not return multiple results with indicators, such as returning false with a reason STRING like "PROVABLY COMPOSITE WITH FACTOR," etc.
+    // This is designed to be simple and straightforward, avoiding the complexity of handling multiple results.
     for (let i = 0; i < k; i++) {
         // Generate a random integer b in the range [2, n-2] (steps 4.1 and 4.2)
         let b: bigint;
