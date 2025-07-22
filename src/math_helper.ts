@@ -124,7 +124,7 @@ export function isProbablePrimeEnhanced(
     // Witness loop (step 4 in FIPS 186-5)
     //
     // Note: This does not return multiple results with indicators, such as returning false with a reason STRING like "PROVABLY COMPOSITE WITH FACTOR," etc.
-    // This is designed to be simple and straightforward, avoiding the complexity of handling multiple results.
+    // This is designed to be simple and straightforward, avoiding the complexity overhead of handling multiple results.
     for (let i = 0; i < k; i++) {
         // Generate a random integer b in the range [2, n-2] (steps 4.1 and 4.2)
         let b: bigint;
@@ -376,7 +376,7 @@ export async function isProbablePrimeEnhancedAsync(
     // Witness loop (step 4 in FIPS 186-5)
     //
     // Note: This does not return multiple results with indicators, such as returning false with a reason STRING like "PROVABLY COMPOSITE WITH FACTOR," etc.
-    // This is designed to be simple and straightforward, avoiding the complexity of handling multiple results.
+    // This is designed to be simple and straightforward, avoiding the complexity overhead of handling multiple results.
     for (let i = 0; i < k; i++) {
         // Generate a random integer b in the range [2, n-2] (steps 4.1 and 4.2)
         let b: bigint;
