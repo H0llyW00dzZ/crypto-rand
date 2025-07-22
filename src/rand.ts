@@ -723,9 +723,14 @@ export class Crypto {
      * 
      * @param bits - The bit length of the prime number to generate (default: 1024)
      * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (a.k.a accuracy 🎯, default: 10)
+     * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version (default: false)
      * @returns A bigint representing a probable prime number of the specified bit length
      */
-    static randPrime(bits: number = 1024, iterations: number = 10): bigint {
+    static randPrime(
+        bits: number = 1024,
+        iterations: number = 10,
+        enhanced: boolean = false,
+    ): bigint {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randPrime');
         }
@@ -749,7 +754,7 @@ export class Crypto {
         let candidate: bigint;
         do {
             candidate = Crypto.randBigInt(bits);
-        } while (!isProbablePrime(candidate, iterations, Crypto.randBytes));
+        } while (!isProbablePrime(candidate, iterations, Crypto.randBytes, enhanced));
 
         return candidate;
     }
@@ -766,9 +771,14 @@ export class Crypto {
      * 
      * @param bits - The bit length of the prime number to generate (default: 1024)
      * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (a.k.a accuracy 🎯, default: 10)
+     * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version (default: false)
      * @returns A Promise that resolves to a bigint representing a probable prime number of the specified bit length
      */
-    static async randPrimeAsync(bits: number = 1024, iterations: number = 10): Promise<bigint> {
+    static async randPrimeAsync(
+        bits: number = 1024,
+        iterations: number = 10,
+        enhanced: boolean = false,
+    ): Promise<bigint> {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randPrimeAsync');
         }
@@ -794,7 +804,7 @@ export class Crypto {
 
         do {
             candidate = await Crypto.randBigIntAsync(bits);
-            isPrime = await isProbablePrimeAsync(candidate, iterations, Crypto.randBytesAsync);
+            isPrime = await isProbablePrimeAsync(candidate, iterations, Crypto.randBytesAsync, enhanced);
         } while (!isPrime);
 
         return candidate;
