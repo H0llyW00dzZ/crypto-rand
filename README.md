@@ -4,7 +4,7 @@
 [![🧪 Test Coverage](https://github.com/H0llyW00dzZ/crypto-rand/actions/workflows/coverage.yml/badge.svg?branch=master)](https://github.com/H0llyW00dzZ/crypto-rand/actions/workflows/coverage.yml)
 [![Coverage Status](https://coveralls.io/repos/github/H0llyW00dzZ/crypto-rand/badge.svg)](https://coveralls.io/github/H0llyW00dzZ/crypto-rand)
 [![jest tested](https://img.shields.io/badge/Jest-tested-eee.svg?logo=jest&labelColor=99424f)](https://github.com/jestjs/jest)
-[![Socket Badge](https://socket.dev/api/badge/npm/package/@h0llyw00dzz/crypto-rand/0.1.4)](https://socket.dev/npm/package/@h0llyw00dzz/crypto-rand/overview/0.1.4)
+[![Socket Badge](https://socket.dev/api/badge/npm/package/@h0llyw00dzz/crypto-rand/0.1.5)](https://socket.dev/npm/package/@h0llyw00dzz/crypto-rand/overview/0.1.5)
 
 <p align="center">
   <img src="https://i.imgur.com/Xd6X6bT.png" alt="crypto-rand logo" width="500">
