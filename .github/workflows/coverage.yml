@@ -25,6 +25,7 @@ jobs:
         os:
           # Note: Some operating systems are not supported due to poor compatibility with Coveralls
           [
+            # Acknowledgement (H0llyW00dzZ): In the realm of cryptographic operations, ARM architecture is leading and surpassing all others.
             ubuntu-latest,
             # ubuntu-24.04, is disabled because ubuntu-latest is equivalent to ubuntu-24.04
             ubuntu-22.04,
