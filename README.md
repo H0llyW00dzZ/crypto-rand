@@ -4,7 +4,7 @@
 [![🧪 Test Coverage](https://github.com/H0llyW00dzZ/crypto-rand/actions/workflows/coverage.yml/badge.svg?branch=master)](https://github.com/H0llyW00dzZ/crypto-rand/actions/workflows/coverage.yml)
 [![Coverage Status](https://coveralls.io/repos/github/H0llyW00dzZ/crypto-rand/badge.svg)](https://coveralls.io/github/H0llyW00dzZ/crypto-rand)
 [![jest tested](https://img.shields.io/badge/Jest-tested-eee.svg?logo=jest&labelColor=99424f)](https://github.com/jestjs/jest)
-[![Socket Badge](https://socket.dev/api/badge/npm/package/@h0llyw00dzz/crypto-rand/0.1.4)](https://socket.dev/npm/package/@h0llyw00dzz/crypto-rand/overview/0.1.4)
+[![Socket Badge](https://socket.dev/api/badge/npm/package/@h0llyw00dzz/crypto-rand/0.1.5)](https://socket.dev/npm/package/@h0llyw00dzz/crypto-rand/overview/0.1.5)
 
 <p align="center">
   <img src="https://i.imgur.com/Xd6X6bT.png" alt="crypto-rand logo" width="500">
@@ -132,7 +132,7 @@ async function generateRandomValues() {
 - `Crypto.randWalk(steps, stepSize?)` - Generate random walk sequence (stepSize defaults to 1)
 - `Crypto.randPassword(options)` - Generate secure password with configurable requirements
 - `Crypto.randLattice(dimension?, modulus?)` - Generate lattice-based cryptographically secure random number
-- `Crypto.randPrime(bits?, iterations?)` - Generate cryptographically secure random prime number
+- `Crypto.randPrime(bits?, iterations?, enhanced?)` - Generate cryptographically secure random prime number with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
 - `Crypto.randBigInt(bits?)` - Generate cryptographically secure random bigint with specified bit length
 - `Crypto.randExponential(lambda?)` - Generate random number with exponential distribution
 
@@ -143,7 +143,7 @@ async function generateRandomValues() {
 - `Crypto.randBase64Async(length)` - Async version of randBase64()
 - `Crypto.randSeedAsync()` - Async version of randSeed()
 - `Crypto.randVersionAsync()` - Async version of randVersion()
-- `Crypto.randPrimeAsync(bits?, iterations?)` - Async version of randPrime()
+- `Crypto.randPrimeAsync(bits?, iterations?, enhanced?)` - Async version of randPrime() with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
 - `Crypto.randBigIntAsync(bits?)` - Async version of randBigInt()
 
 > [!TIP]
@@ -173,9 +173,10 @@ async function generateRandomValues() {
 >   
 >   // Loop to ensure modulus n is of the expected bit length
 >   do {
+>     // Using enhanced FIPS mode for stronger primality testing
 >     [p, q] = await Promise.all([
->       randPrimeAsync(bitLength),
->       randPrimeAsync(bitLength)
+>       randPrimeAsync(bitLength, 10, true), // true enables FIPS-enhanced mode
+>       randPrimeAsync(bitLength, 10, true)
 >     ]);
 >     
 >     n = p * q; // modulus
@@ -204,7 +205,7 @@ async function generateRandomValues() {
 >
 > - **randLattice**: Generates cryptographically secure random numbers using lattice-based mathematical operations and the Learning With Errors (LWE) problem. Uses high-dimensional vector operations with Gaussian error distribution for enhanced security.
 >
-> - **randPrime**: Generates cryptographically secure random prime numbers of specified bit length using the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test). This is useful for cryptographic applications like [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) key generation that require large prime numbers.
+> - **randPrime**: Generates cryptographically secure random prime numbers of specified bit length using the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test). This is useful for cryptographic applications like [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) key generation that require large prime numbers. The function now supports an enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) mode that implements additional checks following the [FIPS 186-5](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf) standard, including [GCD](https://en.wikipedia.org/wiki/Greatest_common_divisor) verification between random witnesses and the tested number.
 >
 > - **randBigInt**: Generates cryptographically secure random bigints with exactly the specified bit length. It ensures the most significant bit is set to 1 (to maintain the exact bit length) and the least significant bit is set to 1 (making it odd). This method is useful for cryptographic operations that require large random integers, and is used internally by `randPrime`.
 >
@@ -252,8 +253,9 @@ import { Crypto } from '@h0llyw00dzz/crypto-rand';
 console.log('🔐 RSA Key Pair Simulation');
 console.log('Generating two 512-bit primes for RSA...');
 console.time('RSA prime pair generation');
-const p: bigint = Crypto.randPrime(512);
-const q: bigint = Crypto.randPrime(512);
+// Using enhanced FIPS mode for stronger primality testing
+const p: bigint = Crypto.randPrime(512, 10, true); // true enables FIPS-enhanced mode
+const q: bigint = Crypto.randPrime(512, 10, true);
 console.timeEnd('RSA prime pair generation');
 
 const n: bigint = p * q;
@@ -362,8 +364,8 @@ F75A29BB758360582AB1F4ED5CD9F17C6272BBD90C4E0EBBAD8E44370C4ED376A9C70EA43518E3A6
 >
 > // Loop to ensure modulus n is of the expected bit length
 > do {
->   p = Crypto.randPrime(expectedBitLength);
->   q = Crypto.randPrime(expectedBitLength);
+>   p = Crypto.randPrime(expectedBitLength, 10, true); // Using enhanced FIPS mode
+>   q = Crypto.randPrime(expectedBitLength, 10, true);
 >   n = p * q;
 >   phi = (p - 1n) * (q - 1n);
 > } while (n.toString(2).length !== 2 * expectedBitLength);
