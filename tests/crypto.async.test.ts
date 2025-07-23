@@ -378,8 +378,8 @@ describe('Crypto Async Methods', () => {
 
     it('should generate different primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
-        randPrimeAsync(16, 41, true),
-        randPrimeAsync(16, 41, true)
+        randPrimeAsync(16, 38, true),
+        randPrimeAsync(16, 38, true)
       ]);
 
       expect(prime1).not.toBe(prime2);
@@ -504,8 +504,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -571,8 +571,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -641,8 +641,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -771,8 +771,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -900,8 +900,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -962,8 +962,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -1079,8 +1079,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -1141,8 +1141,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -1271,8 +1271,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -1404,8 +1404,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -1433,8 +1433,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -1625,8 +1625,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p, q] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -1770,8 +1770,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p1, q1] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
@@ -1799,8 +1799,8 @@ describe('Crypto Async Methods', () => {
       do {
         // Generate two primes asynchronously
         [p2, q2] = await Promise.all([
-          randPrimeAsync(expectedBitLength, 41, true),
-          randPrimeAsync(expectedBitLength, 41, true)
+          randPrimeAsync(expectedBitLength, 38, true),
+          randPrimeAsync(expectedBitLength, 38, true)
         ]);
 
         // Ensure p and q are different
