@@ -223,7 +223,8 @@ export function modPow(base: bigint, exponent: bigint, modulus: bigint): bigint 
 }
 
 /**
- * Calculate the [modular multiplicative inverse](https://en.wikipedia.org/wiki/Modular_multiplicative_inverse) using the [Extended Euclidean Algorithm](https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm)
+* Calculate the [modular multiplicative inverse](https://en.wikipedia.org/wiki/Modular_multiplicative_inverse) using the [Extended Euclidean Algorithm](https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm),
+* similar to operations performed in [Rijndael - AES](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard).
  * 
  * **Note:** This is a helper function primarily intended for testing purposes.
  * Not recommended for production use as it may be vulnerable to timing attacks.
