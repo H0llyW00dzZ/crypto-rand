@@ -463,6 +463,8 @@ This library provides [cryptographically secure random number generation](https:
 > [!NOTE]
 >
 > `4096-bit keys` are often 5-8 times slower than `2048-bit` operations. This is not only during prime \( $p^{\prime}$ \) generation using probabilistic algorithms like [Miller-Rabin](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test), but also when performing encryption/decryption or signing/verifying operations.
+>
+> The slowdown isn't due to [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) itself; in theory, numbers don't lie. So it's incorrect to blame [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) for being a slow algorithm.
 
 - **randPrime/randPrimeAsync \( $p^{\prime}$ \) Performance**:
   - Prime \( $p^{\prime}$ \) generation is computationally intensive, especially at larger bit sizes
