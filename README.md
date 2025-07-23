@@ -355,7 +355,7 @@ F75A29BB758360582AB1F4ED5CD9F17C6272BBD90C4E0EBBAD8E44370C4ED376A9C70EA43518E3A6
 
 > [!TIP]
 >
-> If you encounter an issue where the modulus \( n \) is not as expected (e.g., 1024 bits but returns 1023 bits), consider using this approach:
+> If you encounter an issue where the modulus \( $n$ \) is not as expected (e.g., 1024 bits but returns 1023 bits), consider using this approach:
 >
 > ```typescript
 > // Generate first RSA key pair
