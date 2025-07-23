@@ -1,3 +1,9 @@
+/**
+ * Arch vs. Arch
+ * 
+ * Note: This test for RSA is limited to 2048-bits because using 4096-bits can cause overhead on x64 systems. hahaha
+ */
+
 import * as crypto from 'crypto';
 import { Crypto, randAsync, randBytesAsync, randHexAsync, randBase64Async, randSeedAsync, randVersionAsync, randPrimeAsync, randBigIntAsync } from '../src/rand';
 import { modPow, modInverse, gcd } from '../src/math_helper';
