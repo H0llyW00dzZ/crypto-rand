@@ -468,8 +468,8 @@ This library provides [cryptographically secure random number generation](https:
   - Prime generation is computationally intensive, especially at larger bit sizes
   - Using `randPrimeAsync` is strongly recommended for prime generation to avoid blocking the main thread
   - **[FIPS 186-5](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf) Recommendations** for 1024-bit primes:
-    - For an error probability of \(2^{-100}\): Use `4 iterations` of the [Miller-Rabin](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) test.
-    - For an error probability of \(2^{-112}\): Use `5 iterations` of the [Miller-Rabin](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) test.
+    - For an error probability of $(2^{-100})$: Use `4 iterations` of the [Miller-Rabin](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) test.
+    - For an error probability of $(2^{-112})$: Use `5 iterations` of the [Miller-Rabin](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) test.
     - Consider following the [Miller-Rabin](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) tests with a [Lucas](https://en.wikipedia.org/wiki/Lucas_primality_test) test for additional assurance, although this is not required for [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) prime generation according to [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards).
 
 ### Performance Optimization Tips
