@@ -36,7 +36,8 @@
     "nodejs",
     "cryptographic primitives",
     "numbers don't lie",
-    "cryptography"
+    "cryptography",
+    "cryptography-algorithms"
   ],
   "author": "H0llyW00dzZ",
   "license": "MIT",
