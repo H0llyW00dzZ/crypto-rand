@@ -482,3 +482,8 @@ This library provides [cryptographically secure random number generation](https:
 - For [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) key generation, consider using 2048-bit keys unless you have specific security requirements
 - When generating large amounts of random data, use the async methods and process the data in chunks
 - ~~For performance-critical applications, consider implementing caching strategies for expensive operations like prime generation~~ -> not recommended; it's better to rely on entropy from [cryptographically secure random number generators (CSPRNG)](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator).
+
+## Architecture Comparison (Arch vs. Arch)
+
+Based on [🧪 Test Coverage](https://github.com/H0llyW00dzZ/crypto-rand/actions), in the realm of cryptographic operations, ARM is outperforming x64, making it the leading architecture. (ARM > All)
+
