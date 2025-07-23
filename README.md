@@ -472,6 +472,10 @@ This library provides [cryptographically secure random number generation](https:
     - For an error probability of $(2^{-112})$: Use `5 iterations` of the [Miller-Rabin](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) test.
     - Consider following the [Miller-Rabin](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) tests with a [Lucas](https://en.wikipedia.org/wiki/Lucas_primality_test) test for additional assurance, although this is not required for [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) prime \( $p^{\prime}$ \) generation according to [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards).
 
+> [!NOTE]
+>
+> **[FIPS 186-5](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf) Recommendations:** The original recommendations are likely in [integer](https://en.wikipedia.org/wiki/Integer_(computer_science)) format; however, this library operates with [bigints](https://en.wikipedia.org/wiki/Arbitrary-precision_arithmetic), so it may require adjustments to calculations accordingly.
+
 ### Performance Optimization Tips
 
 - Use `Promise.all()` with async methods when generating multiple random values
