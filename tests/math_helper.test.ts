@@ -179,6 +179,49 @@ describe('Math Helper Functions', () => {
     });
   });
 
+  describe('isProbablePrimeEnhanced', () => {
+    // Use the actual crypto random bytes function for better testing
+    const cryptoRandomBytes = (size: number): Buffer => {
+      return Crypto.randBytes(size) as Buffer;
+    };
+
+    it('should work with custom random bytes function', () => {
+      // Test with known primes
+      expect(isProbablePrime(11n, 5, cryptoRandomBytes, true)).toBe(true);
+      expect(isProbablePrime(23n, 5, cryptoRandomBytes, true)).toBe(true);
+
+      // Test with known non-primes
+      expect(isProbablePrime(15n, 5, cryptoRandomBytes, true)).toBe(false);
+      expect(isProbablePrime(25n, 5, cryptoRandomBytes, true)).toBe(false);
+    });
+
+    it('should correctly identify larger prime numbers', () => {
+      // Some known larger primes
+      const largerPrimes = [
+        97n, 101n, 103n, 107n, 109n, 113n,
+        997n, 1009n, 1013n, 1019n,
+        10007n, 10009n, 10037n
+      ];
+
+      for (const prime of largerPrimes) {
+        expect(isProbablePrime(prime, 10, cryptoRandomBytes, true)).toBe(true);
+      }
+    });
+
+    it('should correctly identify larger non-prime numbers', () => {
+      // Some known larger non-primes
+      const largerNonPrimes = [
+        91n, 93n, 94n, 95n, 96n, 98n, 99n, 100n,
+        1001n, 1003n, 1005n,
+        10001n, 10003n, 10005n
+      ];
+
+      for (const nonPrime of largerNonPrimes) {
+        expect(isProbablePrime(nonPrime, 10, cryptoRandomBytes, true)).toBe(false);
+      }
+    });
+  });
+
   describe('isProbablePrimeAsync', () => {
     // Use crypto random bytes async function for better testing
     const cryptoRandomBytesAsync = async (size: number): Promise<Buffer> => {
