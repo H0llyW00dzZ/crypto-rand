@@ -195,6 +195,22 @@ describe('Math Helper Functions', () => {
       expect(isProbablePrime(25n, 5, cryptoRandomBytes, true)).toBe(false);
     });
 
+    it('should correctly identify small prime numbers', () => {
+      const smallPrimes = [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n];
+
+      for (const prime of smallPrimes) {
+        expect(isProbablePrime(prime, 5, cryptoRandomBytes, true)).toBe(true);
+      }
+    });
+
+    it('should correctly identify small non-prime numbers', () => {
+      const nonPrimes = [1n, 4n, 6n, 8n, 9n, 10n, 12n, 14n, 15n, 16n];
+
+      for (const nonPrime of nonPrimes) {
+        expect(isProbablePrime(nonPrime, 5, cryptoRandomBytes, true)).toBe(false);
+      }
+    });
+
     it('should correctly identify larger prime numbers', () => {
       // Some known larger primes
       const largerPrimes = [
