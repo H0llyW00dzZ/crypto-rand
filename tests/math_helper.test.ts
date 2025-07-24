@@ -1,4 +1,5 @@
 import { isProbablePrime, modPow, modInverse, isProbablePrimeAsync } from '../src/math_helper';
+import { Crypto } from '../src/rand';
 
 describe('Math Helper Functions', () => {
   describe('modPow', () => {
@@ -137,23 +138,18 @@ describe('Math Helper Functions', () => {
     });
 
     it('should work with custom random bytes function', () => {
-      // Mock a deterministic random bytes function
-      const mockRandomBytes = (size: number): Buffer => {
-        const buffer = Buffer.alloc(size);
-        // Fill with a deterministic pattern
-        for (let i = 0; i < size; i++) {
-          buffer[i] = i % 256;
-        }
-        return buffer;
+      // Use the actual crypto random bytes function for better testing
+      const cryptoRandomBytes = (size: number): Buffer => {
+        return Crypto.randBytes(size) as Buffer;
       };
 
       // Test with known primes
-      expect(isProbablePrime(11n, 5, mockRandomBytes)).toBe(true);
-      expect(isProbablePrime(23n, 5, mockRandomBytes)).toBe(true);
+      expect(isProbablePrime(11n, 5, cryptoRandomBytes)).toBe(true);
+      expect(isProbablePrime(23n, 5, cryptoRandomBytes)).toBe(true);
 
       // Test with known non-primes
-      expect(isProbablePrime(15n, 5, mockRandomBytes)).toBe(false);
-      expect(isProbablePrime(25n, 5, mockRandomBytes)).toBe(false);
+      expect(isProbablePrime(15n, 5, cryptoRandomBytes)).toBe(false);
+      expect(isProbablePrime(25n, 5, cryptoRandomBytes)).toBe(false);
     });
 
     it('should correctly identify larger prime numbers', () => {
@@ -184,23 +180,16 @@ describe('Math Helper Functions', () => {
   });
 
   describe('isProbablePrimeAsync', () => {
-    // Mock async random bytes function
-    const mockRandomBytesAsync = async (size: number): Promise<Buffer> => {
-      return new Promise(resolve => {
-        const buffer = Buffer.alloc(size);
-        // Fill with a deterministic pattern
-        for (let i = 0; i < size; i++) {
-          buffer[i] = i % 256;
-        }
-        resolve(buffer);
-      });
+    // Use crypto random bytes async function for better testing
+    const cryptoRandomBytesAsync = async (size: number): Promise<Buffer> => {
+      return Crypto.randBytesAsync(size) as Promise<Buffer>;
     };
 
     it('should correctly identify small prime numbers asynchronously', async () => {
       const smallPrimes = [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n];
 
       for (const prime of smallPrimes) {
-        const result = await isProbablePrimeAsync(prime, 5, mockRandomBytesAsync);
+        const result = await isProbablePrimeAsync(prime, 5, cryptoRandomBytesAsync);
         expect(result).toBe(true);
       }
     });
@@ -209,23 +198,23 @@ describe('Math Helper Functions', () => {
       const nonPrimes = [1n, 4n, 6n, 8n, 9n, 10n, 12n, 14n, 15n, 16n];
 
       for (const nonPrime of nonPrimes) {
-        const result = await isProbablePrimeAsync(nonPrime, 5, mockRandomBytesAsync);
+        const result = await isProbablePrimeAsync(nonPrime, 5, cryptoRandomBytesAsync);
         expect(result).toBe(false);
       }
     });
 
     it('should handle edge cases asynchronously', async () => {
       // 0 and 1 are not prime
-      expect(await isProbablePrimeAsync(0n, 5, mockRandomBytesAsync)).toBe(false);
-      expect(await isProbablePrimeAsync(1n, 5, mockRandomBytesAsync)).toBe(false);
+      expect(await isProbablePrimeAsync(0n, 5, cryptoRandomBytesAsync)).toBe(false);
+      expect(await isProbablePrimeAsync(1n, 5, cryptoRandomBytesAsync)).toBe(false);
 
       // 2 and 3 are prime
-      expect(await isProbablePrimeAsync(2n, 5, mockRandomBytesAsync)).toBe(true);
-      expect(await isProbablePrimeAsync(3n, 5, mockRandomBytesAsync)).toBe(true);
+      expect(await isProbablePrimeAsync(2n, 5, cryptoRandomBytesAsync)).toBe(true);
+      expect(await isProbablePrimeAsync(3n, 5, cryptoRandomBytesAsync)).toBe(true);
 
       // Even numbers > 2 are not prime
-      expect(await isProbablePrimeAsync(4n, 5, mockRandomBytesAsync)).toBe(false);
-      expect(await isProbablePrimeAsync(100n, 5, mockRandomBytesAsync)).toBe(false);
+      expect(await isProbablePrimeAsync(4n, 5, cryptoRandomBytesAsync)).toBe(false);
+      expect(await isProbablePrimeAsync(100n, 5, cryptoRandomBytesAsync)).toBe(false);
     });
 
     it('should correctly identify larger prime numbers asynchronously', async () => {
@@ -233,7 +222,7 @@ describe('Math Helper Functions', () => {
       const largerPrimes = [97n, 101n, 103n, 107n, 109n, 113n];
 
       for (const prime of largerPrimes) {
-        const result = await isProbablePrimeAsync(prime, 5, mockRandomBytesAsync);
+        const result = await isProbablePrimeAsync(prime, 5, cryptoRandomBytesAsync);
         expect(result).toBe(true);
       }
     });
@@ -243,7 +232,66 @@ describe('Math Helper Functions', () => {
       const largerNonPrimes = [91n, 93n, 94n, 95n, 96n, 98n, 99n, 100n];
 
       for (const nonPrime of largerNonPrimes) {
-        const result = await isProbablePrimeAsync(nonPrime, 5, mockRandomBytesAsync);
+        const result = await isProbablePrimeAsync(nonPrime, 5, cryptoRandomBytesAsync);
+        expect(result).toBe(false);
+      }
+    });
+  });
+
+  describe('isProbablePrimeAsyncEnhanced', () => {
+    // Use crypto random bytes async function for better testing
+    const cryptoRandomBytesAsync = async (size: number): Promise<Buffer> => {
+      return Crypto.randBytesAsync(size) as Promise<Buffer>;
+    };
+
+    it('should correctly identify small prime numbers asynchronously', async () => {
+      const smallPrimes = [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n];
+
+      for (const prime of smallPrimes) {
+        const result = await isProbablePrimeAsync(prime, 5, cryptoRandomBytesAsync, true);
+        expect(result).toBe(true);
+      }
+    });
+
+    it('should correctly identify small non-prime numbers asynchronously', async () => {
+      const nonPrimes = [1n, 4n, 6n, 8n, 9n, 10n, 12n, 14n, 15n, 16n];
+
+      for (const nonPrime of nonPrimes) {
+        const result = await isProbablePrimeAsync(nonPrime, 5, cryptoRandomBytesAsync, true);
+        expect(result).toBe(false);
+      }
+    });
+
+    it('should handle edge cases asynchronously', async () => {
+      // 0 and 1 are not prime
+      expect(await isProbablePrimeAsync(0n, 5, cryptoRandomBytesAsync, true)).toBe(false);
+      expect(await isProbablePrimeAsync(1n, 5, cryptoRandomBytesAsync, true)).toBe(false);
+
+      // 2 and 3 are prime
+      expect(await isProbablePrimeAsync(2n, 5, cryptoRandomBytesAsync, true)).toBe(true);
+      expect(await isProbablePrimeAsync(3n, 5, cryptoRandomBytesAsync, true)).toBe(true);
+
+      // Even numbers > 2 are not prime
+      expect(await isProbablePrimeAsync(4n, 5, cryptoRandomBytesAsync, true)).toBe(false);
+      expect(await isProbablePrimeAsync(100n, 5, cryptoRandomBytesAsync, true)).toBe(false);
+    });
+
+    it('should correctly identify larger prime numbers asynchronously', async () => {
+      // Some known larger primes
+      const largerPrimes = [97n, 101n, 103n, 107n, 109n, 113n];
+
+      for (const prime of largerPrimes) {
+        const result = await isProbablePrimeAsync(prime, 5, cryptoRandomBytesAsync, true);
+        expect(result).toBe(true);
+      }
+    });
+
+    it('should correctly identify larger non-prime numbers asynchronously', async () => {
+      // Some known larger non-primes
+      const largerNonPrimes = [91n, 93n, 94n, 95n, 96n, 98n, 99n, 100n];
+
+      for (const nonPrime of largerNonPrimes) {
+        const result = await isProbablePrimeAsync(nonPrime, 5, cryptoRandomBytesAsync, true);
         expect(result).toBe(false);
       }
     });
