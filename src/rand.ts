@@ -459,7 +459,9 @@ export class Crypto {
                 'randSeedAsync',
                 'randVersionAsync',
                 'randPrimeAsync',
-                'randBigIntAsync'
+                'randBigIntAsync',
+                'randSafePrime',
+                'randSafePrimeAsync'
             ];
         }
         return [];
@@ -486,10 +488,10 @@ export class Crypto {
             'shuffle', 'randString', 'randHex', 'randBase64', 'randBool', 'randBytes',
             'randUUID', 'randFormat', 'randSeed', 'randVersion', 'randFloat', 'randNormal',
             'randSeeded', 'randSubset', 'randGaussian', 'randWalk', 'randPassword', 'randLattice',
-            'randPrime', 'randBigInt', 'randExponential',
+            'randPrime', 'randBigInt', 'randExponential', 'randSafePrime',
             // Async versions
             'randAsync', 'randBytesAsync', 'randHexAsync', 'randBase64Async', 'randSeedAsync', 'randVersionAsync',
-            'randPrimeAsync', 'randBigIntAsync'
+            'randPrimeAsync', 'randBigIntAsync', 'randSafePrimeAsync'
         ];
 
         const unsupportedMethods = Crypto.getUnsupportedMethods();
@@ -811,6 +813,127 @@ export class Crypto {
     }
 
     /**
+     * Generate a cryptographically secure random safe prime number suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange).
+     * 
+     * A safe prime is a prime number of the form p = 2q + 1, where q is also a prime number.
+     * Safe primes are particularly useful for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) because they help prevent
+     * small subgroup attacks and ensure that the discrete logarithm problem remains hard.
+     * 
+     * This method first generates a prime q (called a [Sophie Germain prime](https://en.wikipedia.org/wiki/Safe_and_Sophie_Germain_primes)) and then checks if
+     * p = 2q + 1 is also prime. If not, it repeats the process until a safe prime is found.
+     * 
+     * **Note:** This method is currently only available in Node.js environment due to its
+     * dependency on the native crypto module for secure random number generation.
+     * 
+     * @param bits - The bit length of the safe prime number to generate (default: 2048)
+     * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
+     * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version (default: false)
+     * @returns A bigint representing a probable safe prime number of the specified bit length
+     */
+    static randSafePrime(
+        bits: number = 2048,
+        iterations: number = 10,
+        enhanced: boolean = false,
+    ): bigint {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randSafePrime');
+        }
+
+        // Input validation
+        if (!Number.isInteger(bits) || bits < 2) {
+            throw new Error('Bit length must be an integer greater than or equal to 2');
+        }
+        if (!Number.isInteger(iterations) || iterations < 1) {
+            throw new Error('Number of iterations must be a positive integer');
+        }
+
+        // Generate safe prime candidates until a valid one is found
+        // A safe prime p is of the form p = 2q + 1 where q is also prime
+        let q: bigint;
+        let p: bigint;
+        let isPSafePrime: boolean;
+        let correctBitLength: boolean;
+
+        do {
+            // Generate a prime q (Sophie Germain prime)
+            // We need q to be (bits-1) bits so that p = 2q + 1 will be 'bits' bits
+            q = Crypto.randPrime(bits - 1, iterations, enhanced);
+
+            // Calculate p = 2q + 1
+            p = 2n * q + 1n;
+
+            // Check if p is prime
+            isPSafePrime = isProbablePrime(p, iterations, Crypto.randBytes, enhanced);
+
+            // Check if p has exactly the requested bit length
+            correctBitLength = p.toString(2).length === bits;
+        } while (!isPSafePrime || !correctBitLength);
+
+        return p;
+    }
+
+    /**
+     * Generate a cryptographically secure random safe prime number suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) asynchronously.
+     * Async version of randSafePrime().
+     * 
+     * A safe prime is a prime number of the form p = 2q + 1, where q is also a prime number.
+     * Safe primes are particularly useful for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) because they help prevent
+     * small subgroup attacks and ensure that the discrete logarithm problem remains hard.
+     * 
+     * This method first generates a prime q (called a [Sophie Germain prime](https://en.wikipedia.org/wiki/Safe_and_Sophie_Germain_primes)) and then checks if
+     * p = 2q + 1 is also prime. If not, it repeats the process until a safe prime is found.
+     * 
+     * **Note:** This method is currently only available in Node.js environment due to its
+     * dependency on the native crypto module for secure random number generation.
+     * 
+     * @param bits - The bit length of the safe prime number to generate (default: 2048)
+     * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
+     * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version (default: false)
+     * @returns A Promise that resolves to a bigint representing a probable safe prime number of the specified bit length
+     */
+    static async randSafePrimeAsync(
+        bits: number = 2048,
+        iterations: number = 10,
+        enhanced: boolean = false,
+    ): Promise<bigint> {
+        if (Crypto.isBrowser()) {
+            Crypto.throwBrowserError('randSafePrimeAsync');
+        }
+
+        // Input validation
+        if (!Number.isInteger(bits) || bits < 2) {
+            throw new Error('Bit length must be an integer greater than or equal to 2');
+        }
+        if (!Number.isInteger(iterations) || iterations < 1) {
+            throw new Error('Number of iterations must be a positive integer');
+        }
+
+        // Generate safe prime candidates until a valid one is found
+        // A safe prime p is of the form p = 2q + 1 where q is also prime
+        let q: bigint;
+        let p: bigint;
+        let isPSafePrime: boolean;
+        let correctBitLength: boolean;
+
+        do {
+            // Generate a prime q (Sophie Germain prime)
+            // We need q to be (bits-1) bits so that p = 2q + 1 will be 'bits' bits
+            q = await Crypto.randPrimeAsync(bits - 1, iterations, enhanced);
+
+            // Calculate p = 2q + 1
+            p = 2n * q + 1n;
+
+            // Check if p is prime
+            isPSafePrime = await isProbablePrimeAsync(p, iterations, Crypto.randBytesAsync, enhanced);
+
+            // Check if p has exactly the requested bit length
+            correctBitLength = p.toString(2).length === bits;
+        } while (!isPSafePrime || !correctBitLength);
+
+        return p;
+    }
+
+    /**
      * Generate a cryptographically secure random bigint with a specified bit length.
      * 
      * This method generates a random bigint with exactly the specified number of bits.
@@ -924,6 +1047,7 @@ export const {
     randPassword,
     randLattice,
     randPrime,
+    randSafePrime,
     randBigInt,
     randExponential,
     // Async versions
@@ -934,5 +1058,6 @@ export const {
     randSeedAsync,
     randVersionAsync,
     randPrimeAsync,
+    randSafePrimeAsync,
     randBigIntAsync
 } = Crypto;
