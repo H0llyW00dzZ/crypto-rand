@@ -133,8 +133,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     it('should generate different safe primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
-        randSafePrimeAsync(16, 38, true),
-        randSafePrimeAsync(16, 38, true)
+        // When the bit value is small, it can be particularly risky.
+        randSafePrimeAsync(32, 38, true),
+        randSafePrimeAsync(32, 38, true)
       ]);
 
       expect(prime1).not.toBe(prime2);
