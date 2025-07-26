@@ -316,9 +316,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
         return;
       }
 
-      jest.setTimeout(185000);
+      jest.setTimeout(100000);
       // Generate a safe prime asynchronously
-      const p = await Crypto.randSafePrimeAsync(1024, 5, false); // Reduce it to 1024 and see how it goes.
+      const p = await Crypto.randSafePrimeAsync(1024, 5, false); // Reduce it to 1024 (with a $100 million cost to break it) and see how it goes.
       const g = 2n;
 
       // Generate private keys
