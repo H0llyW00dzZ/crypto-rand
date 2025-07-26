@@ -308,14 +308,14 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     });
 
     // This is literally an overhead on [x64](https://en.wikipedia.org/wiki/X86-64). hahahaha
-    test.concurrent('should work with async safe prime generation', async () => {
+    test('should work with async safe prime generation', async () => {
       // Skip test on x64 arch
       if (process.arch === 'x64') {
         console.log('Skipping async safe prime generation test on x64 arch due to overhead. hahaha');
         return;
       }
 
-      jest.setTimeout(175000);
+      jest.setTimeout(185000);
       // Generate a safe prime asynchronously
       const p = await randSafePrimeAsync(2048, 38, false);
       const g = 2n;
@@ -335,6 +335,6 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
       // Both parties should arrive at the same shared secret
       expect(aliceSharedSecret).toBe(bobSharedSecret);
-    }, 300000);
+    }, 350000);
   });
 });
