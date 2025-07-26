@@ -308,6 +308,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     });
 
     // This is literally an overhead on [x64](https://en.wikipedia.org/wiki/X86-64). hahahaha
+    // With ECC, this would likely be fine to implement in TypeScript/JavaScript because ECC involves small and fast computations.
     test('should work with async safe prime generation', async () => {
       // Skip test on x64 arch
       if (process.arch === 'x64') {
@@ -317,7 +318,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
       jest.setTimeout(185000);
       // Generate a safe prime asynchronously
-      const p = await randSafePrimeAsync(2048, 4, false);
+      const p = await Crypto.randSafePrimeAsync(2048, 5, false);
       const g = 2n;
 
       // Generate private keys
