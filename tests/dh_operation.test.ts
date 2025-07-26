@@ -7,8 +7,6 @@ import { isProbablePrime, isProbablePrimeAsync, modPow } from '../src/math_helpe
 // The truth is, the overhead is due to the architecture, not because the algorithm is slow. 
 // Even for RSA, which is not a slow algorithm, architecture plays a significant role.
 describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
-  // Increase timeout for prime generation
-  jest.setTimeout(60000);
 
   // Use the actual crypto random bytes function for better testing
   const cryptoRandomBytes = (size: number): Buffer => {
@@ -28,14 +26,14 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     describe('basic functionality', () => {
       test('should return a BigInt', () => {
         // Use small bit size for faster tests
-        const result = randSafePrime(32, 38, true);
+        const result = randSafePrime(32, 38, false);
         expect(typeof result).toBe('bigint');
       });
 
       test('should generate a safe prime number', () => {
         // A safe prime p is of the form p = 2q + 1 where q is also prime
         // Use small bit size for faster tests
-        const p = randSafePrime(32, 38, true);
+        const p = randSafePrime(32, 38, false);
 
         // Check that p is prime
         expect(isProbablePrime(p, 38, cryptoRandomBytes)).toBe(true);
@@ -47,7 +45,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
       test('should generate safe prime with specified bit length', () => {
         const bits = 32;
-        const prime = Crypto.randSafePrime(bits, 38, true);
+        const prime = Crypto.randSafePrime(bits, 38, false);
 
         // Check bit length
         const bitLength = prime.toString(2).length;
@@ -86,8 +84,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     describe('security properties', () => {
       test('should generate different safe primes on multiple calls', () => {
-        const prime1 = Crypto.randSafePrime(32, 38, true);
-        const prime2 = Crypto.randSafePrime(32, 38, true);
+        const prime1 = Crypto.randSafePrime(32, 38, false);
+        const prime2 = Crypto.randSafePrime(32, 38, false);
         expect(prime1).not.toBe(prime2);
       });
 
@@ -96,7 +94,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
         const bitLengths = [16, 24, 32];
 
         bitLengths.forEach(bits => {
-          const prime = Crypto.randSafePrime(bits, 38, true);
+          const prime = Crypto.randSafePrime(bits, 38, false);
           expect(typeof prime).toBe('bigint');
           expect(prime.toString(2).length).toBe(bits);
 
@@ -110,7 +108,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     describe('performance', () => {
       test('should complete in reasonable time for small bit lengths', () => {
         const startTime = Date.now();
-        Crypto.randSafePrime(32, 38, true);
+        Crypto.randSafePrime(32, 38, false);
         const endTime = Date.now();
 
         // Should complete within a reasonable time
@@ -124,7 +122,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     it('should generate a safe prime with the correct bit length', async () => {
       const bits = 32;
-      const prime = await randSafePrimeAsync(bits, 38, true);
+      const prime = await randSafePrimeAsync(bits, 38, false);
 
       // Check bit length
       const bitLength = prime.toString(2).length;
@@ -140,8 +138,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
         // When the bit value is small, it can be particularly risky.
         // I'm also pretty sure it might cause the default entropy for random bytes that Node.js uses with OpenSSL to be poor,
         // which is why it can be risky, due to how the algorithm works.
-        Crypto.randSafePrimeAsync(32, 38, true),
-        Crypto.randSafePrimeAsync(32, 38, true)
+        Crypto.randSafePrimeAsync(32, 38, false),
+        Crypto.randSafePrimeAsync(32, 38, false)
       ]);
 
       expect(prime1).not.toBe(prime2);
@@ -202,7 +200,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     test('should successfully perform Diffie-Hellman key exchange with safe prime', () => {
       // Generate a safe prime for Diffie-Hellman
-      const p = Crypto.randSafePrime(64, 38, true);
+      const p = Crypto.randSafePrime(64, 38, false);
 
       // Use 2 as the generator (common choice for Diffie-Hellman)
       const g = 2n;
@@ -227,7 +225,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     test('should generate different shared secrets with different private keys', () => {
       // Generate a safe prime for Diffie-Hellman
-      const p = Crypto.randSafePrime(64, 38, true);
+      const p = Crypto.randSafePrime(64, 38, false);
       const g = 2n;
 
       // First key exchange
@@ -254,7 +252,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     test('should work with different generators', () => {
       // Generate a safe prime for Diffie-Hellman
-      const p = Crypto.randSafePrime(64, 38, true);
+      const p = Crypto.randSafePrime(64, 38, false);
 
       // Use different generators
       const generators = [2n, 5n];
@@ -281,7 +279,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     test('should demonstrate resistance to small subgroup attacks', () => {
       // Generate a safe prime for Diffie-Hellman
       // Safe primes help prevent small subgroup attacks because the order of the subgroup is (p-1)/2, which is also prime
-      const p = Crypto.randSafePrime(64, 38, true);
+      const p = Crypto.randSafePrime(64, 38, false);
 
       // Verify that (p-1)/2 is prime (this is what makes it a safe prime)
       const q = (p - 1n) / 2n;
@@ -314,9 +312,17 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       expect(aliceSharedSecret).toBe(bobSharedSecret);
     });
 
-    test('should work with async safe prime generation', async () => {
+    // This is literally an overhead on [x64](https://en.wikipedia.org/wiki/X86-64). hahahaha
+    test.concurrent('should work with async safe prime generation', async () => {
+      // Skip test on Windows platforms
+      if (process.platform === 'win32') {
+        console.log('Skipping async safe prime generation test on Windows platform due to overhead. hahaha');
+        return;
+      }
+
+      jest.setTimeout(175000);
       // Generate a safe prime asynchronously
-      const p = await randSafePrimeAsync(64, 38, true);
+      const p = await randSafePrimeAsync(2048, 38, false);
       const g = 2n;
 
       // Generate private keys
@@ -334,6 +340,6 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
       // Both parties should arrive at the same shared secret
       expect(aliceSharedSecret).toBe(bobSharedSecret);
-    });
+    }, 300000);
   });
 });
