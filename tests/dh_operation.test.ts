@@ -24,26 +24,26 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     describe('basic functionality', () => {
       test('should return a BigInt', () => {
         // Use small bit size for faster tests
-        const result = randSafePrime(32, 10, true);
+        const result = randSafePrime(32, 38, true);
         expect(typeof result).toBe('bigint');
       });
 
       test('should generate a safe prime number', () => {
         // A safe prime p is of the form p = 2q + 1 where q is also prime
         // Use small bit size for faster tests
-        const p = randSafePrime(32, 10, true);
+        const p = randSafePrime(32, 38, true);
 
         // Check that p is prime
-        expect(isProbablePrime(p, 10, cryptoRandomBytes)).toBe(true);
+        expect(isProbablePrime(p, 38, cryptoRandomBytes)).toBe(true);
 
         // Check that q = (p-1)/2 is also prime
         const q = (p - 1n) / 2n;
-        expect(isProbablePrime(q, 10, cryptoRandomBytes)).toBe(true);
+        expect(isProbablePrime(q, 38, cryptoRandomBytes)).toBe(true);
       });
 
       test('should generate safe prime with specified bit length', () => {
         const bits = 32;
-        const prime = Crypto.randSafePrime(bits, 10, true);
+        const prime = Crypto.randSafePrime(bits, 38, true);
 
         // Check bit length
         const bitLength = prime.toString(2).length;
@@ -82,8 +82,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     describe('security properties', () => {
       test('should generate different safe primes on multiple calls', () => {
-        const prime1 = Crypto.randSafePrime(32, 10, true);
-        const prime2 = Crypto.randSafePrime(32, 10, true);
+        const prime1 = Crypto.randSafePrime(32, 38, true);
+        const prime2 = Crypto.randSafePrime(32, 38, true);
         expect(prime1).not.toBe(prime2);
       });
 
@@ -92,13 +92,13 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
         const bitLengths = [16, 24, 32];
 
         bitLengths.forEach(bits => {
-          const prime = Crypto.randSafePrime(bits, 10, true);
+          const prime = Crypto.randSafePrime(bits, 38, true);
           expect(typeof prime).toBe('bigint');
           expect(prime.toString(2).length).toBe(bits);
 
           // Verify it's a safe prime
           const q = (prime - 1n) / 2n;
-          expect(isProbablePrime(q, 10, crypto.randomBytes)).toBe(true);
+          expect(isProbablePrime(q, 38, crypto.randomBytes)).toBe(true);
         });
       });
     });
@@ -106,7 +106,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     describe('performance', () => {
       test('should complete in reasonable time for small bit lengths', () => {
         const startTime = Date.now();
-        Crypto.randSafePrime(32, 10, true);
+        Crypto.randSafePrime(32, 38, true);
         const endTime = Date.now();
 
         // Should complete within a reasonable time
@@ -120,7 +120,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     it('should generate a safe prime with the correct bit length', async () => {
       const bits = 32;
-      const prime = await randSafePrimeAsync(bits, 10, true);
+      const prime = await randSafePrimeAsync(bits, 38, true);
 
       // Check bit length
       const bitLength = prime.toString(2).length;
@@ -128,13 +128,13 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
       // Verify it's a safe prime
       const q = (prime - 1n) / 2n;
-      expect(await isProbablePrimeAsync(q, 10, cryptoRandomBytesAsync)).toBe(true);
+      expect(await isProbablePrimeAsync(q, 38, cryptoRandomBytesAsync)).toBe(true);
     });
 
     it('should generate different safe primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
-        randSafePrimeAsync(16, 10, true),
-        randSafePrimeAsync(16, 10, true)
+        randSafePrimeAsync(16, 38, true),
+        randSafePrimeAsync(16, 38, true)
       ]);
 
       expect(prime1).not.toBe(prime2);
@@ -195,7 +195,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     test('should successfully perform Diffie-Hellman key exchange with safe prime', () => {
       // Generate a safe prime for Diffie-Hellman
-      const p = Crypto.randSafePrime(64, 10, true);
+      const p = Crypto.randSafePrime(64, 38, true);
 
       // Use 2 as the generator (common choice for Diffie-Hellman)
       const g = 2n;
@@ -219,7 +219,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     test('should generate different shared secrets with different private keys', () => {
       // Generate a safe prime for Diffie-Hellman
-      const p = Crypto.randSafePrime(64, 10, true);
+      const p = Crypto.randSafePrime(64, 38, true);
       const g = 2n;
 
       // First key exchange
@@ -244,7 +244,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     test('should work with different generators', () => {
       // Generate a safe prime for Diffie-Hellman
-      const p = Crypto.randSafePrime(64, 10, true);
+      const p = Crypto.randSafePrime(64, 38, true);
 
       // Use different generators
       const generators = [2n, 5n];
@@ -270,11 +270,11 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     test('should demonstrate resistance to small subgroup attacks', () => {
       // Generate a safe prime for Diffie-Hellman
       // Safe primes help prevent small subgroup attacks because the order of the subgroup is (p-1)/2, which is also prime
-      const p = Crypto.randSafePrime(64, 10, true);
+      const p = Crypto.randSafePrime(64, 38, true);
 
       // Verify that (p-1)/2 is prime (this is what makes it a safe prime)
       const q = (p - 1n) / 2n;
-      expect(isProbablePrime(q, 10, cryptoRandomBytes)).toBe(true);
+      expect(isProbablePrime(q, 38, cryptoRandomBytes)).toBe(true);
 
       // With a safe prime p, the subgroup generated by g=2 has order q, which is large and prime
       // This makes small subgroup attacks infeasible
@@ -304,7 +304,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     test('should work with async safe prime generation', async () => {
       // Generate a safe prime asynchronously
-      const p = await randSafePrimeAsync(64, 10, true);
+      const p = await randSafePrimeAsync(64, 38, true);
       const g = 2n;
 
       // Generate private keys
