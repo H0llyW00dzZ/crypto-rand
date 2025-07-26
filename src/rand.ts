@@ -849,10 +849,7 @@ export class Crypto {
 
         // Generate safe prime candidates until a valid one is found
         // A safe prime p is of the form p = 2q + 1 where q is also prime
-        let q: bigint;
-        let p: bigint;
-        let isPSafePrime: boolean;
-        let correctBitLength: boolean;
+        let q: bigint, p: bigint, isPSafePrime: boolean, correctBitLength: boolean;
 
         do {
             // Generate a prime q (Sophie Germain prime)
@@ -910,10 +907,7 @@ export class Crypto {
 
         // Generate safe prime candidates until a valid one is found
         // A safe prime p is of the form p = 2q + 1 where q is also prime
-        let q: bigint;
-        let p: bigint;
-        let isPSafePrime: boolean;
-        let correctBitLength: boolean;
+        let q: bigint, p: bigint, isPSafePrime: boolean, correctBitLength: boolean;
 
         do {
             // Generate a prime q (Sophie Germain prime)
