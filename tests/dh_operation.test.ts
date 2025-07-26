@@ -15,14 +15,14 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     describe('basic functionality', () => {
       test('should return a BigInt', () => {
         // Use small bit size for faster tests
-        const result = Crypto.randSafePrime(32, 10, true);
+        const result = randSafePrime(32, 10, true);
         expect(typeof result).toBe('bigint');
       });
 
       test('should generate a safe prime number', () => {
         // A safe prime p is of the form p = 2q + 1 where q is also prime
         // Use small bit size for faster tests
-        const p = Crypto.randSafePrime(32, 10, true);
+        const p = randSafePrime(32, 10, true);
 
         // Check that p is prime
         expect(isProbablePrime(p, 10, crypto.randomBytes)).toBe(true);
