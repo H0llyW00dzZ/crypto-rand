@@ -18,11 +18,6 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
   };
 
   describe('randSafePrime()', () => {
-    beforeEach(() => {
-      // Ensure we're in Node.js environment for these tests
-      jest.clearAllMocks();
-    });
-
     describe('basic functionality', () => {
       test('should return a BigInt', () => {
         // Use small bit size for faster tests
