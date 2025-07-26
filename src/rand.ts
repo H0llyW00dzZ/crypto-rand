@@ -826,6 +826,8 @@ export class Crypto {
      * **Note:** This method is currently only available in Node.js environment due to its
      * dependency on the native crypto module for secure random number generation.
      * 
+     * **TODO:** Change the algorithm method due to its too overhead. Combine Safe and Sophie Germain primes with the Miller-Rabin test.
+     * 
      * @param bits - The bit length of the safe prime number to generate (default: 2048)
      * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
      * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version (default: false)
@@ -938,6 +940,8 @@ export class Crypto {
      * 
      * **Note:** This method is currently only available in Node.js environment due to its
      * dependency on the native crypto module for secure random number generation.
+     * 
+     * **TODO:** Change the algorithm method due to its too overhead. Combine Safe and Sophie Germain primes with the Miller-Rabin test.
      * 
      * @param bits - The bit length of the safe prime number to generate (default: 2048)
      * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
