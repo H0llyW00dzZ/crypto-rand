@@ -1,0 +1,317 @@
+import * as crypto from 'crypto';
+import { Crypto, randSafePrime, randSafePrimeAsync } from '../src/rand';
+import { isProbablePrime, modPow } from '../src/math_helper';
+
+describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
+  // Increase timeout for prime generation
+  jest.setTimeout(60000);
+
+  describe('randSafePrime()', () => {
+    beforeEach(() => {
+      // Ensure we're in Node.js environment for these tests
+      jest.clearAllMocks();
+    });
+
+    describe('basic functionality', () => {
+      test('should return a BigInt', () => {
+        // Use small bit size for faster tests
+        const result = Crypto.randSafePrime(32, 10, true);
+        expect(typeof result).toBe('bigint');
+      });
+
+      test('should generate a safe prime number', () => {
+        // A safe prime p is of the form p = 2q + 1 where q is also prime
+        // Use small bit size for faster tests
+        const p = Crypto.randSafePrime(32, 10, true);
+
+        // Check that p is prime
+        expect(isProbablePrime(p, 10, crypto.randomBytes)).toBe(true);
+
+        // Check that q = (p-1)/2 is also prime
+        const q = (p - 1n) / 2n;
+        expect(isProbablePrime(q, 10, crypto.randomBytes)).toBe(true);
+      });
+
+      test('should generate safe prime with specified bit length', () => {
+        const bits = 32;
+        const prime = Crypto.randSafePrime(bits, 10, true);
+
+        // Check bit length
+        const bitLength = prime.toString(2).length;
+        expect(bitLength).toBe(bits);
+      });
+    });
+
+    describe('parameter validation', () => {
+      test('should throw error for invalid bit length', () => {
+        expect(() => Crypto.randSafePrime(0)).toThrow('Bit length must be an integer greater than or equal to 2');
+        expect(() => Crypto.randSafePrime(1)).toThrow('Bit length must be an integer greater than or equal to 2');
+        expect(() => Crypto.randSafePrime(1.5)).toThrow('Bit length must be an integer greater than or equal to 2');
+      });
+
+      test('should throw error for invalid iteration count', () => {
+        expect(() => Crypto.randSafePrime(32, 0)).toThrow('Number of iterations must be a positive integer');
+        expect(() => Crypto.randSafePrime(32, -1)).toThrow('Number of iterations must be a positive integer');
+        expect(() => Crypto.randSafePrime(32, 1.5)).toThrow('Number of iterations must be a positive integer');
+      });
+    });
+
+    describe('browser environment', () => {
+      test('should throw error in browser environment', () => {
+        // Mock browser environment
+        const originalIsBrowser = Crypto['isBrowser'];
+        Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
+
+        expect(() => Crypto.randSafePrime()).toThrow(
+          'randSafePrime is not available in browser environment. This method requires Node.js crypto module.'
+        );
+
+        // Restore original method
+        Crypto['isBrowser'] = originalIsBrowser;
+      });
+    });
+
+    describe('security properties', () => {
+      test('should generate different safe primes on multiple calls', () => {
+        const prime1 = Crypto.randSafePrime(32, 10, true);
+        const prime2 = Crypto.randSafePrime(32, 10, true);
+        expect(prime1).not.toBe(prime2);
+      });
+
+      test('should handle common cryptographic bit lengths', () => {
+        // Test with small bit lengths for faster tests
+        const bitLengths = [16, 24, 32];
+
+        bitLengths.forEach(bits => {
+          const prime = Crypto.randSafePrime(bits, 10, true);
+          expect(typeof prime).toBe('bigint');
+          expect(prime.toString(2).length).toBe(bits);
+
+          // Verify it's a safe prime
+          const q = (prime - 1n) / 2n;
+          expect(isProbablePrime(q, 10, crypto.randomBytes)).toBe(true);
+        });
+      });
+    });
+
+    describe('performance', () => {
+      test('should complete in reasonable time for small bit lengths', () => {
+        const startTime = Date.now();
+        Crypto.randSafePrime(32, 10, true);
+        const endTime = Date.now();
+
+        // Should complete within a reasonable time
+        expect(endTime - startTime).toBeLessThan(5000);
+      });
+    });
+  });
+
+  describe('randSafePrimeAsync()', () => {
+    // These tests use small bit sizes for faster execution
+
+    it('should generate a safe prime with the correct bit length', async () => {
+      const bits = 32;
+      const prime = await randSafePrimeAsync(bits, 10, true);
+
+      // Check bit length
+      const bitLength = prime.toString(2).length;
+      expect(bitLength).toBe(bits);
+
+      // Verify it's a safe prime
+      const q = (prime - 1n) / 2n;
+      expect(isProbablePrime(q, 10, crypto.randomBytes)).toBe(true);
+    });
+
+    it('should generate different safe primes on multiple calls', async () => {
+      const [prime1, prime2] = await Promise.all([
+        randSafePrimeAsync(16, 10, true),
+        randSafePrimeAsync(16, 10, true)
+      ]);
+
+      expect(prime1).not.toBe(prime2);
+    });
+
+    it('should throw error for invalid bit length', async () => {
+      await expect(randSafePrimeAsync(0)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
+      await expect(randSafePrimeAsync(1)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
+      await expect(randSafePrimeAsync(1.5)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
+    });
+
+    it('should throw error for invalid iterations', async () => {
+      await expect(randSafePrimeAsync(16, 0)).rejects.toThrow('Number of iterations must be a positive integer');
+      await expect(randSafePrimeAsync(16, -1)).rejects.toThrow('Number of iterations must be a positive integer');
+      await expect(randSafePrimeAsync(16, 1.5)).rejects.toThrow('Number of iterations must be a positive integer');
+    });
+
+    it('should throw error in browser environment', async () => {
+      // Save original isBrowser method
+      const originalIsBrowser = Crypto['isBrowser'];
+
+      // Mock isBrowser to return true
+      Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
+
+      try {
+        await expect(randSafePrimeAsync()).rejects.toThrow('randSafePrimeAsync is not available in browser environment');
+      } finally {
+        // Restore original method
+        Crypto['isBrowser'] = originalIsBrowser;
+      }
+    });
+  });
+
+  describe('Diffie-Hellman Key Exchange', () => {
+    /**
+     * Performs a Diffie-Hellman key exchange operation
+     * 
+     * @param p - The safe prime modulus
+     * @param g - The generator (typically 2 or 5)
+     * @param privateKey - The private key
+     * @returns The public key
+     */
+    function dhGeneratePublicKey(p: bigint, g: bigint, privateKey: bigint): bigint {
+      return modPow(g, privateKey, p);
+    }
+
+    /**
+     * Computes the shared secret in a Diffie-Hellman key exchange
+     * 
+     * @param p - The safe prime modulus
+     * @param publicKey - The other party's public key
+     * @param privateKey - Your private key
+     * @returns The shared secret
+     */
+    function dhComputeSharedSecret(p: bigint, publicKey: bigint, privateKey: bigint): bigint {
+      return modPow(publicKey, privateKey, p);
+    }
+
+    test('should successfully perform Diffie-Hellman key exchange with safe prime', () => {
+      // Generate a safe prime for Diffie-Hellman
+      const p = Crypto.randSafePrime(64, 10, true);
+
+      // Use 2 as the generator (common choice for Diffie-Hellman)
+      const g = 2n;
+
+      // Generate private keys for Alice and Bob
+      // In a real scenario, these would be large random numbers
+      const alicePrivateKey = 123456789n;
+      const bobPrivateKey = 987654321n;
+
+      // Generate public keys
+      const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
+      const bobPublicKey = dhGeneratePublicKey(p, g, bobPrivateKey);
+
+      // Compute shared secrets
+      const aliceSharedSecret = dhComputeSharedSecret(p, bobPublicKey, alicePrivateKey);
+      const bobSharedSecret = dhComputeSharedSecret(p, alicePublicKey, bobPrivateKey);
+
+      // Both parties should arrive at the same shared secret
+      expect(aliceSharedSecret).toBe(bobSharedSecret);
+    });
+
+    test('should generate different shared secrets with different private keys', () => {
+      // Generate a safe prime for Diffie-Hellman
+      const p = Crypto.randSafePrime(64, 10, true);
+      const g = 2n;
+
+      // First key exchange
+      const alicePrivateKey1 = 123456789n;
+      const bobPrivateKey1 = 987654321n;
+
+      const bobPublicKey1 = dhGeneratePublicKey(p, g, bobPrivateKey1);
+
+      const sharedSecret1 = dhComputeSharedSecret(p, bobPublicKey1, alicePrivateKey1);
+
+      // Second key exchange with different private keys
+      const alicePrivateKey2 = 111111111n;
+      const bobPrivateKey2 = 999999999n;
+
+      const bobPublicKey2 = dhGeneratePublicKey(p, g, bobPrivateKey2);
+
+      const sharedSecret2 = dhComputeSharedSecret(p, bobPublicKey2, alicePrivateKey2);
+
+      // The shared secrets should be different
+      expect(sharedSecret1).not.toBe(sharedSecret2);
+    });
+
+    test('should work with different generators', () => {
+      // Generate a safe prime for Diffie-Hellman
+      const p = Crypto.randSafePrime(64, 10, true);
+
+      // Use different generators
+      const generators = [2n, 5n];
+
+      for (const g of generators) {
+        // Generate private keys
+        const alicePrivateKey = 123456789n;
+        const bobPrivateKey = 987654321n;
+
+        // Generate public keys
+        const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
+        const bobPublicKey = dhGeneratePublicKey(p, g, bobPrivateKey);
+
+        // Compute shared secrets
+        const aliceSharedSecret = dhComputeSharedSecret(p, bobPublicKey, alicePrivateKey);
+        const bobSharedSecret = dhComputeSharedSecret(p, alicePublicKey, bobPrivateKey);
+
+        // Both parties should arrive at the same shared secret
+        expect(aliceSharedSecret).toBe(bobSharedSecret);
+      }
+    });
+
+    test('should demonstrate resistance to small subgroup attacks', () => {
+      // Generate a safe prime for Diffie-Hellman
+      // Safe primes help prevent small subgroup attacks because the order of the subgroup is (p-1)/2, which is also prime
+      const p = Crypto.randSafePrime(64, 10, true);
+
+      // Verify that (p-1)/2 is prime (this is what makes it a safe prime)
+      const q = (p - 1n) / 2n;
+      expect(isProbablePrime(q, 10, crypto.randomBytes)).toBe(true);
+
+      // With a safe prime p, the subgroup generated by g=2 has order q, which is large and prime
+      // This makes small subgroup attacks infeasible
+
+      // Demonstrate a normal key exchange
+      const g = 2n;
+      const alicePrivateKey = 123456789n;
+      const bobPrivateKey = 987654321n;
+
+      const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
+      const bobPublicKey = dhGeneratePublicKey(p, g, bobPrivateKey);
+
+      // Verify that public keys are not in a small subgroup
+      // For a safe prime, the only small subgroup elements are 1 and p-1
+      expect(alicePublicKey).not.toBe(1n);
+      expect(alicePublicKey).not.toBe(p - 1n);
+      expect(bobPublicKey).not.toBe(1n);
+      expect(bobPublicKey).not.toBe(p - 1n);
+
+      // Compute shared secrets
+      const aliceSharedSecret = dhComputeSharedSecret(p, bobPublicKey, alicePrivateKey);
+      const bobSharedSecret = dhComputeSharedSecret(p, alicePublicKey, bobPrivateKey);
+
+      // Both parties should arrive at the same shared secret
+      expect(aliceSharedSecret).toBe(bobSharedSecret);
+    });
+
+    test('should work with async safe prime generation', async () => {
+      // Generate a safe prime asynchronously
+      const p = await randSafePrimeAsync(64, 10, true);
+      const g = 2n;
+
+      // Generate private keys
+      const alicePrivateKey = 123456789n;
+      const bobPrivateKey = 987654321n;
+
+      // Generate public keys
+      const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
+      const bobPublicKey = dhGeneratePublicKey(p, g, bobPrivateKey);
+
+      // Compute shared secrets
+      const aliceSharedSecret = dhComputeSharedSecret(p, bobPublicKey, alicePrivateKey);
+      const bobSharedSecret = dhComputeSharedSecret(p, alicePublicKey, bobPrivateKey);
+
+      // Both parties should arrive at the same shared secret
+      expect(aliceSharedSecret).toBe(bobSharedSecret);
+    });
+  });
+});

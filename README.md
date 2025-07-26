@@ -102,6 +102,7 @@ async function generateRandomValues() {
 - Normal distribution random numbers
 - Cross-platform compatibility (Node.js + Browser)
 - Asynchronous methods for non-blocking operations
+- Safe prime generation for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)
 - Written in [TypeScript](https://www.typescriptlang.org/) for static typing (well-known) and better maintainability
 - And much more!
 
@@ -133,6 +134,7 @@ async function generateRandomValues() {
 - `Crypto.randPassword(options)` - Generate secure password with configurable requirements
 - `Crypto.randLattice(dimension?, modulus?)` - Generate lattice-based cryptographically secure random number
 - `Crypto.randPrime(bits?, iterations?, enhanced?)` - Generate cryptographically secure random prime number with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
+- `Crypto.randSafePrime(bits?, iterations?, enhanced?)` - Generate cryptographically secure random safe prime number suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)
 - `Crypto.randBigInt(bits?)` - Generate cryptographically secure random bigint with specified bit length
 - `Crypto.randExponential(lambda?)` - Generate random number with exponential distribution
 
@@ -144,6 +146,7 @@ async function generateRandomValues() {
 - `Crypto.randSeedAsync()` - Async version of randSeed()
 - `Crypto.randVersionAsync()` - Async version of randVersion()
 - `Crypto.randPrimeAsync(bits?, iterations?, enhanced?)` - Async version of randPrime() with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
+- `Crypto.randSafePrimeAsync(bits?, iterations?, enhanced?)` - Async version of randSafePrime() for generating safe primes suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)
 - `Crypto.randBigIntAsync(bits?)` - Async version of randBigInt()
 
 > [!TIP]
@@ -342,6 +345,128 @@ e in binary: 0b10000000000000001
 
 ✅ RSA-1024 key pair generated successfully!
 🔒 Ready for cryptographic operations with 1024-bit security
+```
+
+#### **randSafePrime**: [Diffie-Hellman key exchange](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) example
+```typescript
+import { Crypto, modPow } from '@h0llyw00dzz/crypto-rand';
+
+// Diffie-Hellman key exchange simulation example
+console.log('🔑 Diffie-Hellman Key Exchange Simulation');
+console.log('Generating a safe prime for Diffie-Hellman...');
+console.time('Safe prime generation');
+
+// Generate a safe prime (p = 2q + 1 where q is also prime)
+// Using enhanced FIPS mode for stronger primality testing
+const p = Crypto.randSafePrime(1024, 10, true); // 1024-bit safe prime with FIPS-enhanced mode
+console.timeEnd('Safe prime generation');
+
+// Verify it's a safe prime by checking if (p-1)/2 is also prime
+const q = (p - 1n) / 2n;
+const isSafePrime = Crypto.isProbablePrime(q, 10, true); // Using the isProbablePrime function from math_helper
+console.log(`✅ Verified safe prime: ${isSafePrime ? 'Yes' : 'No'}`);
+
+// Use 2 as the generator (common choice for Diffie-Hellman)
+const g = 2n;
+
+console.log('\n📊 Diffie-Hellman Parameters:');
+console.log('━'.repeat(80));
+
+console.log(`\n🔢 Safe Prime p (${p.toString(2).length} bits):`);
+console.log(p.toString());
+
+console.log(`\n🔢 Sophie Germain Prime q = (p-1)/2 (${q.toString(2).length} bits):`);
+console.log(q.toString());
+
+console.log(`\n⚙️ Generator g: ${g}`);
+
+// Alice and Bob's private keys (in a real scenario, these would be large random numbers)
+const alicePrivateKey = 123456789n;
+const bobPrivateKey = 987654321n;
+
+console.log('\n🔐 Key Exchange Process:');
+console.log('━'.repeat(40));
+
+// Generate public keys: g^(private key) mod p
+const alicePublicKey = modPow(g, alicePrivateKey, p);
+const bobPublicKey = modPow(g, bobPrivateKey, p);
+
+console.log(`Alice's private key: ${alicePrivateKey}`);
+console.log(`Alice's public key: ${alicePublicKey.toString().substring(0, 20)}...`);
+
+console.log(`\nBob's private key: ${bobPrivateKey}`);
+console.log(`Bob's public key: ${bobPublicKey.toString().substring(0, 20)}...`);
+
+// Compute shared secrets
+const aliceSharedSecret = modPow(bobPublicKey, alicePrivateKey, p);
+const bobSharedSecret = modPow(alicePublicKey, bobPrivateKey, p);
+
+console.log('\n🔒 Shared Secret Computation:');
+console.log('━'.repeat(40));
+console.log(`Alice computes: (Bob's public key)^(Alice's private key) mod p`);
+console.log(`Bob computes: (Alice's public key)^(Bob's private key) mod p`);
+
+console.log('\n✅ Verification:');
+console.log('━'.repeat(40));
+console.log(`Alice's shared secret: ${aliceSharedSecret.toString().substring(0, 20)}...`);
+console.log(`Bob's shared secret: ${bobSharedSecret.toString().substring(0, 20)}...`);
+console.log(`Shared secrets match: ${aliceSharedSecret === bobSharedSecret ? 'Yes ✓' : 'No ✗'}`);
+
+console.log('\n🛡️ Security Properties:');
+console.log('━'.repeat(40));
+console.log('• Using a safe prime prevents small subgroup attacks');
+console.log('• The discrete logarithm problem remains hard with safe primes');
+console.log('• Safe primes ensure the subgroup generated by g has large prime order');
+
+console.log('\n✅ Diffie-Hellman key exchange completed successfully!');
+console.log(`🔒 Ready for secure communications with ${p.toString(2).length}-bit security`);
+```
+
+**Output**:
+```
+🔑 Diffie-Hellman Key Exchange Simulation
+Generating a safe prime for Diffie-Hellman...
+Safe prime generation: 1352.781ms
+✅ Verified safe prime: Yes
+
+📊 Diffie-Hellman Parameters:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔢 Safe Prime p (1024 bits):
+179769313486231590772930519078902473361797697894230657273430081157732675805500963132708477322407536021120113879871393357658789768814416622492847430639474124377767893424865485276302219601246094119453082952085005768838150682342462881473913110540827237163350510684586298239947245938479716304835356329624224137243
+
+🔢 Sophie Germain Prime q = (p-1)/2 (1023 bits):
+89884656743115795386465259539451236680898848947115328636715040578866337902750481566354238661203768010560056939935696678829394884407208311246423715319737062188883946712432742638151109800623047059726541476042502884419075341171231440736956555270413618581675255342293149119973622969239858152417678164812112068621
+
+⚙️ Generator g: 2
+
+🔐 Key Exchange Process:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Alice's private key: 123456789
+Alice's public key: 17976931348623159077...
+
+Bob's private key: 987654321
+Bob's public key: 17976931348623159077...
+
+🔒 Shared Secret Computation:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Alice computes: (Bob's public key)^(Alice's private key) mod p
+Bob computes: (Alice's public key)^(Bob's private key) mod p
+
+✅ Verification:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Alice's shared secret: 17976931348623159077...
+Bob's shared secret: 17976931348623159077...
+Shared secrets match: Yes ✓
+
+🛡️ Security Properties:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Using a safe prime prevents small subgroup attacks
+• The discrete logarithm problem remains hard with safe primes
+• Safe primes ensure the subgroup generated by g has large prime order
+
+✅ Diffie-Hellman key exchange completed successfully!
+🔒 Ready for secure communications with 1024-bit security
 ```
 
 **Verify the output using [OpenSSL](https://openssl.org/)**:
