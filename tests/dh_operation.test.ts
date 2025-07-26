@@ -134,7 +134,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     it('should generate different safe primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
         // When the bit value is small, it can be particularly risky.
-        // I'm also pretty sure it might cause entropy random bytes, which is why it can be risky, due to how the algorithm works.
+        // I'm also pretty sure it might cause the default entropy for random bytes that Node.js uses with OpenSSL to be poor,
+        // which is why it can be risky, due to how the algorithm works.
         randSafePrimeAsync(32, 38, true),
         randSafePrimeAsync(32, 38, true)
       ]);
