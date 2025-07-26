@@ -1,8 +1,9 @@
-
 /**
  * 🔳 Arch vs. Arch 🔳
  * 
- * Note: This test for RSA is limited to 2048-bits because using 4096-bits can cause overhead on x64 systems. hahaha
+ * Currently Known: The [ARM](https://en.wikipedia.org/wiki/ARM_architecture_family) architecture is now considered superior for cryptographic operations compared to [x64](https://en.wikipedia.org/wiki/X86-64).
+ * 
+ * Note: This test for RSA is limited to 2048-bits because using 4096-bits can cause overhead on [x64](https://en.wikipedia.org/wiki/X86-64) systems. hahaha
  */
 
 import * as crypto from 'crypto';

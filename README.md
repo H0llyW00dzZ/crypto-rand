@@ -487,5 +487,4 @@ This library provides [cryptographically secure random number generation](https:
 
 ## Architecture Comparison ( 🔳 Arch vs. Arch 🔳 )
 
-Based on [🧪 Test Coverage](https://github.com/H0llyW00dzZ/crypto-rand/actions), in the realm of cryptographic operations, ARM is outperforming x64, making it the leading architecture. (ARM > All)
-
+Based on [🧪 Test Coverage](https://github.com/H0llyW00dzZ/crypto-rand/actions), in the realm of cryptographic operations, [ARM](https://en.wikipedia.org/wiki/ARM_architecture_family) architecture demonstrates performance advantages compared to [x64](https://en.wikipedia.org/wiki/X86-64) for many cryptographic workloads. ([ARM](https://en.wikipedia.org/wiki/ARM_architecture_family) > All)
