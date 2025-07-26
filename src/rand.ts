@@ -801,8 +801,7 @@ export class Crypto {
         // 2. It does NOT leak information about the specific value of the final prime that is returned
         // 3. Each candidate is generated independently using secure random number generation
         // 4. The statistical distribution of the search process is independent of the specific prime value
-        let candidate: bigint;
-        let isPrime: boolean;
+        let candidate: bigint, isPrime: boolean;
 
         do {
             candidate = await Crypto.randBigIntAsync(bits);
