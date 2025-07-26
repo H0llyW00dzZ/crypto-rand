@@ -314,7 +314,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     // This is literally an overhead on [x64](https://en.wikipedia.org/wiki/X86-64). hahahaha
     test.concurrent('should work with async safe prime generation', async () => {
-      // Skip test on Windows platforms
+      // Skip test on x64 arch
       if (process.arch === 'x64') {
         console.log('Skipping async safe prime generation test on x64 arch due to overhead. hahaha');
         return;
