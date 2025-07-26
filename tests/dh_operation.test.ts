@@ -2,6 +2,10 @@ import * as crypto from 'crypto';
 import { Crypto, randSafePrime, randSafePrimeAsync } from '../src/rand';
 import { isProbablePrime, isProbablePrimeAsync, modPow } from '../src/math_helper';
 
+// Note: This test currently uses only 64 bits for a prime because it can be overhead on [x64](https://en.wikipedia.org/wiki/X86-64). hahaha
+// However, on ARM, it can handle even more than 64 bits.
+// The truth is, the overhead is due to the architecture, not because the algorithm is slow. 
+// Even for RSA, which is not a slow algorithm, architecture plays a significant role.
 describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
   // Increase timeout for prime generation
   jest.setTimeout(60000);
@@ -205,8 +209,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
       // Generate private keys for Alice and Bob
       // In a real scenario, these would be large random numbers
-      const alicePrivateKey = 123456789n;
-      const bobPrivateKey = 987654321n;
+      // Using 256-bit private keys which is secure for DH
+      const alicePrivateKey = Crypto.randBigInt(256);
+      const bobPrivateKey = Crypto.randBigInt(256);
 
       // Generate public keys
       const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
@@ -226,16 +231,18 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       const g = 2n;
 
       // First key exchange
-      const alicePrivateKey1 = 123456789n;
-      const bobPrivateKey1 = 987654321n;
+      // Using 256-bit private keys which is secure for DH
+      const alicePrivateKey1 = Crypto.randBigInt(256);
+      const bobPrivateKey1 = Crypto.randBigInt(256);
 
       const bobPublicKey1 = dhGeneratePublicKey(p, g, bobPrivateKey1);
 
       const sharedSecret1 = dhComputeSharedSecret(p, bobPublicKey1, alicePrivateKey1);
 
       // Second key exchange with different private keys
-      const alicePrivateKey2 = 111111111n;
-      const bobPrivateKey2 = 999999999n;
+      // Using 256-bit private keys which is secure for DH
+      const alicePrivateKey2 = Crypto.randBigInt(256);
+      const bobPrivateKey2 = Crypto.randBigInt(256);
 
       const bobPublicKey2 = dhGeneratePublicKey(p, g, bobPrivateKey2);
 
@@ -254,8 +261,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
       for (const g of generators) {
         // Generate private keys
-        const alicePrivateKey = 123456789n;
-        const bobPrivateKey = 987654321n;
+        // Using 256-bit private keys which is secure for DH
+        const alicePrivateKey = Crypto.randBigInt(256);
+        const bobPrivateKey = Crypto.randBigInt(256);
 
         // Generate public keys
         const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
@@ -284,8 +292,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
       // Demonstrate a normal key exchange
       const g = 2n;
-      const alicePrivateKey = 123456789n;
-      const bobPrivateKey = 987654321n;
+      // Using 256-bit private keys which is secure for DH
+      const alicePrivateKey = Crypto.randBigInt(256);
+      const bobPrivateKey = Crypto.randBigInt(256);
 
       const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
       const bobPublicKey = dhGeneratePublicKey(p, g, bobPrivateKey);
@@ -311,8 +320,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       const g = 2n;
 
       // Generate private keys
-      const alicePrivateKey = 123456789n;
-      const bobPrivateKey = 987654321n;
+      // Using 256-bit private keys which is secure for DH
+      const alicePrivateKey = await Crypto.randBigIntAsync(256);
+      const bobPrivateKey = await Crypto.randBigIntAsync(256);
 
       // Generate public keys
       const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
