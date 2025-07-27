@@ -330,6 +330,13 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
       const bobPublicKey = dhGeneratePublicKey(p, g, bobPrivateKey);
 
+      // Verify that public keys are not in a small subgroup
+      // For a safe prime, the only small subgroup elements are 1 and p-1
+      expect(alicePublicKey).not.toBe(1n);
+      expect(alicePublicKey).not.toBe(p - 1n);
+      expect(bobPublicKey).not.toBe(1n);
+      expect(bobPublicKey).not.toBe(p - 1n);
+
       // Compute shared secrets
       const aliceSharedSecret = dhComputeSharedSecret(p, bobPublicKey, alicePrivateKey);
       const bobSharedSecret = dhComputeSharedSecret(p, alicePublicKey, bobPrivateKey);
