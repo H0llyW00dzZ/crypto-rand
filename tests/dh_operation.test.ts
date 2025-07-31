@@ -17,6 +17,55 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     return Crypto.randBytesAsync(size) as Promise<Buffer>;
   };
 
+  /**
+   * Performs a Diffie-Hellman key exchange operation
+   * 
+   * @param p - The safe prime modulus
+   * @param g - The generator (typically 2 or 5)
+   * @param privateKey - The private key
+   * @returns The public key
+   */
+  function dhGeneratePublicKey(p: bigint, g: bigint, privateKey: bigint): bigint {
+    return modPow(g, privateKey, p);
+  }
+
+  /**
+   * Computes the shared secret in a Diffie-Hellman key exchange
+   * 
+   * @param p - The safe prime modulus
+   * @param publicKey - The other party's public key
+   * @param privateKey - Your private key
+   * @returns The shared secret
+   */
+  function dhComputeSharedSecret(p: bigint, publicKey: bigint, privateKey: bigint): bigint {
+    return modPow(publicKey, privateKey, p);
+  }
+
+  /**
+   * Simulates a Key Derivation Function (KDF) for Triple Diffie-Hellman
+   * 
+   * In a real implementation, a proper KDF like HKDF would be used.
+   * This is a simplified simulation for testing purposes.
+   * 
+   * @param secrets - Array of shared secrets to be combined
+   * @returns A derived key as a hex string
+   */
+  function simulateKDF(secrets: bigint[]): string {
+    // Convert all secrets to buffers and concatenate them
+    const combinedBuffer = Buffer.concat(
+      secrets.map(secret => {
+        // Convert bigint to hex string, then to buffer
+        const hexStr = secret.toString(16);
+        return Buffer.from(hexStr, 'hex');
+      })
+    );
+
+    // Use SHA-256 to derive a fixed-length key from the combined secrets
+    const hash = crypto.createHash('sha256');
+    hash.update(combinedBuffer);
+    return hash.digest('hex');
+  }
+
   describe('randSafePrime()', () => {
     describe('basic functionality', () => {
       test('should return a BigInt', () => {
@@ -169,30 +218,6 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
   });
 
   describe('Diffie-Hellman Key Exchange', () => {
-    /**
-     * Performs a Diffie-Hellman key exchange operation
-     * 
-     * @param p - The safe prime modulus
-     * @param g - The generator (typically 2 or 5)
-     * @param privateKey - The private key
-     * @returns The public key
-     */
-    function dhGeneratePublicKey(p: bigint, g: bigint, privateKey: bigint): bigint {
-      return modPow(g, privateKey, p);
-    }
-
-    /**
-     * Computes the shared secret in a Diffie-Hellman key exchange
-     * 
-     * @param p - The safe prime modulus
-     * @param publicKey - The other party's public key
-     * @param privateKey - Your private key
-     * @returns The shared secret
-     */
-    function dhComputeSharedSecret(p: bigint, publicKey: bigint, privateKey: bigint): bigint {
-      return modPow(publicKey, privateKey, p);
-    }
-
     test('should successfully perform Diffie-Hellman key exchange with safe prime', () => {
       // Generate a safe prime for Diffie-Hellman
       const p = Crypto.randSafePrime(64, 38, false);
@@ -344,7 +369,121 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       const bobSharedSecret = dhComputeSharedSecret(p, alicePublicKey, bobPrivateKey);
 
       // Both parties should arrive at the same shared secret
+      //
+      // Note: This is not magic, it's proof that numbers don't lie
       expect(aliceSharedSecret).toBe(bobSharedSecret);
     }, 350000);
   });
+
+  test('should successfully perform Triple Diffie-Hellman (3-DH) key exchange', () => {
+    // Generate a safe prime for Diffie-Hellman
+    const p = Crypto.randSafePrime(64, 15, false);
+
+    // Use 2 as the generator (common choice for Diffie-Hellman)
+    const g = 2n;
+
+    // Generate long-term identity key pairs for Alice and Bob
+    const aliceIdentityPrivate = Crypto.randBigInt(256);
+    const bobIdentityPrivate = Crypto.randBigInt(256);
+
+    const aliceIdentityPublic = dhGeneratePublicKey(p, g, aliceIdentityPrivate);
+    const bobIdentityPublic = dhGeneratePublicKey(p, g, bobIdentityPrivate);
+
+    // Generate ephemeral key pairs for Alice and Bob (used only for this session)
+    const aliceEphemeralPrivate = Crypto.randBigInt(256);
+    const bobEphemeralPrivate = Crypto.randBigInt(256);
+
+    const aliceEphemeralPublic = dhGeneratePublicKey(p, g, aliceEphemeralPrivate);
+    const bobEphemeralPublic = dhGeneratePublicKey(p, g, bobEphemeralPrivate);
+
+    // Triple Diffie-Hellman key exchange components:
+
+    // 1. DH1: Alice's identity key with Bob's identity key
+    const dh1Alice = dhComputeSharedSecret(p, bobIdentityPublic, aliceIdentityPrivate);
+    const dh1Bob = dhComputeSharedSecret(p, aliceIdentityPublic, bobIdentityPrivate);
+
+    // 2. DH2: Alice's ephemeral key with Bob's identity key
+    const dh2Alice = dhComputeSharedSecret(p, bobIdentityPublic, aliceEphemeralPrivate);
+    const dh2Bob = dhComputeSharedSecret(p, aliceEphemeralPublic, bobIdentityPrivate);
+
+    // 3. DH3: Alice's identity key with Bob's ephemeral key
+    const dh3Alice = dhComputeSharedSecret(p, bobEphemeralPublic, aliceIdentityPrivate);
+    const dh3Bob = dhComputeSharedSecret(p, aliceIdentityPublic, bobEphemeralPrivate);
+
+    // 4. DH4: Alice's ephemeral key with Bob's ephemeral key
+    const dh4Alice = dhComputeSharedSecret(p, bobEphemeralPublic, aliceEphemeralPrivate);
+    const dh4Bob = dhComputeSharedSecret(p, aliceEphemeralPublic, bobEphemeralPrivate);
+
+    // Verify each DH component matches between Alice and Bob
+    expect(dh1Alice).toBe(dh1Bob);
+    expect(dh2Alice).toBe(dh2Bob);
+    expect(dh3Alice).toBe(dh3Bob);
+    expect(dh4Alice).toBe(dh4Bob);
+
+    // In a real implementation, these values would be combined with a KDF (Key Derivation Function)
+    // For this test, we'll simulate a KDF using our function
+    const aliceSharedSecret = simulateKDF([dh1Alice, dh2Alice, dh3Alice, dh4Alice]);
+    const bobSharedSecret = simulateKDF([dh1Bob, dh2Bob, dh3Bob, dh4Bob]);
+
+    // Both parties should arrive at the same shared secret
+    //
+    // Note: This is not magic, it's proof that numbers don't lie
+    expect(aliceSharedSecret).toBe(bobSharedSecret);
+  });
+
+  test('should successfully perform Triple Diffie-Hellman (3-DH) key exchange with async prime generation', async () => {
+    jest.setTimeout(100000);
+
+    // Generate a safe prime asynchronously (using smaller bit size for simulation)
+    const p = await Crypto.randSafePrimeAsync(64, 15, false);
+    const g = 2n;
+
+    // Generate long-term identity key pairs for Alice and Bob
+    const aliceIdentityPrivate = await Crypto.randBigIntAsync(256);
+    const bobIdentityPrivate = await Crypto.randBigIntAsync(256);
+
+    const aliceIdentityPublic = dhGeneratePublicKey(p, g, aliceIdentityPrivate);
+    const bobIdentityPublic = dhGeneratePublicKey(p, g, bobIdentityPrivate);
+
+    // Generate ephemeral key pairs for Alice and Bob (used only for this session)
+    const aliceEphemeralPrivate = await Crypto.randBigIntAsync(256);
+    const bobEphemeralPrivate = await Crypto.randBigIntAsync(256);
+
+    const aliceEphemeralPublic = dhGeneratePublicKey(p, g, aliceEphemeralPrivate);
+    const bobEphemeralPublic = dhGeneratePublicKey(p, g, bobEphemeralPrivate);
+
+    // Triple Diffie-Hellman key exchange components:
+
+    // 1. DH1: Alice's identity key with Bob's identity key
+    const dh1Alice = dhComputeSharedSecret(p, bobIdentityPublic, aliceIdentityPrivate);
+    const dh1Bob = dhComputeSharedSecret(p, aliceIdentityPublic, bobIdentityPrivate);
+
+    // 2. DH2: Alice's ephemeral key with Bob's identity key
+    const dh2Alice = dhComputeSharedSecret(p, bobIdentityPublic, aliceEphemeralPrivate);
+    const dh2Bob = dhComputeSharedSecret(p, aliceEphemeralPublic, bobIdentityPrivate);
+
+    // 3. DH3: Alice's identity key with Bob's ephemeral key
+    const dh3Alice = dhComputeSharedSecret(p, bobEphemeralPublic, aliceIdentityPrivate);
+    const dh3Bob = dhComputeSharedSecret(p, aliceIdentityPublic, bobEphemeralPrivate);
+
+    // 4. DH4: Alice's ephemeral key with Bob's ephemeral key
+    const dh4Alice = dhComputeSharedSecret(p, bobEphemeralPublic, aliceEphemeralPrivate);
+    const dh4Bob = dhComputeSharedSecret(p, aliceEphemeralPublic, bobEphemeralPrivate);
+
+    // Verify each DH component matches between Alice and Bob
+    expect(dh1Alice).toBe(dh1Bob);
+    expect(dh2Alice).toBe(dh2Bob);
+    expect(dh3Alice).toBe(dh3Bob);
+    expect(dh4Alice).toBe(dh4Bob);
+
+    // In a real implementation, these values would be combined with a KDF (Key Derivation Function)
+    // For this test, we'll simulate a KDF using our function
+    const aliceSharedSecret = simulateKDF([dh1Alice, dh2Alice, dh3Alice, dh4Alice]);
+    const bobSharedSecret = simulateKDF([dh1Bob, dh2Bob, dh3Bob, dh4Bob]);
+
+    // Both parties should arrive at the same shared secret
+    //
+    // Note: This is not magic, it's proof that numbers don't lie
+    expect(aliceSharedSecret).toBe(bobSharedSecret);
+  }, 350000);
 });
