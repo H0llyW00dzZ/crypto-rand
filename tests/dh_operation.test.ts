@@ -318,7 +318,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
       jest.setTimeout(100000);
       // Generate a safe prime asynchronously
-      const p = await Crypto.randSafePrimeAsync(1024, 5, false); // Reduce it to 1024 (with a $100 million cost to break it) and see how it goes.
+      //
+      // 2048 is still causing overhead, however ARM can still handle it on Ubuntu 22.04. Will improve/fix it later when I have time.
+      const p = await Crypto.randSafePrimeAsync(1024, 15, false); // Reduce it to 1024 (with a $100 million cost to break it) and see how it goes.
       const g = 2n;
 
       // Generate private keys
