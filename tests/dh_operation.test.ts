@@ -42,28 +42,80 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
   }
 
   /**
-   * Simulates a Key Derivation Function (KDF) for Triple Diffie-Hellman
+   * Simulates a [Key Derivation Function (KDF)](https://en.wikipedia.org/wiki/Key_derivation_function) for [Triple Diffie-Hellman](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange#Triple_Diffie%E2%80%93Hellman_(3-DH))
    * 
-   * In a real implementation, a proper KDF like HKDF would be used.
-   * This is a simplified simulation for testing purposes.
+   * This implementation follows [HKDF (HMAC-based Key Derivation Function)](https://en.wikipedia.org/wiki/HKDF) principles
+   * with extract and expand phases as defined in [RFC 5869](https://datatracker.ietf.org/doc/html/rfc5869).
+   * 
+   * For testing purposes, we use a fixed salt when none is provided to ensure
+   * consistent results across multiple calls with the same input.
    * 
    * @param secrets - Array of shared secrets to be combined
+   * @param salt - Optional salt value (recommended for stronger security)
+   * @param info - Optional context/application specific information
+   * @param length - Optional length of the output key material in bytes (default: 32)
    * @returns A derived key as a hex string
    */
-  function simulateKDF(secrets: bigint[]): string {
+  function simulateKDF(
+    secrets: bigint[],
+    salt?: Buffer | string,
+    info: Buffer | string = Buffer.from('TripleDH-KDF'),
+    length: number = 32
+  ): string {
+    // Validate length parameter
+    if (length <= 0) {
+      throw new Error('Length must be positive');
+    }
+
+    const maxLength = 255 * 32; // 255 * HashLen for SHA-256
+    if (length > maxLength) {
+      throw new Error(`Length too large. Maximum is ${maxLength} bytes for SHA-256`);
+    }
+
+    // Use a fixed salt for testing consistency if none provided
+    const saltBuffer = salt
+      ? (typeof salt === 'string' ? Buffer.from(salt, 'utf8') : salt)
+      : Buffer.from('fixed-test-salt-for-consistency', 'utf8');
+
+    const infoBuffer = typeof info === 'string' ? Buffer.from(info, 'utf8') : info;
+
     // Convert all secrets to buffers and concatenate them
     const combinedBuffer = Buffer.concat(
       secrets.map(secret => {
-        // Convert bigint to hex string, then to buffer
-        const hexStr = secret.toString(16);
+        // Convert bigint to hex string, ensuring even length
+        let hexStr = secret.toString(16);
+        // Pad with leading zero if odd length to prevent data loss
+        if (hexStr.length % 2 !== 0) {
+          hexStr = '0' + hexStr;
+        }
         return Buffer.from(hexStr, 'hex');
       })
     );
 
-    // Use SHA-256 to derive a fixed-length key from the combined secrets
-    const hash = crypto.createHash('sha256');
-    hash.update(combinedBuffer);
-    return hash.digest('hex');
+    // 1. Extract phase: HMAC(salt, input_key_material)
+    // This creates a pseudorandom key (PRK) from the input key material
+    const prk = crypto.createHmac('sha256', saltBuffer)
+      .update(combinedBuffer)
+      .digest();
+
+    // 2. Expand phase: Generate output key material of desired length
+    let output = Buffer.alloc(0);
+    let T = Buffer.alloc(0);
+    let i = 0;
+
+    // Generate enough output material to reach the desired length
+    while (output.length < length) {
+      i++;
+      // T(i) = HMAC-Hash(PRK, T(i-1) | info | i)
+      const hmac = crypto.createHmac('sha256', prk);
+      hmac.update(Buffer.concat([T, infoBuffer, Buffer.from([i])]));
+      T = hmac.digest();
+      output = Buffer.concat([output, T]);
+    }
+
+    // Truncate to the desired length and convert to hex
+    const truncatedOutput = output.subarray(0, length);
+    return Array.from(truncatedOutput).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
   describe('randSafePrime()', () => {
@@ -421,9 +473,10 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     expect(dh4Alice).toBe(dh4Bob);
 
     // In a real implementation, these values would be combined with a KDF (Key Derivation Function)
-    // For this test, we'll simulate a KDF using our function
-    const aliceSharedSecret = simulateKDF([dh1Alice, dh2Alice, dh3Alice, dh4Alice]);
-    const bobSharedSecret = simulateKDF([dh1Bob, dh2Bob, dh3Bob, dh4Bob]);
+    // For this test, we'll simulate a KDF using our function with the same salt for both parties
+    const kdfSalt = Buffer.from('consistent-salt-for-3dh-tests', 'utf8');
+    const aliceSharedSecret = simulateKDF([dh1Alice, dh2Alice, dh3Alice, dh4Alice], kdfSalt);
+    const bobSharedSecret = simulateKDF([dh1Bob, dh2Bob, dh3Bob, dh4Bob], kdfSalt);
 
     // Both parties should arrive at the same shared secret
     //
@@ -478,8 +531,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     // In a real implementation, these values would be combined with a KDF (Key Derivation Function)
     // For this test, we'll simulate a KDF using our function
-    const aliceSharedSecret = simulateKDF([dh1Alice, dh2Alice, dh3Alice, dh4Alice]);
-    const bobSharedSecret = simulateKDF([dh1Bob, dh2Bob, dh3Bob, dh4Bob]);
+    const kdfSalt = Buffer.from('consistent-salt-for-3dh-tests', 'utf8');
+    const aliceSharedSecret = simulateKDF([dh1Alice, dh2Alice, dh3Alice, dh4Alice], kdfSalt);
+    const bobSharedSecret = simulateKDF([dh1Bob, dh2Bob, dh3Bob, dh4Bob], kdfSalt);
 
     // Both parties should arrive at the same shared secret
     //
