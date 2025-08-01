@@ -540,4 +540,392 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     // Note: This is not magic, it's proof that numbers don't lie
     expect(aliceSharedSecret).toBe(bobSharedSecret);
   }, 350000);
+
+  test('should simulate Signal-like key ratcheting with forward secrecy', () => {
+    // Initial setup - simulate a Triple DH key exchange (X3DH)
+    const p = Crypto.randSafePrime(64, 15, false);
+    const g = 2n;
+
+    // Generate initial DH secrets (simulating X3DH output)
+    const initialSecrets = [
+      Crypto.randBigInt(256), // IK_A * SPK_B
+      Crypto.randBigInt(256), // EK_A * IK_B  
+      Crypto.randBigInt(256), // EK_A * SPK_B
+      Crypto.randBigInt(256)  // EK_A * OPK_B
+    ];
+
+    const salt = Buffer.from('signal-double-ratchet', 'utf8');
+
+    // Derive initial root key from X3DH output
+    let rootKey = simulateKDF(initialSecrets, salt, 'initial-root-key', 32);
+
+    // Initialize sending and receiving chains
+    const sendingChainKeys: string[] = [];
+    const receivingChainKeys: string[] = [];
+    const messageKeys: string[] = [];
+    const rootKeys: string[] = [rootKey];
+
+    // Simulate Double Ratchet with both DH ratchet and symmetric ratchet
+    for (let dhRatchetStep = 0; dhRatchetStep < 3; dhRatchetStep++) {
+      // DH Ratchet: Generate new ephemeral DH key pair
+      const newDHPrivate = Crypto.randBigInt(256);
+
+      // Simulate receiving party's DH public key
+      const otherDHPrivate = Crypto.randBigInt(256);
+      const otherDHPublic = dhGeneratePublicKey(p, g, otherDHPrivate);
+
+      // Compute new DH shared secret
+      const newDHSecret = dhComputeSharedSecret(p, otherDHPublic, newDHPrivate);
+
+      // Root key ratchet: derive new root key and initial chain key
+      const rootKeyBigInt = BigInt('0x' + rootKey);
+      const kdfOutput = simulateKDF([rootKeyBigInt, newDHSecret], salt, `dh-ratchet-${dhRatchetStep}`, 64);
+
+      // Split KDF output: first 32 bytes for new root key, next 32 bytes for chain key
+      rootKey = kdfOutput.substring(0, 64);  // First 32 bytes (64 hex chars)
+      let chainKey = kdfOutput.substring(64, 128); // Next 32 bytes (64 hex chars)
+
+      rootKeys.push(rootKey);
+
+      // Determine if this is sending or receiving chain
+      const isSendingChain = dhRatchetStep % 2 === 0;
+      if (isSendingChain) {
+        sendingChainKeys.push(chainKey);
+      } else {
+        receivingChainKeys.push(chainKey);
+      }
+
+      // Symmetric ratchet: derive multiple message keys from chain key
+      for (let msgIndex = 0; msgIndex < 3; msgIndex++) {
+        const chainKeyBigInt = BigInt('0x' + chainKey);
+
+        // Derive message key (for encryption/decryption)
+        const messageKey = simulateKDF([chainKeyBigInt], salt, `message-${dhRatchetStep}-${msgIndex}`, 32);
+        messageKeys.push(messageKey);
+
+        // Advance chain key (symmetric ratchet step)
+        chainKey = simulateKDF([chainKeyBigInt], salt, `next-chain-${dhRatchetStep}-${msgIndex}`, 32);
+      }
+    }
+
+    // Verify forward secrecy: all keys must be unique
+    const allKeys = [...rootKeys, ...sendingChainKeys, ...receivingChainKeys, ...messageKeys];
+    const uniqueKeys = new Set(allKeys);
+    expect(uniqueKeys.size).toBe(allKeys.length);
+
+    // Verify proper key hierarchy
+    expect(rootKeys).toHaveLength(4); // Initial + 3 DH ratchet steps
+    expect(sendingChainKeys.length + receivingChainKeys.length).toBe(3); // 3 DH ratchet steps
+    expect(messageKeys).toHaveLength(9); // 3 DH steps * 3 messages each
+
+    // Verify cryptographic properties
+    allKeys.forEach(key => {
+      expect(key).toMatch(/^[0-9a-f]+$/); // Valid hex
+      expect(key.length).toBe(64); // 32 bytes = 64 hex chars
+    });
+
+    // Test key deletion simulation (forward secrecy)
+    // In real Signal, old keys are deleted after use
+    const oldRootKey = rootKeys[0];
+    const currentRootKey = rootKeys[rootKeys.length - 1];
+    expect(oldRootKey).not.toBe(currentRootKey);
+
+    // Verify that knowing current keys doesn't reveal previous keys
+    // (This is ensured by the one-way nature of KDF, but we test uniqueness)
+    const firstMessageKey = messageKeys[0];
+    const lastMessageKey = messageKeys[messageKeys.length - 1];
+    expect(firstMessageKey).not.toBe(lastMessageKey);
+  });
+
+  test('should derive multiple specialized keys from same DH output', () => {
+    // Simulate X3DH output (Extended Triple Diffie-Hellman)
+    const x3dhSecrets = [
+      Crypto.randBigInt(256), // IK_A * SPK_B (Identity Key * Signed Prekey)
+      Crypto.randBigInt(256), // EK_A * IK_B  (Ephemeral Key * Identity Key)
+      Crypto.randBigInt(256), // EK_A * SPK_B (Ephemeral Key * Signed Prekey)
+      Crypto.randBigInt(256)  // EK_A * OPK_B (Ephemeral Key * One-time Prekey)
+    ];
+
+    const salt = Buffer.from('signal-key-derivation-v1', 'utf8');
+
+    // Derive specialized keys for different cryptographic purposes
+    // Following Signal Protocol key derivation patterns
+
+    // 1. Message encryption keys (AES-256-GCM)
+    const messageEncryptionKey = simulateKDF(x3dhSecrets, salt, 'message-encryption-aes256', 32);
+
+    // 2. Message authentication keys (HMAC-SHA256)
+    const messageAuthKey = simulateKDF(x3dhSecrets, salt, 'message-authentication-hmac', 32);
+
+    // 3. Header encryption key (for metadata protection)
+    const headerEncryptionKey = simulateKDF(x3dhSecrets, salt, 'header-encryption-aes256', 32);
+
+    // 4. IV/Nonce generation seed
+    const ivGenerationSeed = simulateKDF(x3dhSecrets, salt, 'iv-generation-seed', 16);
+
+    // 5. Next root key for Double Ratchet initialization
+    const initialRootKey = simulateKDF(x3dhSecrets, salt, 'double-ratchet-root-key', 32);
+
+    // 6. Chain key for initial sending chain
+    const initialChainKey = simulateKDF(x3dhSecrets, salt, 'initial-sending-chain-key', 32);
+
+    // 7. Key for encrypting prekey bundles
+    const prekeyBundleKey = simulateKDF(x3dhSecrets, salt, 'prekey-bundle-encryption', 32);
+
+    // 8. Session identifier derivation
+    const sessionId = simulateKDF(x3dhSecrets, salt, 'session-identifier', 16);
+
+    // 9. Backup/export key (for key backup systems)
+    const backupKey = simulateKDF(x3dhSecrets, salt, 'backup-encryption-key', 32);
+
+    // Collect all derived keys
+    const allKeys = [
+      messageEncryptionKey,
+      messageAuthKey,
+      headerEncryptionKey,
+      ivGenerationSeed,
+      initialRootKey,
+      initialChainKey,
+      prekeyBundleKey,
+      sessionId,
+      backupKey
+    ];
+
+    // Test 1: Domain separation - all keys must be unique
+    const uniqueKeys = new Set(allKeys);
+    expect(uniqueKeys.size).toBe(allKeys.length);
+
+    // Test 2: Verify correct key lengths for their intended purposes
+    expect(messageEncryptionKey).toHaveLength(64);  // 32 bytes for AES-256
+    expect(messageAuthKey).toHaveLength(64);        // 32 bytes for HMAC-SHA256
+    expect(headerEncryptionKey).toHaveLength(64);   // 32 bytes for AES-256
+    expect(ivGenerationSeed).toHaveLength(32);      // 16 bytes for IV seed
+    expect(initialRootKey).toHaveLength(64);        // 32 bytes for root key
+    expect(initialChainKey).toHaveLength(64);       // 32 bytes for chain key
+    expect(prekeyBundleKey).toHaveLength(64);       // 32 bytes for AES-256
+    expect(sessionId).toHaveLength(32);             // 16 bytes for session ID
+    expect(backupKey).toHaveLength(64);             // 32 bytes for backup encryption
+
+    // Test 3: Cryptographic properties validation
+    const hexRegex = /^[0-9a-f]+$/;
+    allKeys.forEach((key, index) => {
+      // Valid hexadecimal encoding
+      expect(hexRegex.test(key)).toBe(true);
+
+      // No obvious patterns (basic entropy check)
+      expect(key).not.toMatch(/^0+$/); // Not all zeros
+      expect(key).not.toMatch(/^f+$/); // Not all ones
+      expect(key).not.toMatch(/^(..)\1+$/); // No simple repetition
+    });
+
+    // Test 4: Deterministic derivation (same input produces same output)
+    const messageEncryptionKey2 = simulateKDF(x3dhSecrets, salt, 'message-encryption-aes256', 32);
+    expect(messageEncryptionKey).toBe(messageEncryptionKey2);
+
+    // Test 5: Different info contexts produce different keys
+    const altMessageKey = simulateKDF(x3dhSecrets, salt, 'message-encryption-aes256-alt', 32);
+    expect(messageEncryptionKey).not.toBe(altMessageKey);
+
+    // Test 6: Different salt produces different keys
+    const altSalt = Buffer.from('signal-key-derivation-v2', 'utf8');
+    const altEncryptionKey = simulateKDF(x3dhSecrets, altSalt, 'message-encryption-aes256', 32);
+    expect(messageEncryptionKey).not.toBe(altEncryptionKey);
+
+    // Test 7: Key independence - changing one input secret affects all keys
+    const modifiedSecrets = [...x3dhSecrets];
+    modifiedSecrets[0] = Crypto.randBigInt(256); // Change first secret
+
+    const modifiedMessageKey = simulateKDF(modifiedSecrets, salt, 'message-encryption-aes256', 32);
+    expect(messageEncryptionKey).not.toBe(modifiedMessageKey);
+
+    // Test 8: Simulate realistic key usage patterns
+    // Derive sub-keys from main encryption key for different message types
+    const textMessageKey = simulateKDF([BigInt('0x' + messageEncryptionKey)], salt, 'text-message', 32);
+    const imageMessageKey = simulateKDF([BigInt('0x' + messageEncryptionKey)], salt, 'image-message', 32);
+    const voiceMessageKey = simulateKDF([BigInt('0x' + messageEncryptionKey)], salt, 'voice-message', 32);
+
+    const messageTypeKeys = [textMessageKey, imageMessageKey, voiceMessageKey];
+    const uniqueMessageKeys = new Set(messageTypeKeys);
+    expect(uniqueMessageKeys.size).toBe(messageTypeKeys.length);
+
+    // These sub-keys should also be different from the parent key
+    messageTypeKeys.forEach(subKey => {
+      expect(subKey).not.toBe(messageEncryptionKey);
+    });
+  });
+
+  test('should simulate TLS 1.3 style key schedule', () => {
+    // Simulate handshake secrets (like ECDHE output)
+    const handshakeSecrets = [
+      Crypto.randBigInt(256), // ECDHE secret
+      Crypto.randBigInt(256)  // PSK (if any)
+    ];
+
+    const salt = Buffer.from('tls13-key-schedule', 'utf8');
+
+    // Early Secret (normally from PSK)
+    const earlySecret = simulateKDF([handshakeSecrets[1]], salt, 'early-secret', 32);
+
+    // Handshake Secret
+    const earlySecretBigInt = BigInt('0x' + earlySecret);
+    const handshakeSecret = simulateKDF([earlySecretBigInt, handshakeSecrets[0]], salt, 'handshake-secret', 32);
+
+    // Master Secret
+    const handshakeSecretBigInt = BigInt('0x' + handshakeSecret);
+    const masterSecret = simulateKDF([handshakeSecretBigInt], salt, 'master-secret', 32);
+
+    // Traffic Keys (client and server)
+    const masterSecretBigInt = BigInt('0x' + masterSecret);
+    const clientHandshakeKey = simulateKDF([handshakeSecretBigInt], salt, 'client-handshake-traffic', 32);
+    const serverHandshakeKey = simulateKDF([handshakeSecretBigInt], salt, 'server-handshake-traffic', 32);
+    const clientAppKey = simulateKDF([masterSecretBigInt], salt, 'client-application-traffic', 32);
+    const serverAppKey = simulateKDF([masterSecretBigInt], salt, 'server-application-traffic', 32);
+
+    // Verify key hierarchy and uniqueness
+    const allSecrets = [earlySecret, handshakeSecret, masterSecret, clientHandshakeKey, serverHandshakeKey, clientAppKey, serverAppKey];
+    const uniqueSecrets = new Set(allSecrets);
+    expect(uniqueSecrets.size).toBe(allSecrets.length);
+
+    // Verify each secret is 32 bytes (64 hex chars)
+    allSecrets.forEach(secret => {
+      expect(secret).toHaveLength(64);
+      expect(/^[0-9a-f]+$/.test(secret)).toBe(true);
+    });
+  });
+
+  test('should demonstrate key evolution with previous key input', () => {
+    // Start with initial shared secret
+    const initialSecret = Crypto.randBigInt(256);
+    const salt = Buffer.from('key-evolution', 'utf8');
+
+    // Evolve keys through multiple generations
+    let currentKey = simulateKDF([initialSecret], salt, 'generation-0', 32);
+    const keyHistory: string[] = [currentKey];
+
+    // Each generation uses previous key + new randomness
+    for (let generation = 1; generation <= 10; generation++) {
+      const newRandomness = Crypto.randBigInt(128); // New entropy
+      const currentKeyBigInt = BigInt('0x' + currentKey);
+
+      currentKey = simulateKDF([currentKeyBigInt, newRandomness], salt, `generation-${generation}`, 32);
+      keyHistory.push(currentKey);
+    }
+
+    // Verify all keys in chain are unique
+    const uniqueKeys = new Set(keyHistory);
+    expect(uniqueKeys.size).toBe(keyHistory.length);
+    expect(keyHistory).toHaveLength(11); // 0-10 generations
+
+    // Verify forward secrecy: knowing current key shouldn't help derive previous keys
+    // (This is ensured by the one-way nature of the KDF)
+    const lastKey = keyHistory[keyHistory.length - 1];
+    const secondLastKey = keyHistory[keyHistory.length - 2];
+    expect(lastKey).not.toBe(secondLastKey);
+  });
+
+  test('should simulate WhatsApp Double Ratchet key derivation', () => {
+    // Simulate initial X3DH output
+    const x3dhSecrets = [
+      Crypto.randBigInt(256), // IK_A * SPK_B  
+      Crypto.randBigInt(256), // EK_A * IK_B
+      Crypto.randBigInt(256), // EK_A * SPK_B
+      Crypto.randBigInt(256)  // EK_A * OPK_B
+    ];
+
+    const salt = Buffer.from('double-ratchet-sim', 'utf8');
+
+    // Initial root key from X3DH
+    let rootKey = simulateKDF(x3dhSecrets, salt, 'initial-root-key', 32);
+
+    // Simulate sending and receiving chain
+    const sendingChainKeys: string[] = [];
+    const receivingChainKeys: string[] = [];
+    const messageKeys: string[] = [];
+
+    // Simulate 3 DH ratchet steps
+    for (let ratchetStep = 0; ratchetStep < 3; ratchetStep++) {
+      // New DH key pair for this ratchet
+      const newDHSecret = Crypto.randBigInt(256);
+
+      // Update root key and derive new chain key
+      const rootKeyBigInt = BigInt('0x' + rootKey);
+      const kdfOutput = simulateKDF([rootKeyBigInt, newDHSecret], salt, `ratchet-${ratchetStep}`, 64);
+
+      // Split output into new root key and chain key
+      rootKey = kdfOutput.substring(0, 64);  // First 32 bytes
+      const chainKey = kdfOutput.substring(64, 128); // Next 32 bytes
+
+      if (ratchetStep % 2 === 0) {
+        sendingChainKeys.push(chainKey);
+      } else {
+        receivingChainKeys.push(chainKey);
+      }
+
+      // Derive message keys from chain key (simulate 2 messages per chain)
+      let currentChainKey = chainKey;
+      for (let msg = 0; msg < 2; msg++) {
+        const chainKeyBigInt = BigInt('0x' + currentChainKey);
+        const messageKey = simulateKDF([chainKeyBigInt], salt, `message-${ratchetStep}-${msg}`, 32);
+        messageKeys.push(messageKey);
+
+        // Update chain key for next message
+        currentChainKey = simulateKDF([chainKeyBigInt], salt, `next-chain-${ratchetStep}-${msg}`, 32);
+      }
+    }
+
+    // Verify all keys are unique (forward secrecy and key isolation)
+    const allKeys = [rootKey, ...sendingChainKeys, ...receivingChainKeys, ...messageKeys];
+    const uniqueKeys = new Set(allKeys);
+    expect(uniqueKeys.size).toBe(allKeys.length);
+
+    // Verify we generated expected number of keys
+    expect(messageKeys).toHaveLength(6); // 3 ratchets * 2 messages each
+    expect(sendingChainKeys.length + receivingChainKeys.length).toBe(3);
+  });
+
+  test('should handle key derivation with different salt values', () => {
+    const secrets = [Crypto.randBigInt(256), Crypto.randBigInt(256)];
+
+    // Same secrets with different salts should produce different keys
+    const salt1 = Buffer.from('salt-variant-1', 'utf8');
+    const salt2 = Buffer.from('salt-variant-2', 'utf8');
+    const salt3 = Buffer.from('salt-variant-3', 'utf8');
+
+    const key1 = simulateKDF(secrets, salt1, 'test-key', 32);
+    const key2 = simulateKDF(secrets, salt2, 'test-key', 32);
+    const key3 = simulateKDF(secrets, salt3, 'test-key', 32);
+
+    // All keys should be different due to different salts
+    expect(key1).not.toBe(key2);
+    expect(key2).not.toBe(key3);
+    expect(key1).not.toBe(key3);
+
+    // But same salt should produce same key (deterministic)
+    const key1Repeat = simulateKDF(secrets, salt1, 'test-key', 32);
+    expect(key1).toBe(key1Repeat);
+  });
+
+  test('should support variable output lengths for different use cases', () => {
+    const secrets = [Crypto.randBigInt(256)];
+    const salt = Buffer.from('length-test', 'utf8');
+
+    // Different key lengths for different purposes
+    const aes128Key = simulateKDF(secrets, salt, 'aes-128', 16);  // 128-bit key
+    const aes256Key = simulateKDF(secrets, salt, 'aes-256', 32);  // 256-bit key
+    const hmacKey = simulateKDF(secrets, salt, 'hmac-sha256', 32); // HMAC key
+    const ivSeed = simulateKDF(secrets, salt, 'iv-seed', 12);     // GCM IV seed
+    const longKey = simulateKDF(secrets, salt, 'long-key', 64);   // Custom long key
+
+    // Verify lengths (in hex characters)
+    expect(aes128Key).toHaveLength(32);  // 16 bytes = 32 hex chars
+    expect(aes256Key).toHaveLength(64);  // 32 bytes = 64 hex chars
+    expect(hmacKey).toHaveLength(64);
+    expect(ivSeed).toHaveLength(24);     // 12 bytes = 24 hex chars
+    expect(longKey).toHaveLength(128);   // 64 bytes = 128 hex chars
+
+    // All keys should be different due to different info contexts
+    const allKeys = [aes128Key, aes256Key, hmacKey, ivSeed, longKey];
+    const uniqueKeys = new Set(allKeys);
+    expect(uniqueKeys.size).toBe(allKeys.length);
+  });
 });
