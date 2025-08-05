@@ -177,12 +177,12 @@ export class Crypto {
      * Generate random hex string.
      * Note: Only available in Node.js environment.
      */
-    static randHex(length: number): string {
+    static randHex(length: number, randFill?: boolean): string {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randHex');
         }
 
-        const bytes = crypto.randomBytes(Math.ceil(length / 2));
+        const bytes = Crypto.randBytes(Math.ceil(length / 2), randFill);
         return bytes.toString('hex').substring(0, length);
     }
 
@@ -192,14 +192,15 @@ export class Crypto {
      * Note: Only available in Node.js environment.
      * 
      * @param length - Length of the hex string to generate
+     * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
      * @returns Promise that resolves to a random hex string
      */
-    static async randHexAsync(length: number): Promise<string> {
+    static async randHexAsync(length: number, randFill?: boolean): Promise<string> {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randHexAsync');
         }
 
-        const bytes = await randomBytesAsync!(Math.ceil(length / 2));
+        const bytes = await Crypto.randBytesAsync!(Math.ceil(length / 2), randFill);
         return bytes.toString('hex').substring(0, length);
     }
 
@@ -207,12 +208,12 @@ export class Crypto {
      * Generate random base64 string.
      * Note: Only available in Node.js environment.
      */
-    static randBase64(length: number): string {
+    static randBase64(length: number, randFill?: boolean): string {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randBase64');
         }
 
-        const bytes = crypto.randomBytes(Math.ceil(length * 3 / 4));
+        const bytes = Crypto.randBytes(Math.ceil(length * 3 / 4), randFill);
         return bytes.toString('base64').substring(0, length);
     }
 
@@ -222,14 +223,15 @@ export class Crypto {
      * Note: Only available in Node.js environment.
      * 
      * @param length - Length of the base64 string to generate
+     * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
      * @returns Promise that resolves to a random base64 string
      */
-    static async randBase64Async(length: number): Promise<string> {
+    static async randBase64Async(length: number, randFill?: boolean): Promise<string> {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randBase64Async');
         }
 
-        const bytes = await randomBytesAsync!(Math.ceil(length * 3 / 4));
+        const bytes = await Crypto.randBytesAsync!(Math.ceil(length * 3 / 4), randFill);
         return bytes.toString('base64').substring(0, length);
     }
 
@@ -1085,9 +1087,10 @@ export class Crypto {
      * dependency on the native crypto module for secure random number generation.
      * 
      * @param bits - The bit length of the bigint to generate (default: 1024)
+     * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
      * @returns A bigint with the specified bit length
      */
-    static randBigInt(bits: number = 1024): bigint {
+    static randBigInt(bits: number = 1024, randFill?: boolean): bigint {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randBigInt');
         }
@@ -1099,7 +1102,7 @@ export class Crypto {
 
         // Calculate bytes needed (bits / 8, rounded up)
         const byteLength = Math.ceil(bits / 8);
-        const randomBytes = Crypto.randBytes(byteLength);
+        const randomBytes = Crypto.randBytes(byteLength, randFill);
 
         // Convert to bigint
         let num = BigInt('0x' + randomBytes.toString('hex'));
@@ -1124,9 +1127,10 @@ export class Crypto {
      * dependency on the native crypto module for secure random number generation.
      * 
      * @param bits - The bit length of the bigint to generate (default: 1024)
+     * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
      * @returns A Promise that resolves to a bigint with the specified bit length
      */
-    static async randBigIntAsync(bits: number = 1024): Promise<bigint> {
+    static async randBigIntAsync(bits: number = 1024, randFill?: boolean): Promise<bigint> {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randBigIntAsync');
         }
@@ -1138,7 +1142,7 @@ export class Crypto {
 
         // Calculate bytes needed (bits / 8, rounded up)
         const byteLength = Math.ceil(bits / 8);
-        const randomBytes = await Crypto.randBytesAsync(byteLength);
+        const randomBytes = await Crypto.randBytesAsync(byteLength, randFill);
 
         // Convert to bigint
         let num = BigInt('0x' + randomBytes.toString('hex'));

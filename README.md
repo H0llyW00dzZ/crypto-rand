@@ -122,8 +122,8 @@ async function generateRandomValues() {
 - `Crypto.randBytes(size, randFill?)` - Generate random bytes (Node.js: Buffer, Browser: Uint8Array)
 - `Crypto.randChoice(array)` - Pick random array element
 - `Crypto.shuffle(array)` - Shuffle array securely
-- `Crypto.randHex(length)` - Generate random hex string
-- `Crypto.randBase64(length)` - Generate random base64 string
+- `Crypto.randHex(length, randFill?)` - Generate random hex string
+- `Crypto.randBase64(length, randFill?)` - Generate random base64 string
 - `Crypto.randFloat(min, max)` - Generate random float in range
 - `Crypto.randWeighted(items, weights)` - Weighted random selection
 - `Crypto.randNormal(mean, stdDev)` - Normal distribution random
@@ -136,19 +136,19 @@ async function generateRandomValues() {
 - `Crypto.randLattice(dimension?, modulus?)` - Generate lattice-based cryptographically secure random number
 - `Crypto.randPrime(bits?, iterations?, enhanced?)` - Generate cryptographically secure random prime number with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
 - `Crypto.randSafePrime(bits?, iterations?, enhanced?)` - Generate cryptographically secure random safe prime number suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)
-- `Crypto.randBigInt(bits?)` - Generate cryptographically secure random bigint with specified bit length
+- `Crypto.randBigInt(bits?, randFill?)` - Generate cryptographically secure random bigint with specified bit length
 - `Crypto.randExponential(lambda?)` - Generate random number with exponential distribution
 
 ### Static Async Methods
 - `Crypto.randAsync()` - Async version of rand()
 - `Crypto.randBytesAsync(size, randFill?)` - Async version of randBytes()
-- `Crypto.randHexAsync(length)` - Async version of randHex()
-- `Crypto.randBase64Async(length)` - Async version of randBase64()
+- `Crypto.randHexAsync(length, randFill?)` - Async version of randHex()
+- `Crypto.randBase64Async(length, randFill?)` - Async version of randBase64()
 - `Crypto.randSeedAsync()` - Async version of randSeed()
 - `Crypto.randVersionAsync()` - Async version of randVersion()
 - `Crypto.randPrimeAsync(bits?, iterations?, enhanced?)` - Async version of randPrime() with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
 - `Crypto.randSafePrimeAsync(bits?, iterations?, enhanced?)` - Async version of randSafePrime() for generating safe primes suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)
-- `Crypto.randBigIntAsync(bits?)` - Async version of randBigInt()
+- `Crypto.randBigIntAsync(bits?, randFill?)` - Async version of randBigInt()
 
 > [!TIP]
 > **Benefits of Async Methods**
