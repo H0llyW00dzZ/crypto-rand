@@ -215,25 +215,85 @@ describe('Crypto Async Methods', () => {
         expect(counts.size).toBeGreaterThan(100);
       });
 
-      it('should work with concurrent calls using randFill=true', async () => {
-        const promises: Promise<Uint8Array | Buffer>[] = [];
+      it('should work with concurrent calls using randFill=true and show performance differences', async () => {
+        console.log('\n=== Testing randBytesAsync() concurrent calls with randFill=true ===');
+
+        // Test with randFill=true (crypto.randomFill)
+        const startTimeRandFill = Date.now();
+        const promisesRandFill: Promise<Uint8Array | Buffer>[] = [];
+
         for (let i = 0; i < 10; i++) {
-          promises.push(randBytesAsync(16, true));
+          const promise = randBytesAsync(256, true);
+          promisesRandFill.push(promise);
+          console.log(`Started randFill=true call ${i + 1} at ${Date.now() - startTimeRandFill}ms`);
         }
 
-        const results = await Promise.all(promises);
-        const hexStrings = results.map(result => Buffer.from(result).toString('hex'));
-        const uniqueResults = new Set<string>(hexStrings);
+        const resultsRandFill = await Promise.all(promisesRandFill);
+        const endTimeRandFill = Date.now();
+        const durationRandFill = endTimeRandFill - startTimeRandFill;
+
+        console.log(`All randFill=true calls completed in ${durationRandFill}ms`);
+
+        // Test with randFill=false (crypto.randomBytes)
+        console.log('\n=== Testing randBytesAsync() concurrent calls with randFill=false ===');
+
+        const startTimeRandBytes = Date.now();
+        const promisesRandBytes: Promise<Uint8Array | Buffer>[] = [];
+
+        for (let i = 0; i < 10; i++) {
+          const promise = randBytesAsync(256, false);
+          promisesRandBytes.push(promise);
+          console.log(`Started randFill=false call ${i + 1} at ${Date.now() - startTimeRandBytes}ms`);
+        }
+
+        const resultsRandBytes = await Promise.all(promisesRandBytes);
+        const endTimeRandBytes = Date.now();
+        const durationRandBytes = endTimeRandBytes - startTimeRandBytes;
+
+        console.log(`All randFill=false calls completed in ${durationRandBytes}ms`);
+
+        // Compare performance
+        console.log('\n=== Performance Comparison ===');
+        console.log(`randFill=true (crypto.randomFill): ${durationRandFill}ms`);
+        console.log(`randFill=false (crypto.randomBytes): ${durationRandBytes}ms`);
+        console.log(`Difference: ${Math.abs(durationRandFill - durationRandBytes)}ms`);
+        console.log(`Faster method: ${durationRandFill < durationRandBytes ? 'randomFill' : 'randomBytes'} by ${Math.abs(((durationRandFill - durationRandBytes) / Math.max(durationRandFill, durationRandBytes)) * 100).toFixed(2)}%`);
+
+        // Verify results
+        const hexStringsRandFill = resultsRandFill.map(result => Buffer.from(result).toString('hex'));
+        const hexStringsRandBytes = resultsRandBytes.map(result => Buffer.from(result).toString('hex'));
+
+        const uniqueResultsRandFill = new Set<string>(hexStringsRandFill);
+        const uniqueResultsRandBytes = new Set<string>(hexStringsRandBytes);
 
         // All results should be different
-        expect(uniqueResults.size).toBe(10);
+        expect(uniqueResultsRandFill.size).toBe(10);
+        expect(uniqueResultsRandBytes.size).toBe(10);
 
         // All results should be the correct length
-        results.forEach(result => {
-          expect(result.length).toBe(16);
+        resultsRandFill.forEach(result => {
+          expect(result.length).toBe(256);
           expect(Buffer.isBuffer(result)).toBe(true);
         });
+
+        resultsRandBytes.forEach(result => {
+          expect(result.length).toBe(256);
+          expect(Buffer.isBuffer(result)).toBe(true);
+        });
+
+        // Log some sample results
+        console.log('\n=== Sample Results ===');
+        console.log('randFill=true samples:');
+        hexStringsRandFill.slice(0, 10).forEach((hex, i) => {
+          console.log(`  ${i + 1}: ${hex}`);
+        });
+
+        console.log('randFill=false samples:');
+        hexStringsRandBytes.slice(0, 10).forEach((hex, i) => {
+          console.log(`  ${i + 1}: ${hex}`);
+        });
       });
+
     });
   });
 
