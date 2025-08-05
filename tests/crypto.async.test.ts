@@ -235,7 +235,7 @@ describe('Crypto Async Methods', () => {
         console.log(`All randFill=true calls completed in ${durationRandFill}ms`);
 
         // Test with randFill=false (crypto.randomBytes)
-        console.log('\n=== Testing concurrent calls with randFill=false ===');
+        console.log('\n=== Testing randBytesAsync() concurrent calls with randFill=false ===');
 
         const startTimeRandBytes = Date.now();
         const promisesRandBytes: Promise<Uint8Array | Buffer>[] = [];
