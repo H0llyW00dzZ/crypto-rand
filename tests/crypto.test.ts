@@ -257,6 +257,68 @@ describe('Crypto Class', () => {
       const uniqueBuffers = new Set<string>(buffers);
       expect(uniqueBuffers.size).toBe(10);
     });
+
+    describe('with randFill parameter', () => {
+      it('should generate buffer using crypto.randomFill when randFill=true', () => {
+        const result = Crypto.randBytes(16, true);
+        expect(Buffer.isBuffer(result)).toBe(true);
+        expect(result.length).toBe(16);
+      });
+
+      it('should generate buffer using crypto.randomBytes when randFill=false', () => {
+        const result = Crypto.randBytes(16, false);
+        expect(Buffer.isBuffer(result)).toBe(true);
+        expect(result.length).toBe(16);
+      });
+
+      it('should generate different byte sequences with randFill=true', () => {
+        const buffers: string[] = [];
+        for (let i = 0; i < 10; i++) {
+          buffers.push(Crypto.randBytes(8, true).toString('hex'));
+        }
+        const uniqueBuffers = new Set<string>(buffers);
+        expect(uniqueBuffers.size).toBe(10);
+      });
+
+      it('should generate different results between randFill=true and randFill=false', () => {
+        const results: string[] = [];
+        for (let i = 0; i < 5; i++) {
+          results.push(Crypto.randBytes(16, true).toString('hex'));
+          results.push(Crypto.randBytes(16, false).toString('hex'));
+        }
+        const uniqueResults = new Set<string>(results);
+        expect(uniqueResults.size).toBe(10); // All should be different
+      });
+
+      it('should handle zero-length input with randFill=true', () => {
+        const result = Crypto.randBytes(0, true);
+        expect(Buffer.isBuffer(result)).toBe(true);
+        expect(result.length).toBe(0);
+      });
+
+      it('should handle large input with randFill=true', () => {
+        const size = 1024 * 5; // 5KB
+        const result = Crypto.randBytes(size, true);
+        expect(Buffer.isBuffer(result)).toBe(true);
+        expect(result.length).toBe(size);
+      });
+
+      it('should generate bytes with high entropy using randFill=true', () => {
+        const size = 256;
+        const result = Crypto.randBytes(size, true);
+
+        // Count occurrences of each byte value
+        const counts = new Map<number, number>();
+        for (let i = 0; i < result.length; i++) {
+          const value = result[i];
+          counts.set(value, (counts.get(value) || 0) + 1);
+        }
+
+        // With 256 bytes, we should have a good distribution of values
+        // Expect at least 100 different byte values (out of 256 possible)
+        expect(counts.size).toBeGreaterThan(100);
+      });
+    });
   });
 
   describe('uuid()', () => {

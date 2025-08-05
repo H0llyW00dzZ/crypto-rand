@@ -3,8 +3,15 @@ import { promisify } from 'util';
 import { DEFAULT_CHARSET, LOWERCASE_CHARSET, NUMERIC_CHARSET, SPECIAL_CHARSET, UPPERCASE_CHARSET } from './const';
 import { isProbablePrime, isProbablePrimeAsync } from './math_helper';
 
-// Promisified version of crypto.randomBytes - only created if crypto.randomBytes exists
+/**
+ * Promisified version of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) - only created if [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) exists
+ */
 const randomBytesAsync = typeof crypto !== 'undefined' && crypto.randomBytes ? promisify(crypto.randomBytes) : undefined;
+
+/**
+ * Promisified version of [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) - only created if [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) exists
+ */
+const randomFillAsync = typeof crypto !== 'undefined' && crypto.randomFill ? promisify(crypto.randomFill) : undefined;
 
 /**
  * Cryptographically secure random utilities
@@ -235,8 +242,12 @@ export class Crypto {
 
     /**
      * Generate random bytes.
+     * 
+     * @param size - Number of bytes to generate
+     * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
+     * @returns Random bytes as Uint8Array (browser) or Buffer (Node.js)
      */
-    static randBytes(size: number): Uint8Array | Buffer {
+    static randBytes(size: number, randFill?: boolean): Uint8Array | Buffer {
         if (Crypto.hasWebCrypto()) {
             // Browser environment
             const array = new Uint8Array(size);
@@ -244,7 +255,19 @@ export class Crypto {
             return array;
         } else if (typeof crypto !== 'undefined' && crypto.randomBytes) {
             // Node.js environment
-            return crypto.randomBytes(size);
+            if (randFill && typeof crypto.randomFillSync === 'function') {
+                // Use crypto.randomFill when requested
+                // Note: Buffer.allocUnsafe is safe here because the entire buffer
+                // is immediately filled with cryptographically secure random data,
+                // leaving no uninitialized memory exposed. This is more performant
+                // than Buffer.alloc() which would unnecessarily zero-initialize first.
+                const buffer = Buffer.allocUnsafe(size);
+                crypto.randomFillSync(buffer);
+                return buffer;
+            } else {
+                // Use crypto.randomBytes (default behavior)
+                return crypto.randomBytes(size);
+            }
         } else {
             throw new Error('No secure random bytes generator available. Please use in Node.js environment or modern browser with Web Crypto API.');
         }
@@ -255,9 +278,10 @@ export class Crypto {
      * Async version of randBytes().
      * 
      * @param size - Number of bytes to generate
+     * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
      * @returns Promise that resolves to random bytes
      */
-    static async randBytesAsync(size: number): Promise<Uint8Array | Buffer> {
+    static async randBytesAsync(size: number, randFill?: boolean): Promise<Uint8Array | Buffer> {
         if (Crypto.hasWebCrypto()) {
             // Browser environment
             const array = new Uint8Array(size);
@@ -265,7 +289,19 @@ export class Crypto {
             return array;
         } else if (typeof crypto !== 'undefined' && randomBytesAsync) {
             // Node.js environment
-            return randomBytesAsync(size); // Adding await here is redundant
+            if (randFill && randomFillAsync) {
+                // Use crypto.randomFill when requested
+                // Note: Buffer.allocUnsafe is safe here because the entire buffer
+                // is immediately filled with cryptographically secure random data,
+                // leaving no uninitialized memory exposed. This is more performant
+                // than Buffer.alloc() which would unnecessarily zero-initialize first.
+                const buffer = Buffer.allocUnsafe(size);
+                await randomFillAsync(buffer);
+                return buffer;
+            } else {
+                // Use crypto.randomBytes (default behavior)
+                return randomBytesAsync(size);
+            }
         } else {
             throw new Error('No secure random bytes generator available. Please use in Node.js environment or modern browser with Web Crypto API.');
         }

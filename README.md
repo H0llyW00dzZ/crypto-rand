@@ -119,6 +119,7 @@ async function generateRandomValues() {
 - `Crypto.randN(max)` - Generate random integer 0 to max-1
 - `Crypto.randString(length, charset?)` - Generate random string
 - `Crypto.randBool(probability?)` - Generate random boolean
+- `Crypto.randBytes(size, randFill?)` - Generate random bytes (Node.js: Buffer, Browser: Uint8Array)
 - `Crypto.randChoice(array)` - Pick random array element
 - `Crypto.shuffle(array)` - Shuffle array securely
 - `Crypto.randHex(length)` - Generate random hex string
@@ -140,7 +141,7 @@ async function generateRandomValues() {
 
 ### Static Async Methods
 - `Crypto.randAsync()` - Async version of rand()
-- `Crypto.randBytesAsync(size)` - Async version of randBytes()
+- `Crypto.randBytesAsync(size, randFill?)` - Async version of randBytes()
 - `Crypto.randHexAsync(length)` - Async version of randHex()
 - `Crypto.randBase64Async(length)` - Async version of randBase64()
 - `Crypto.randSeedAsync()` - Async version of randSeed()
@@ -213,6 +214,8 @@ async function generateRandomValues() {
 > - **randBigInt**: Generates cryptographically secure random bigints with exactly the specified bit length. It ensures the most significant bit is set to 1 (to maintain the exact bit length) and the least significant bit is set to 1 (making it odd). This method is useful for cryptographic operations that require large random integers, and is used internally by `randPrime`.
 >
 > - **randExponential**: Generates random numbers following an [exponential distribution](https://en.wikipedia.org/wiki/Exponential_distribution) with rate parameter `lambda` (default: 1). The exponential distribution is commonly used for modeling time between independent events that occur at a constant average rate, such as arrival times, failure times, or waiting times in queuing theory. The mean of the distribution is 1/λ and the variance is 1/λ².
+>
+> - **randBytes/randBytesAsync with randFill parameter**: Both `randBytes` and `randBytesAsync` methods now support an optional `randFill` parameter (Node.js only). When `randFill=true`, the methods use [`crypto.randomFill`](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [`crypto.randomBytes`](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback). This provides an alternative method for generating random bytes that may have different performance characteristics. The `randFill` parameter is ignored in browser environments and only works in Node.js where both `crypto.randomFillSync` and `crypto.randomFill` are available.
 
 ### Character Sets
 ```typescript
@@ -246,6 +249,12 @@ const normalRandom = Crypto.randNormal(0, 1); // mean=0, stdDev=1
 
 // Generate random bytes
 const bytes = Crypto.randBytes(32);
+
+// Generate random bytes using crypto.randomFill (Node.js only)
+const bytesWithRandFill = Crypto.randBytes(32, true);
+
+// Generate random bytes asynchronously using crypto.randomFill (Node.js only)
+const asyncBytesWithRandFill = await Crypto.randBytesAsync(32, true);
 ```
 
 #### **randPrime**: [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) key pair simulation example

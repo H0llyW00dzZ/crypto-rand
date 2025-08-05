@@ -144,6 +144,97 @@ describe('Crypto Async Methods', () => {
       // Expect at least 100 different byte values (out of 256 possible)
       expect(counts.size).toBeGreaterThan(100);
     });
+
+    describe('with randFill parameter', () => {
+      it('should generate buffer using crypto.randomFill when randFill=true', async () => {
+        const result = await randBytesAsync(16, true);
+        expect(Buffer.isBuffer(result)).toBe(true);
+        expect(result.length).toBe(16);
+      });
+
+      it('should generate buffer using crypto.randomBytes when randFill=false', async () => {
+        const result = await randBytesAsync(16, false);
+        expect(Buffer.isBuffer(result)).toBe(true);
+        expect(result.length).toBe(16);
+      });
+
+      it('should generate different byte sequences with randFill=true', async () => {
+        const results = await Promise.all([
+          randBytesAsync(8, true),
+          randBytesAsync(8, true),
+          randBytesAsync(8, true),
+          randBytesAsync(8, true),
+          randBytesAsync(8, true)
+        ]);
+
+        const hexStrings = results.map(result => Buffer.from(result).toString('hex'));
+        const uniqueResults = new Set<string>(hexStrings);
+        expect(uniqueResults.size).toBe(5);
+      });
+
+      it('should generate different results between randFill=true and randFill=false', async () => {
+        const results = await Promise.all([
+          randBytesAsync(16, true),
+          randBytesAsync(16, false),
+          randBytesAsync(16, true),
+          randBytesAsync(16, false),
+          randBytesAsync(16, true)
+        ]);
+
+        const hexStrings = results.map(result => Buffer.from(result).toString('hex'));
+        const uniqueResults = new Set<string>(hexStrings);
+        expect(uniqueResults.size).toBe(5); // All should be different
+      });
+
+      it('should handle zero-length input with randFill=true', async () => {
+        const result = await randBytesAsync(0, true);
+        expect(Buffer.isBuffer(result)).toBe(true);
+        expect(result.length).toBe(0);
+      });
+
+      it('should handle large input with randFill=true', async () => {
+        const size = 1024 * 5; // 5KB
+        const result = await randBytesAsync(size, true);
+        expect(Buffer.isBuffer(result)).toBe(true);
+        expect(result.length).toBe(size);
+      });
+
+      it('should generate bytes with high entropy using randFill=true', async () => {
+        const size = 256;
+        const result = await randBytesAsync(size, true);
+
+        // Count occurrences of each byte value
+        const counts = new Map<number, number>();
+        for (let i = 0; i < result.length; i++) {
+          const value = result[i];
+          counts.set(value, (counts.get(value) || 0) + 1);
+        }
+
+        // With 256 bytes, we should have a good distribution of values
+        // Expect at least 100 different byte values (out of 256 possible)
+        expect(counts.size).toBeGreaterThan(100);
+      });
+
+      it('should work with concurrent calls using randFill=true', async () => {
+        const promises: Promise<Uint8Array | Buffer>[] = [];
+        for (let i = 0; i < 10; i++) {
+          promises.push(randBytesAsync(16, true));
+        }
+
+        const results = await Promise.all(promises);
+        const hexStrings = results.map(result => Buffer.from(result).toString('hex'));
+        const uniqueResults = new Set<string>(hexStrings);
+
+        // All results should be different
+        expect(uniqueResults.size).toBe(10);
+
+        // All results should be the correct length
+        results.forEach(result => {
+          expect(result.length).toBe(16);
+          expect(Buffer.isBuffer(result)).toBe(true);
+        });
+      });
+    });
   });
 
   describe('randHexAsync', () => {
