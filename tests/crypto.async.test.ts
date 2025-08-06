@@ -537,8 +537,8 @@ describe('Crypto Async Methods', () => {
 
     it('should generate different primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
-        randPrimeAsync(16, 38, true),
-        randPrimeAsync(16, 38, true)
+        randPrimeAsync(16, 38, true, true),
+        randPrimeAsync(16, 38, true, true)
       ]);
 
       expect(prime1).not.toBe(prime2);

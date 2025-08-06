@@ -796,7 +796,7 @@ export class Crypto {
         let candidate: bigint;
         do {
             candidate = Crypto.randBigInt(bits, randFill);
-        } while (!isProbablePrime(candidate, iterations, Crypto.randBytes, enhanced));
+        } while (!isProbablePrime(candidate, iterations, Crypto.randBytes, enhanced, randFill));
 
         return candidate;
     }
@@ -847,7 +847,7 @@ export class Crypto {
 
         do {
             candidate = await Crypto.randBigIntAsync(bits, randFill);
-            isPrime = await isProbablePrimeAsync(candidate, iterations, Crypto.randBytesAsync, enhanced);
+            isPrime = await isProbablePrimeAsync(candidate, iterations, Crypto.randBytesAsync, enhanced, randFill);
         } while (!isPrime);
 
         return candidate;
