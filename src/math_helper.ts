@@ -16,18 +16,20 @@ import * as crypto from 'crypto';
  * @param k - The number of iterations for the test (a.k.a accuracy 🎯)
  * @param getRandomBytes - Function to generate random bytes (defaults to crypto.randomBytes)
  * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version
+ * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
  * @returns A boolean indicating whether the number is probably prime
  */
 export function isProbablePrime(
     n: bigint,
     k: number,
-    getRandomBytes: (size: number) => Buffer | Uint8Array = crypto.randomBytes,
-    enhanced: boolean = false
+    getRandomBytes: (size: number, randFill?: boolean) => Buffer | Uint8Array = crypto.randomBytes,
+    enhanced: boolean = false,
+    randFill?: boolean
 ): boolean {
     if (enhanced) {
-        return isProbablePrimeEnhanced(n, k, getRandomBytes);
+        return isProbablePrimeEnhanced(n, k, getRandomBytes, randFill);
     } else {
-        return isProbablePrimeStandard(n, k, getRandomBytes);
+        return isProbablePrimeStandard(n, k, getRandomBytes, randFill);
     }
 }
 
@@ -40,12 +42,14 @@ export function isProbablePrime(
  * @param n - The number to test for primality
  * @param k - The number of iterations for the test (higher values increase accuracy)
  * @param getRandomBytes - Function to generate random bytes for witness selection
+ * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
  * @returns A boolean indicating whether the number is probably prime
  */
 function isProbablePrimeStandard(
     n: bigint,
     k: number,
-    getRandomBytes: (size: number) => Buffer | Uint8Array
+    getRandomBytes: (size: number, randFill?: boolean) => Buffer | Uint8Array,
+    randFill?: boolean
 ): boolean {
 
     // Handle small numbers
@@ -64,7 +68,7 @@ function isProbablePrimeStandard(
     // ⚙️ Witness loop
     for (let i = 0; i < k; i++) {
         // Generate a random integer a in the range [2, n-2]
-        const randomBytes = getRandomBytes(64); // 64 bytes should be enough for most primes
+        const randomBytes = getRandomBytes(64, randFill); // 64 bytes should be enough for most primes
         let a = BigInt('0x' + randomBytes.toString('hex')) % (n - 4n) + 2n;
 
         // Compute aᵈ mod n
@@ -99,12 +103,14 @@ function isProbablePrimeStandard(
  * @param n - The number to test for primality
  * @param k - The number of iterations for the test (higher values increase accuracy)
  * @param getRandomBytes - Function to generate random bytes for witness selection
+ * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
  * @returns A boolean indicating whether the number is probably prime according to [FIPS 186-5](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf) criteria
  */
 export function isProbablePrimeEnhanced(
     n: bigint,
     k: number,
-    getRandomBytes: (size: number) => Buffer | Uint8Array = crypto.randomBytes
+    getRandomBytes: (size: number, randFill?: boolean) => Buffer | Uint8Array,
+    randFill?: boolean
 ): boolean {
 
     // Handle small numbers
@@ -128,7 +134,7 @@ export function isProbablePrimeEnhanced(
         // Generate a random integer b in the range [2, n-2] (steps 4.1 and 4.2)
         let b: bigint;
         do {
-            const randomBytes = getRandomBytes(64); // 64 bytes should be enough for most primes
+            const randomBytes = getRandomBytes(64, randFill); // 64 bytes should be enough for most primes
             b = BigInt('0x' + randomBytes.toString('hex')) % (n - 1n);
         } while (b <= 1n || b >= n - 1n);
 
@@ -266,18 +272,20 @@ export function modInverse(a: bigint, m: bigint): bigint {
  * @param k - The number of iterations for the test (a.k.a accuracy 🎯)
  * @param getRandomBytesAsync - Async function to generate random bytes
  * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version
+ * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
  * @returns A Promise that resolves to a boolean indicating whether the number is probably prime
  */
 export async function isProbablePrimeAsync(
     n: bigint,
     k: number,
     getRandomBytesAsync: (size: number) => Promise<Buffer | Uint8Array>,
-    enhanced: boolean = false
+    enhanced: boolean = false,
+    randFill?: boolean
 ): Promise<boolean> {
     if (enhanced) {
-        return isProbablePrimeEnhancedAsync(n, k, getRandomBytesAsync);
+        return isProbablePrimeEnhancedAsync(n, k, getRandomBytesAsync, randFill);
     } else {
-        return isProbablePrimeStandardAsync(n, k, getRandomBytesAsync);
+        return isProbablePrimeStandardAsync(n, k, getRandomBytesAsync, randFill);
     }
 }
 
@@ -291,12 +299,14 @@ export async function isProbablePrimeAsync(
  * @param n - The number to test for primality
  * @param k - The number of iterations for the test (higher values increase accuracy)
  * @param getRandomBytesAsync - Async function to generate random bytes for witness selection
+ * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
  * @returns A Promise that resolves to a boolean indicating whether the number is probably prime
  */
 async function isProbablePrimeStandardAsync(
     n: bigint,
     k: number,
-    getRandomBytesAsync: (size: number) => Promise<Buffer | Uint8Array>
+    getRandomBytesAsync: (size: number, randFill?: boolean) => Promise<Buffer | Uint8Array>,
+    randFill?: boolean
 ): Promise<boolean> {
 
     // Handle small numbers
@@ -315,7 +325,7 @@ async function isProbablePrimeStandardAsync(
     // ⚙️ Witness loop
     for (let i = 0; i < k; i++) {
         // Generate a random integer a in the range [2, n-2]
-        const randomBytes = await getRandomBytesAsync(64); // 64 bytes should be enough for most primes
+        const randomBytes = await getRandomBytesAsync(64, randFill); // 64 bytes should be enough for most primes
         let a = BigInt('0x' + randomBytes.toString('hex')) % (n - 4n) + 2n;
 
         // Compute aᵈ mod n
@@ -351,12 +361,14 @@ async function isProbablePrimeStandardAsync(
  * @param n - The number to test for primality
  * @param k - The number of iterations for the test (higher values increase accuracy)
  * @param getRandomBytesAsync - Async function to generate random bytes for witness selection
+ * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
  * @returns A Promise that resolves to a boolean indicating whether the number is probably prime according to [FIPS 186-5](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf) criteria
  */
 export async function isProbablePrimeEnhancedAsync(
     n: bigint,
     k: number,
-    getRandomBytesAsync: (size: number) => Promise<Buffer | Uint8Array>
+    getRandomBytesAsync: (size: number, randFill?: boolean) => Promise<Buffer | Uint8Array>,
+    randFill?: boolean
 ): Promise<boolean> {
 
     // Handle small numbers
@@ -380,7 +392,7 @@ export async function isProbablePrimeEnhancedAsync(
         // Generate a random integer b in the range [2, n-2] (steps 4.1 and 4.2)
         let b: bigint;
         do {
-            const randomBytes = await getRandomBytesAsync(64); // 64 bytes should be enough for most primes
+            const randomBytes = await getRandomBytesAsync(64, randFill); // 64 bytes should be enough for most primes
             b = BigInt('0x' + randomBytes.toString('hex')) % (n - 1n);
         } while (b <= 1n || b >= n - 1n);
 

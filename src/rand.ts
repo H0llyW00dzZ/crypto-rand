@@ -257,7 +257,7 @@ export class Crypto {
             return array;
         } else if (typeof crypto !== 'undefined' && crypto.randomBytes) {
             // Node.js environment
-            if (randFill && typeof crypto.randomFillSync === 'function') {
+            if (randFill === true && typeof crypto.randomFillSync === 'function') {
                 // Use crypto.randomFill when requested
                 // Note: Buffer.allocUnsafe is safe here because the entire buffer
                 // is immediately filled with cryptographically secure random data,
@@ -291,7 +291,7 @@ export class Crypto {
             return array;
         } else if (typeof crypto !== 'undefined' && randomBytesAsync) {
             // Node.js environment
-            if (randFill && randomFillAsync) {
+            if (randFill === true && randomFillAsync) {
                 // Use crypto.randomFill when requested
                 // Note: Buffer.allocUnsafe is safe here because the entire buffer
                 // is immediately filled with cryptographically secure random data,
@@ -764,12 +764,14 @@ export class Crypto {
      * @param bits - The bit length of the prime number to generate (default: 1024)
      * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (a.k.a accuracy 🎯, default: 10)
      * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version (default: false)
+     * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
      * @returns A bigint representing a probable prime number of the specified bit length
      */
     static randPrime(
         bits: number = 1024,
         iterations: number = 10,
         enhanced: boolean = false,
+        randFill?: boolean,
     ): bigint {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randPrime');
@@ -793,7 +795,7 @@ export class Crypto {
         // 4. The statistical distribution of the search process is independent of the specific prime value
         let candidate: bigint;
         do {
-            candidate = Crypto.randBigInt(bits);
+            candidate = Crypto.randBigInt(bits, randFill);
         } while (!isProbablePrime(candidate, iterations, Crypto.randBytes, enhanced));
 
         return candidate;
@@ -812,12 +814,14 @@ export class Crypto {
      * @param bits - The bit length of the prime number to generate (default: 1024)
      * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (a.k.a accuracy 🎯, default: 10)
      * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version (default: false)
+     * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
      * @returns A Promise that resolves to a bigint representing a probable prime number of the specified bit length
      */
     static async randPrimeAsync(
         bits: number = 1024,
         iterations: number = 10,
         enhanced: boolean = false,
+        randFill?: boolean,
     ): Promise<bigint> {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randPrimeAsync');
@@ -842,7 +846,7 @@ export class Crypto {
         let candidate: bigint, isPrime: boolean;
 
         do {
-            candidate = await Crypto.randBigIntAsync(bits);
+            candidate = await Crypto.randBigIntAsync(bits, randFill);
             isPrime = await isProbablePrimeAsync(candidate, iterations, Crypto.randBytesAsync, enhanced);
         } while (!isPrime);
 
