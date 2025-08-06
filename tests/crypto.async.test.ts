@@ -578,7 +578,7 @@ describe('Crypto Async Methods', () => {
 
     it('should generate a number with the correct bit length', async () => {
       const bits = 32;
-      const bigint = await randBigIntAsync(bits);
+      const bigint = await randBigIntAsync(bits, true);
 
       // Check bit length
       const bitLength = bigint.toString(2).length;

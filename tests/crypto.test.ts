@@ -3229,7 +3229,7 @@ describe('Crypto Class', () => {
 
     describe('basic functionality', () => {
       test('should return a BigInt', () => {
-        const result = Crypto.randBigInt(32); // Small bit size for faster tests
+        const result = Crypto.randBigInt(32, true); // Small bit size for faster tests
         expect(typeof result).toBe('bigint');
       });
 
@@ -3319,11 +3319,11 @@ describe('Crypto Class', () => {
         Crypto.randBigInt = jest.fn().mockImplementation(originalRandBigInt);
 
         // Call randPrime which should use randBigInt
-        Crypto.randPrime(32, 5);
+        Crypto.randPrime(32, 5, false, true);
 
         // Verify randBigInt was called
         expect(Crypto.randBigInt).toHaveBeenCalled();
-        expect(Crypto.randBigInt).toHaveBeenCalledWith(32);
+        expect(Crypto.randBigInt).toHaveBeenCalledWith(32, true);
 
         // Restore original method
         Crypto.randBigInt = originalRandBigInt;

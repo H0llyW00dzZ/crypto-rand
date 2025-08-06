@@ -134,7 +134,7 @@ async function generateRandomValues() {
 - `Crypto.randWalk(steps, stepSize?)` - Generate random walk sequence (stepSize defaults to 1)
 - `Crypto.randPassword(options)` - Generate secure password with configurable requirements
 - `Crypto.randLattice(dimension?, modulus?)` - Generate lattice-based cryptographically secure random number
-- `Crypto.randPrime(bits?, iterations?, enhanced?)` - Generate cryptographically secure random prime number with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
+- `Crypto.randPrime(bits?, iterations?, enhanced?, randFill?)` - Generate cryptographically secure random prime number with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
 - `Crypto.randSafePrime(bits?, iterations?, enhanced?)` - Generate cryptographically secure random safe prime number suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)
 - `Crypto.randBigInt(bits?, randFill?)` - Generate cryptographically secure random bigint with specified bit length
 - `Crypto.randExponential(lambda?)` - Generate random number with exponential distribution
@@ -146,7 +146,7 @@ async function generateRandomValues() {
 - `Crypto.randBase64Async(length, randFill?)` - Async version of randBase64()
 - `Crypto.randSeedAsync()` - Async version of randSeed()
 - `Crypto.randVersionAsync()` - Async version of randVersion()
-- `Crypto.randPrimeAsync(bits?, iterations?, enhanced?)` - Async version of randPrime() with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
+- `Crypto.randPrimeAsync(bits?, iterations?, enhanced?, randFill?)` - Async version of randPrime() with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
 - `Crypto.randSafePrimeAsync(bits?, iterations?, enhanced?)` - Async version of randSafePrime() for generating safe primes suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)
 - `Crypto.randBigIntAsync(bits?, randFill?)` - Async version of randBigInt()
 
