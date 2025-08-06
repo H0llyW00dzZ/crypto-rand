@@ -1512,8 +1512,8 @@ describe('Crypto Class', () => {
 
     describe('security properties', () => {
       test('should generate different primes on multiple calls', () => {
-        const prime1 = Crypto.randPrime(32, 38, true);
-        const prime2 = Crypto.randPrime(32, 38, true);
+        const prime1 = Crypto.randPrime(32, 38, true, true);
+        const prime2 = Crypto.randPrime(32, 38, true, true);
         expect(prime1).not.toBe(prime2);
       });
 
