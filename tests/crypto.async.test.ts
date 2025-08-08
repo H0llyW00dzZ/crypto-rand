@@ -918,6 +918,136 @@ describe('Crypto Async Methods', () => {
       }
     });
 
+    it('should perform RSAES-OAEP operations with async prime generation using RandFill', async () => {
+      // Generate 2048-bit RSA key pair (1024-bit primes each)
+      let p: bigint, q: bigint, n: bigint, phi: bigint;
+      const expectedBitLength: number = 1024;
+
+      let startTime: number;
+      startTime = Date.now();
+
+      // Loop to ensure modulus n is of the expected bit length
+      do {
+        // Generate two primes asynchronously
+        [p, q] = await Promise.all([
+          randPrimeAsync(expectedBitLength, 38, true, true),
+          randPrimeAsync(expectedBitLength, 38, true, true)
+        ]);
+
+        // Ensure p and q are different
+        expect(p).not.toBe(q);
+
+        // Calculate RSA parameters
+        n = p * q; // 2048-bit modulus
+        phi = (p - 1n) * (q - 1n); // Euler's totient function
+      } while (n.toString(2).length !== 2 * expectedBitLength);
+
+      console.log(`Testing RSAES-OAEP with a ${2 * expectedBitLength}-bit RSA key pair using RandFill...`);
+
+      // Common RSA public exponent
+      const e = 65537n;
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e, phi)).toBe(1n);
+
+      const d = modInverse(e, phi);
+
+      // Verify key generation time is reasonable
+      const keyGenTime = Date.now() - startTime;
+      console.log(`The ${n.toString(2).length}-bit key generation using RandFill took ${keyGenTime}ms`);
+      expect(keyGenTime).toBeLessThan(150000); // Increase due to overhead on Windows. Haha!
+
+      // Create RSA keys from our generated parameters
+      console.log('Creating RSA keys from our generated parameters...');
+
+      // Create private key components
+      const dmp1 = d % (p - 1n); // d mod (p-1)
+      const dmq1 = d % (q - 1n); // d mod (q-1)
+      const coeff = modInverse(q, p); // q^-1 mod p
+
+      // Convert bigints to Buffer for key creation
+      const nBuffer = Buffer.from(n.toString(16).padStart(512, '0'), 'hex');
+      const eBuffer = Buffer.from(e.toString(16).padStart(8, '0'), 'hex');
+      const dBuffer = Buffer.from(d.toString(16).padStart(512, '0'), 'hex');
+      const pBuffer = Buffer.from(p.toString(16).padStart(256, '0'), 'hex');
+      const qBuffer = Buffer.from(q.toString(16).padStart(256, '0'), 'hex');
+      const dmp1Buffer = Buffer.from(dmp1.toString(16).padStart(256, '0'), 'hex');
+      const dmq1Buffer = Buffer.from(dmq1.toString(16).padStart(256, '0'), 'hex');
+      const coeffBuffer = Buffer.from(coeff.toString(16).padStart(256, '0'), 'hex');
+
+      // Create key objects
+      const privateKey = crypto.createPrivateKey({
+        key: {
+          kty: 'RSA',
+          n: nBuffer.toString('base64url'),
+          e: eBuffer.toString('base64url'),
+          d: dBuffer.toString('base64url'),
+          p: pBuffer.toString('base64url'),
+          q: qBuffer.toString('base64url'),
+          dp: dmp1Buffer.toString('base64url'),
+          dq: dmq1Buffer.toString('base64url'),
+          qi: coeffBuffer.toString('base64url')
+        },
+        format: 'jwk'
+      });
+
+      const publicKey = crypto.createPublicKey(privateKey);
+
+      // Test RSAES-OAEP encryption and decryption
+      console.log('Testing RSAES-OAEP encryption/decryption with our generated keys...');
+
+      // Create test message - keep it small enough for the key size with OAEP padding
+      // For a 2048-bit key, the maximum message size with OAEP padding is approximately 190 bytes
+      const message = Buffer.from(`This is a test message for RSAES-OAEP encryption with ${n.toString(2).length}-bit RSA key.`);
+
+      try {
+        // Encrypt with public key using RSAES-OAEP
+        const encrypted = crypto.publicEncrypt(
+          {
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            oaepHash: 'sha256'
+          },
+          message
+        );
+
+        // Decrypt with private key using RSAES-OAEP
+        const decrypted = crypto.privateDecrypt(
+          {
+            key: privateKey,
+            padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+            oaepHash: 'sha256'
+          },
+          encrypted
+        );
+
+        // Verify decryption worked
+        expect(decrypted.toString()).toBe(message.toString());
+        console.log('RSAES-OAEP encryption/decryption successful!');
+
+        // Verify ciphertext is different from plaintext
+        expect(encrypted.toString()).not.toBe(message.toString());
+
+        // Verify ciphertext length is appropriate for RSA key size (256 bytes for 2048-bit key)
+        expect(encrypted.length).toBe(256);
+
+        // Also demonstrate textbook RSA (no padding) for verification
+        console.log('Verifying with textbook RSA (no padding)...');
+
+        // Encrypt a small message using our parameters (textbook RSA)
+        const smallMessage = 12345n;
+        const ciphertext = modPow(smallMessage, e, n);
+        const decryptedMessage = modPow(ciphertext, d, n);
+        expect(decryptedMessage).toBe(smallMessage);
+        console.log('Successfully verified that randPrimeAsync generates primes suitable for RSA operations');
+      } catch (error) {
+        console.error('RSAES-OAEP test failed:', error);
+        throw error;
+      }
+    });
+
     it('should perform RSASSA-PSS operations with async prime generation', async () => {
       // Generate 2048-bit RSA key pair (1024-bit primes each)
       let startTime: number;
@@ -956,6 +1086,137 @@ describe('Crypto Async Methods', () => {
       // Verify key generation time is reasonable
       const keyGenTime = Date.now() - startTime;
       console.log(`${n.toString(2).length}-bit key generation took ${keyGenTime}ms`);
+      expect(keyGenTime).toBeLessThan(150000); // Increase due to overhead on Windows. Haha!
+
+      // Create RSA keys from our generated parameters
+      console.log('Creating RSA keys from our generated parameters...');
+
+      // Create private key components
+      const dmp1 = d % (p - 1n); // d mod (p-1)
+      const dmq1 = d % (q - 1n); // d mod (q-1)
+      const coeff = modInverse(q, p); // q^-1 mod p
+
+      // Convert bigints to Buffer for key creation
+      const nBuffer = Buffer.from(n.toString(16).padStart(512, '0'), 'hex');
+      const eBuffer = Buffer.from(e.toString(16).padStart(8, '0'), 'hex');
+      const dBuffer = Buffer.from(d.toString(16).padStart(512, '0'), 'hex');
+      const pBuffer = Buffer.from(p.toString(16).padStart(256, '0'), 'hex');
+      const qBuffer = Buffer.from(q.toString(16).padStart(256, '0'), 'hex');
+      const dmp1Buffer = Buffer.from(dmp1.toString(16).padStart(256, '0'), 'hex');
+      const dmq1Buffer = Buffer.from(dmq1.toString(16).padStart(256, '0'), 'hex');
+      const coeffBuffer = Buffer.from(coeff.toString(16).padStart(256, '0'), 'hex');
+
+      // Create key objects
+      const privateKey = crypto.createPrivateKey({
+        key: {
+          kty: 'RSA',
+          n: nBuffer.toString('base64url'),
+          e: eBuffer.toString('base64url'),
+          d: dBuffer.toString('base64url'),
+          p: pBuffer.toString('base64url'),
+          q: qBuffer.toString('base64url'),
+          dp: dmp1Buffer.toString('base64url'),
+          dq: dmq1Buffer.toString('base64url'),
+          qi: coeffBuffer.toString('base64url')
+        },
+        format: 'jwk'
+      });
+
+      const publicKey = crypto.createPublicKey(privateKey);
+
+      // Test RSASSA-PSS signing and verification
+      console.log('Testing RSASSA-PSS signing/verification with our generated keys...');
+
+      // Create test message
+      const message = Buffer.from(`This is a test message for RSASSA-PSS signing with ${n.toString(2).length}-bit RSA key.`);
+
+      try {
+        // Sign with private key using RSASSA-PSS
+        const signature = crypto.sign(
+          'sha256',
+          message,
+          {
+            key: privateKey,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          }
+        );
+
+        // Verify with public key using RSASSA-PSS
+        const isVerified = crypto.verify(
+          'sha256',
+          message,
+          {
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          },
+          signature
+        );
+
+        // Verify signature verification worked
+        expect(isVerified).toBe(true);
+        console.log('RSASSA-PSS signing/verification successful!');
+
+        // Test with modified message (should fail verification)
+        const modifiedMessage = Buffer.from(`This is a MODIFIED test message for RSASSA-PSS signing with ${n.toString(2).length}-bit RSA key.`);
+        const isModifiedVerified = crypto.verify(
+          'sha256',
+          modifiedMessage,
+          {
+            key: publicKey,
+            padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+            saltLength: 32
+          },
+          signature
+        );
+
+        // Verify modified message fails verification
+        expect(isModifiedVerified).toBe(false);
+      } catch (error) {
+        console.error('RSASSA-PSS test failed:', error);
+        throw error;
+      }
+    });
+
+    it('It should perform RSASSA-PSS operations with asynchronous prime generation using RandFill', async () => {
+      // Generate 2048-bit RSA key pair (1024-bit primes each)
+      let startTime: number;
+      startTime = Date.now();
+
+      let p: bigint, q: bigint, n: bigint, phi: bigint;
+      const expectedBitLength: number = 1024;
+
+      // Loop to ensure modulus n is of the expected bit length
+      do {
+        // Generate two primes asynchronously
+        [p, q] = await Promise.all([
+          randPrimeAsync(expectedBitLength, 38, true, true),
+          randPrimeAsync(expectedBitLength, 38, true, true)
+        ]);
+
+        // Ensure p and q are different
+        expect(p).not.toBe(q);
+
+        // Calculate RSA parameters
+        n = p * q; // 2048-bit modulus
+        phi = (p - 1n) * (q - 1n); // Euler's totient function
+      } while (n.toString(2).length !== 2 * expectedBitLength);
+
+      console.log(`Testing RSASSA-PSS with a ${2 * expectedBitLength}-bit RSA key pair using RandFill...`);
+
+      const e = 65537n; // Common public exponent
+
+      // Verify that e is coprime to phi using GCD.
+      //
+      // Note: This may fail on some operating systems and could likely fail with 512 bits.
+      expect(gcd(e, phi)).toBe(1n);
+
+      const d = modInverse(e, phi);
+
+      // Verify key generation time is reasonable
+      const keyGenTime = Date.now() - startTime;
+      console.log(`The ${n.toString(2).length}-bit key generation using RandFill took ${keyGenTime}ms.`);
       expect(keyGenTime).toBeLessThan(150000); // Increase due to overhead on Windows. Haha!
 
       // Create RSA keys from our generated parameters
