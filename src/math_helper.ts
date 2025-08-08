@@ -68,7 +68,9 @@ function isProbablePrimeStandard(
     // ⚙️ Witness loop
     for (let i = 0; i < k; i++) {
         // Generate a random integer a in the range [2, n-2]
-        const randomBytes = getRandomBytes(64, randFill); // 64 bytes should be enough for most primes
+        // Calculate how many bytes are needed to represent n
+        const byteLength = Math.ceil(n.toString(2).length / 8);
+        const randomBytes = getRandomBytes(byteLength, randFill);
         let a = BigInt('0x' + randomBytes.toString('hex')) % (n - 4n) + 2n;
 
         // Compute aᵈ mod n
@@ -134,7 +136,9 @@ export function isProbablePrimeEnhanced(
         // Generate a random integer b in the range [2, n-2] (steps 4.1 and 4.2)
         let b: bigint;
         do {
-            const randomBytes = getRandomBytes(64, randFill); // 64 bytes should be enough for most primes
+            // Calculate how many bytes are needed to represent n
+            const byteLength = Math.ceil(n.toString(2).length / 8);
+            const randomBytes = getRandomBytes(byteLength, randFill);
             b = BigInt('0x' + randomBytes.toString('hex')) % (n - 1n);
         } while (b <= 1n || b >= n - 1n);
 
@@ -325,7 +329,9 @@ async function isProbablePrimeStandardAsync(
     // ⚙️ Witness loop
     for (let i = 0; i < k; i++) {
         // Generate a random integer a in the range [2, n-2]
-        const randomBytes = await getRandomBytesAsync(64, randFill); // 64 bytes should be enough for most primes
+        // Calculate how many bytes are needed to represent n
+        const byteLength = Math.ceil(n.toString(2).length / 8);
+        const randomBytes = await getRandomBytesAsync(byteLength, randFill);
         let a = BigInt('0x' + randomBytes.toString('hex')) % (n - 4n) + 2n;
 
         // Compute aᵈ mod n
@@ -392,7 +398,9 @@ export async function isProbablePrimeEnhancedAsync(
         // Generate a random integer b in the range [2, n-2] (steps 4.1 and 4.2)
         let b: bigint;
         do {
-            const randomBytes = await getRandomBytesAsync(64, randFill); // 64 bytes should be enough for most primes
+            // Calculate how many bytes are needed to represent n
+            const byteLength = Math.ceil(n.toString(2).length / 8);
+            const randomBytes = await getRandomBytesAsync(byteLength, randFill);
             b = BigInt('0x' + randomBytes.toString('hex')) % (n - 1n);
         } while (b <= 1n || b >= n - 1n);
 
