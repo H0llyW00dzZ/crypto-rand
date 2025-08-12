@@ -20,7 +20,7 @@ on:
 
 jobs:
   build:
-    name: Test Hack Crypto [${{ matrix.os }} / Node ${{ matrix.node-version }}]
+    name: Hack Crypto [${{ matrix.os }} / Node ${{ matrix.node-version }}]
     strategy:
       matrix:
         os:
