@@ -24,7 +24,6 @@ jobs:
     strategy:
       matrix:
         os:
-          # Note: Some operating systems are not supported due to poor compatibility with Coveralls
           [
             # Acknowledgement (H0llyW00dzZ): In the realm of cryptographic operations, ARM architecture is leading and surpassing all others.
             ubuntu-latest,
