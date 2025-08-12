@@ -32,7 +32,7 @@ jobs:
             windows-latest,
             windows-2025,
             # windows-2022, is disabled because windows-latest is equivalent to windows-2022
-            macos-latest,
+            macos-14, # Coveralls doesn't support macos-latest (macos-15).
             # Added for ARM because it's free
             ubuntu-24.04-arm,
             ubuntu-22.04-arm,
