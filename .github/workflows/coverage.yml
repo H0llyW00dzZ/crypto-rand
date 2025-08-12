@@ -20,25 +20,26 @@ on:
 
 jobs:
   build:
+    name: 🔢 Hack Crypto [OS ${{ matrix.os }} / Node ${{ matrix.node-version }}]
     strategy:
       matrix:
         os:
-          # Note: Some operating systems are not supported due to poor compatibility with Coveralls
           [
             # Acknowledgement (H0llyW00dzZ): In the realm of cryptographic operations, ARM architecture is leading and surpassing all others.
-            ubuntu-latest,
-            # ubuntu-24.04, is disabled because ubuntu-latest is equivalent to ubuntu-24.04
+            # ubuntu-latest, is disabled because ubuntu-24.04 is equivalent to ubuntu-latest for now
+            ubuntu-24.04,
             ubuntu-22.04,
-            windows-latest,
+            # windows-latest, is disabled because windows-2022 is equivalent to windows-latest for now
             windows-2025,
-            # windows-2022, is disabled because windows-latest is equivalent to windows-2022
-            macos-latest,
+            windows-2022,
+            # macos-latest,
+            macos-15, # macos-15 is macos-latest, I'm pretty sure
             macos-14,
             macos-13,
             # Added for ARM because it's free
             ubuntu-24.04-arm,
             ubuntu-22.04-arm,
-            # windows-11-arm is disabled because "Error: Unable to find Node version '21.x' for platform win32 and architecture arm64."
+            # windows-11-arm is disabled because "Error: Unable to find Node version '21.x' for platform win32 and architecture arm64." (RIP - Unsupported)
           ]
         node-version: [19.x, 20.x, 21.x, 22.x, 23.x, 24.x]
 

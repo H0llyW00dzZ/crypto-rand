@@ -2,7 +2,7 @@
 ![Node.js min version](https://img.shields.io/badge/node-%3E%3D19.0.0-brightgreen?logo=node.js)
 [![npm version](https://badge.fury.io/js/@h0llyw00dzz%2Fcrypto-rand.svg)](https://badge.fury.io/js/@h0llyw00dzz%2Fcrypto-rand)
 [![🧪 Test Coverage](https://github.com/H0llyW00dzZ/crypto-rand/actions/workflows/coverage.yml/badge.svg?branch=master)](https://github.com/H0llyW00dzZ/crypto-rand/actions/workflows/coverage.yml)
-[![Coverage Status](https://coveralls.io/repos/github/H0llyW00dzZ/crypto-rand/badge.svg)](https://coveralls.io/github/H0llyW00dzZ/crypto-rand)
+[![Coverage Status](https://codecov.io/gh/H0llyW00dzZ/crypto-rand/branch/master/graph/badge.svg?token=9JK6KO47OE)](https://codecov.io/gh/H0llyW00dzZ/crypto-rand)
 [![jest tested](https://img.shields.io/badge/Jest-tested-eee.svg?logo=jest&labelColor=99424f)](https://github.com/jestjs/jest)
 [![Socket Badge](https://socket.dev/api/badge/npm/package/@h0llyw00dzz/crypto-rand/0.1.5)](https://socket.dev/npm/package/@h0llyw00dzz/crypto-rand/overview/0.1.5)
 
