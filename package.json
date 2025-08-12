@@ -20,7 +20,6 @@
     "test:browser": "cross-env TEST_HACK_CRYPTO_BROWSER_ENV=true jest --selectProjects=browser",
     "test:watch": "jest --watch",
     "test:coverage": "cross-env TEST_HACK_CRYPTO_BROWSER_ENV=true jest --coverage --selectProjects=browser && cross-env TEST_HACK_CRYPTO_BROWSER_ENV=false jest --coverage --selectProjects=node",
-    "coveralls": "cross-env TEST_HACK_CRYPTO_BROWSER_ENV=true jest --coverage --selectProjects=browser && cross-env TEST_HACK_CRYPTO_BROWSER_ENV=false jest --coverage --selectProjects=node && coveralls < coverage/lcov.info",
     "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "keywords": [
@@ -48,7 +47,6 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.3",
     "babel-jest": "^30.0.0",
-    "coveralls": "^3.1.1",
     "cross-env": "^10.0.0",
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
