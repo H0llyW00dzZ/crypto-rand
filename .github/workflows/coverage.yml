@@ -57,7 +57,10 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:coverage
 
-      - name: Coveralls
-        uses: coverallsapp/github-action@v2
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          files: coverage/lcov.info
+          verbose: true
