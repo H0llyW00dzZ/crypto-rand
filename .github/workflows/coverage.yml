@@ -39,7 +39,7 @@ jobs:
             # Added for ARM because it's free
             ubuntu-24.04-arm,
             ubuntu-22.04-arm,
-            # windows-11-arm is disabled because "Error: Unable to find Node version '21.x' for platform win32 and architecture arm64."
+            # windows-11-arm is disabled because "Error: Unable to find Node version '21.x' for platform win32 and architecture arm64." (RIP - Unsupported)
           ]
         node-version: [19.x, 20.x, 21.x, 22.x, 23.x, 24.x]
 
