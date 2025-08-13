@@ -211,6 +211,21 @@ describe('Crypto Class', () => {
       }
       expect(hexStrings.size).toBe(20);
     });
+
+    it('should throw error in browser environment', () => {
+      // Save original isBrowser method
+      const originalIsBrowser = Crypto['isBrowser'];
+
+      // Mock isBrowser to return true
+      Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
+
+      try {
+        expect(() => Crypto.randHex(10)).toThrow('randHex is not available in browser environment. This method requires Node.js crypto module.');
+      } finally {
+        // Restore original method
+        Crypto['isBrowser'] = originalIsBrowser;
+      }
+    });
   });
 
   describe('randBase64()', () => {
@@ -407,6 +422,21 @@ describe('Crypto Class', () => {
       }
       expect(seeds.size).toBeGreaterThan(15); // High entropy expected
     });
+
+    it('should throw error in browser environment', () => {
+      // Save original isBrowser method
+      const originalIsBrowser = Crypto['isBrowser'];
+
+      // Mock isBrowser to return true
+      Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
+
+      try {
+        expect(() => Crypto.randSeed()).toThrow('randSeed is not available in browser environment. This method requires Node.js crypto module.');
+      } finally {
+        // Restore original method
+        Crypto['isBrowser'] = originalIsBrowser;
+      }
+    });
   });
 
   describe('randSeeded()', () => {
@@ -427,6 +457,21 @@ describe('Crypto Class', () => {
       const result = Crypto.randSeeded();
       expect(result).toBeGreaterThanOrEqual(0);
       expect(result).toBeLessThan(1);
+    });
+
+    it('should throw error in browser environment', () => {
+      // Save original isBrowser method
+      const originalIsBrowser = Crypto['isBrowser'];
+
+      // Mock isBrowser to return true
+      Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
+
+      try {
+        expect(() => Crypto.randSeeded(1337)).toThrow('randSeeded (with seed parameter) is not available in browser environment. This method requires Node.js crypto module.');
+      } finally {
+        // Restore original method
+        Crypto['isBrowser'] = originalIsBrowser;
+      }
     });
   });
 
