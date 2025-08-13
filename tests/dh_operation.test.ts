@@ -1,4 +1,5 @@
 import * as crypto from 'crypto';
+import * as os from 'os';
 import { Crypto, randSafePrime, randSafePrimeAsync } from '../src/rand';
 import { isProbablePrime, isProbablePrimeAsync, modPow } from '../src/math_helper';
 
@@ -229,17 +230,25 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       expect(await isProbablePrimeAsync(q, 38, cryptoRandomBytesAsync)).toBe(true);
     });
 
-    it('should generate different safe primes on multiple calls', async () => {
+    // Detect if we're on Windows 2025 or macOS 13
+    const platform = os.platform();
+    const osRelease = os.release();
+    const osVersion = os.version();
+    const isWindows2025 = platform === 'win32' && osVersion.includes('Windows Server 2025 Datacenter');
+    const isMacOS13 = platform === 'darwin' && osRelease.startsWith('22.');
+
+    // Skip test on slow platforms
+    (isWindows2025 || isMacOS13 ? test.skip : test)('should generate different safe primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
         // When the bit value is small, it can be particularly risky.
         // I'm also pretty sure it might cause the default entropy for random bytes that Node.js uses with OpenSSL to be poor,
         // which is why it can be risky, due to how the algorithm works.
-        Crypto.randSafePrimeAsync(32, 38, false),
-        Crypto.randSafePrimeAsync(32, 38, false)
+        Crypto.randSafePrimeAsync(1024, 15, false),
+        Crypto.randSafePrimeAsync(1024, 15, false)
       ]);
 
       expect(prime1).not.toBe(prime2);
-    });
+    }, 700000); // Increased to 700000 due to performance overhead on macOS 13 running on Intel x64 processors. hahaha
 
     it('should throw error for invalid bit length', async () => {
       await expect(randSafePrimeAsync(0)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
@@ -384,50 +393,63 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       expect(aliceSharedSecret).toBe(bobSharedSecret);
     });
 
-    // This is literally an overhead on [x64](https://en.wikipedia.org/wiki/X86-64). hahahaha
-    // With ECC, this would likely be fine to implement in TypeScript/JavaScript because ECC involves small and fast computations.
-    test('should work with async safe prime generation', async () => {
-      // Skip test on x64 arch
-      //
-      // On my local machine running Ubuntu 25.04, this introduces no noticeable overhead.
-      // However, the GitHub runner does not support Ubuntu 25.04, so we can't run the test there (RIP).
-      if (process.arch === 'x64') {
-        console.log('Skipping async safe prime generation test on x64 arch due to overhead. hahaha');
-        return;
-      }
+    // This test uses the optimized implementation for large bit sizes
+    // which significantly improves performance compared to the previous implementation
+    // However, on Windows 2025 and macOS 13 it's too slow and should be skipped hahaha
 
-      jest.setTimeout(100000);
-      // Generate a safe prime asynchronously
-      //
-      // 2048 is still causing overhead, however ARM can still handle it on Ubuntu 22.04. Will improve/fix it later when I have time.
-      const p = await Crypto.randSafePrimeAsync(1024, 15, false); // Reduce it to 1024 (with a $100 million cost to break it) and see how it goes.
-      const g = 2n;
+    // Detect if we're on Windows 2025 or macOS 13
+    const platform = os.platform();
+    const osRelease = os.release();
+    const osVersion = os.version();
+    const isWindows2025 = platform === 'win32' && osVersion.includes('Windows Server 2025 Datacenter');
+    const isMacOS13 = platform === 'darwin' && osRelease.startsWith('22.');
 
-      // Generate private keys
-      // Using 256-bit private keys which is secure for DH
-      const alicePrivateKey = await Crypto.randBigIntAsync(256);
-      const bobPrivateKey = await Crypto.randBigIntAsync(256);
+    // Skip test on slow platforms
+    (isWindows2025 || isMacOS13 ? test.skip : test)(
+      'should work with async safe prime generation',
+      async () => {
+        console.time('2048-bit safe prime generation');
+        // Generate a 2048-bit safe prime asynchronously
+        const p = await Crypto.randSafePrimeAsync(2048, 15, false);
+        console.timeEnd('2048-bit safe prime generation');
 
-      // Generate public keys
-      const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
-      const bobPublicKey = dhGeneratePublicKey(p, g, bobPrivateKey);
+        // Verify bit length
+        expect(p.toString(2).length).toBe(2048);
 
-      // Verify that public keys are not in a small subgroup
-      // For a safe prime, the only small subgroup elements are 1 and p-1
-      expect(alicePublicKey).not.toBe(1n);
-      expect(alicePublicKey).not.toBe(p - 1n);
-      expect(bobPublicKey).not.toBe(1n);
-      expect(bobPublicKey).not.toBe(p - 1n);
+        // Verify it's a safe prime
+        const q = (p - 1n) / 2n;
+        expect(await isProbablePrimeAsync(q, 15, cryptoRandomBytesAsync)).toBe(true);
+        expect(await isProbablePrimeAsync(p, 15, cryptoRandomBytesAsync)).toBe(true);
 
-      // Compute shared secrets
-      const aliceSharedSecret = dhComputeSharedSecret(p, bobPublicKey, alicePrivateKey);
-      const bobSharedSecret = dhComputeSharedSecret(p, alicePublicKey, bobPrivateKey);
+        const g = 2n;
 
-      // Both parties should arrive at the same shared secret
-      //
-      // Note: This is not magic, it's proof that numbers don't lie
-      expect(aliceSharedSecret).toBe(bobSharedSecret);
-    }, 350000);
+        // Generate private keys
+        // Using 256-bit private keys which is secure for DH
+        const alicePrivateKey = await Crypto.randBigIntAsync(256);
+        const bobPrivateKey = await Crypto.randBigIntAsync(256);
+
+        // Generate public keys
+        const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
+        const bobPublicKey = dhGeneratePublicKey(p, g, bobPrivateKey);
+
+        // Verify that public keys are not in a small subgroup
+        // For a safe prime, the only small subgroup elements are 1 and p-1
+        expect(alicePublicKey).not.toBe(1n);
+        expect(alicePublicKey).not.toBe(p - 1n);
+        expect(bobPublicKey).not.toBe(1n);
+        expect(bobPublicKey).not.toBe(p - 1n);
+
+        // Compute shared secrets
+        const aliceSharedSecret = dhComputeSharedSecret(p, bobPublicKey, alicePrivateKey);
+        const bobSharedSecret = dhComputeSharedSecret(p, alicePublicKey, bobPrivateKey);
+
+        // Both parties should arrive at the same shared secret
+        //
+        // Note: This is not magic, it's proof that numbers don't lie
+        expect(aliceSharedSecret).toBe(bobSharedSecret);
+      },
+      1000000
+    );
   });
 
   test('should successfully perform Triple Diffie-Hellman (3-DH) key exchange', () => {

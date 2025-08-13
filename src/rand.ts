@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import { promisify } from 'util';
 import { DEFAULT_CHARSET, LOWERCASE_CHARSET, NUMERIC_CHARSET, SPECIAL_CHARSET, UPPERCASE_CHARSET } from './const';
-import { isProbablePrime, isProbablePrimeAsync } from './math_helper';
+import { isProbablePrime, isProbablePrimeAsync, getSmallPrimesForSieve, combinedSieveTest } from './math_helper';
 
 /**
  * Promisified version of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) - only created if [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) exists
@@ -856,29 +856,31 @@ export class Crypto {
     /**
      * Generate a cryptographically secure random safe prime number suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange).
      * 
-     * A safe prime is a prime number of the form p = 2q + 1, where q is also a prime number.
+     * A safe prime is a prime number of the form p = 2q + 1, where q is also a prime number ([Sophie Germain prime](https://en.wikipedia.org/wiki/Safe_and_Sophie_Germain_primes)).
      * Safe primes are particularly useful for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) because they help prevent
      * small subgroup attacks and ensure that the discrete logarithm problem remains hard.
      * 
-     * This method uses an optimized approach to find safe primes by:
-     * 1. Generating candidates directly with the correct bit length
-     * 2. Using sieving with small primes to quickly eliminate non-prime candidates
-     * 3. Performing primality tests only on promising candidates
+     * This method uses [Michael J. Wiener's](https://eprint.iacr.org/2003/186) combined sieve approach to find safe primes with approximately
+     * 15x speedup over naive algorithms by:
+     * 1. Generating random candidates with the correct bit length
+     * 2. Using combined sieving with small primes up to 2^16 to simultaneously eliminate candidates
+     *    where either p or (p-1)/2 is divisible by small primes
+     * 3. Performing Miller-Rabin primality tests only on candidates that pass the sieve
      * 
      * **Note:** This method is currently only available in Node.js environment due to its
      * dependency on the native crypto module for secure random number generation.
      * 
-     * **TODO:** Change the algorithm method due to its too overhead. Combine Safe and Sophie Germain primes with the Miller-Rabin test.
-     * 
      * @param bits - The bit length of the safe prime number to generate (default: 2048)
      * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
      * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version (default: false)
+     * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
      * @returns A bigint representing a probable safe prime number of the specified bit length
      */
     static randSafePrime(
         bits: number = 2048,
         iterations: number = 10,
         enhanced: boolean = false,
+        randFill?: boolean,
     ): bigint {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randSafePrime');
@@ -892,27 +894,13 @@ export class Crypto {
             throw new Error('Number of iterations must be a positive integer');
         }
 
-        // Small primes for sieving
-        //
-        // This method works well on ARM; however, on x64, it experiences significant overhead and keeps spinning. hahaha
-        const smallPrimes = [
-            3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n, 41n, 43n, 47n, 53n, 59n, 61n, 67n, 71n,
-            73n, 79n, 83n, 89n, 97n, 101n, 103n, 107n, 109n, 113n, 127n, 131n, 137n, 139n, 149n, 151n,
-            157n, 163n, 167n, 173n, 179n, 181n, 191n, 193n, 197n, 199n, 211n, 223n, 227n, 229n, 233n,
-            239n, 241n, 251n, 257n, 263n, 269n, 271n, 277n, 281n, 283n, 293n, 307n, 311n, 313n, 317n,
-            331n, 337n, 347n, 349n, 353n, 359n, 367n, 373n, 379n, 383n, 389n, 397n, 401n, 409n, 419n,
-            421n, 431n, 433n, 439n, 443n, 449n, 457n, 461n, 463n, 467n, 479n, 487n, 491n, 499n, 503n,
-            509n, 521n, 523n, 541n, 547n, 557n, 563n, 569n, 571n, 577n, 587n, 593n, 599n, 601n, 607n,
-            613n, 617n, 619n, 631n, 641n, 643n, 647n, 653n, 659n, 661n, 673n, 677n, 683n, 691n, 701n,
-            709n, 719n, 727n, 733n, 739n, 743n, 751n, 757n, 761n, 769n, 773n, 787n, 797n, 809n, 811n,
-            821n, 823n, 827n, 829n, 839n, 853n, 857n, 859n, 863n, 877n, 881n, 883n, 887n, 907n, 911n,
-            919n, 929n, 937n, 941n, 947n, 953n, 967n, 971n, 977n, 983n, 991n, 997n
-        ];
+        // Get small primes up to 2^16 for combined sieve (cached for performance)
+        const smallPrimes = getSmallPrimesForSieve();
 
         // Generate safe prime candidates until a valid one is found
-        while (true) {
+        do {
             // Generate a random odd number with exactly 'bits' bits
-            const p = Crypto.randBigInt(bits);
+            const p = Crypto.randBigInt(bits, randFill);
 
             // For a safe prime p = 2q + 1, q = (p-1)/2 must be prime
             const q = (p - 1n) / 2n;
@@ -922,40 +910,19 @@ export class Crypto {
                 continue;
             }
 
-            // Sieve check: quickly eliminate candidates divisible by small primes
-            let divisibleBySmallPrime = false;
-
-            for (const prime of smallPrimes) {
-                // Skip if prime is too large for efficient sieving
-                if (prime * prime > p) {
-                    break;
-                }
-
-                // Check if p is divisible by the small prime
-                if (p % prime === 0n) {
-                    divisibleBySmallPrime = true;
-                    break;
-                }
-
-                // Check if q is divisible by the small prime
-                if (q % prime === 0n) {
-                    divisibleBySmallPrime = true;
-                    break;
-                }
-            }
-
-            if (divisibleBySmallPrime) {
+            // Combined sieve test: quickly eliminate candidates where either p or q is divisible by small primes
+            if (!combinedSieveTest(p, smallPrimes)) {
                 continue;
             }
 
             // Perform full primality tests only on candidates that pass sieving
-            // First check if q is prime (cheaper than checking p first)
-            if (!isProbablePrime(q, iterations, Crypto.randBytes, enhanced)) {
+            // First check if q ([Sophie Germain prime](https://en.wikipedia.org/wiki/Safe_and_Sophie_Germain_primes)) is prime
+            if (!isProbablePrime(q, iterations, Crypto.randBytes, enhanced, randFill)) {
                 continue;
             }
 
-            // Then check if p is prime
-            if (!isProbablePrime(p, iterations, Crypto.randBytes, enhanced)) {
+            // Then check if p (safe prime) is prime
+            if (!isProbablePrime(p, iterations, Crypto.randBytes, enhanced, randFill)) {
                 continue;
             }
 
@@ -963,37 +930,39 @@ export class Crypto {
             if (p.toString(2).length === bits) {
                 return p;
             }
-        }
+        } while (true);
     }
 
     /**
      * Generate a cryptographically secure random safe prime number suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) asynchronously.
      * Async version of randSafePrime().
      * 
-     * A safe prime is a prime number of the form p = 2q + 1, where q is also a prime number.
+     * A safe prime is a prime number of the form p = 2q + 1, where q is also a prime number ([Sophie Germain prime](https://en.wikipedia.org/wiki/Safe_and_Sophie_Germain_primes)).
      * Safe primes are particularly useful for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange) because they help prevent
      * small subgroup attacks and ensure that the discrete logarithm problem remains hard.
      * 
-     * This method uses an optimized approach to find safe primes by:
-     * 1. Generating candidates directly with the correct bit length
-     * 2. Using sieving with small primes to quickly eliminate non-prime candidates
-     * 3. Performing primality tests only on promising candidates
+     * This method uses [Michael J. Wiener's](https://eprint.iacr.org/2003/186) combined sieve approach to find safe primes with approximately
+     * 15x speedup over naive algorithms by:
+     * 1. Generating random candidates with the correct bit length
+     * 2. Using combined sieving with small primes up to 2^16 to simultaneously eliminate candidates
+     *    where either p or (p-1)/2 is divisible by small primes
+     * 3. Performing Miller-Rabin primality tests only on candidates that pass the sieve
      * 4. Using asynchronous operations for better performance
      * 
      * **Note:** This method is currently only available in Node.js environment due to its
      * dependency on the native crypto module for secure random number generation.
      * 
-     * **TODO:** Change the algorithm method due to its too overhead. Combine Safe and Sophie Germain primes with the Miller-Rabin test.
-     * 
      * @param bits - The bit length of the safe prime number to generate (default: 2048)
      * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
      * @param enhanced - Whether to use the enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) version (default: false)
+     * @param randFill - Optional parameter to use [crypto.randomFill](https://nodejs.org/api/crypto.html#cryptorandomfillbuffer-offset-size-callback) instead of [crypto.randomBytes](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) (Node.js only)
      * @returns A Promise that resolves to a bigint representing a probable safe prime number of the specified bit length
      */
     static async randSafePrimeAsync(
         bits: number = 2048,
         iterations: number = 10,
         enhanced: boolean = false,
+        randFill?: boolean,
     ): Promise<bigint> {
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randSafePrimeAsync');
@@ -1007,27 +976,13 @@ export class Crypto {
             throw new Error('Number of iterations must be a positive integer');
         }
 
-        // Small primes for sieving
-        //
-        // This method works well on ARM; however, on x64, it experiences significant overhead and keeps spinning. hahaha
-        const smallPrimes = [
-            3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n, 41n, 43n, 47n, 53n, 59n, 61n, 67n, 71n,
-            73n, 79n, 83n, 89n, 97n, 101n, 103n, 107n, 109n, 113n, 127n, 131n, 137n, 139n, 149n, 151n,
-            157n, 163n, 167n, 173n, 179n, 181n, 191n, 193n, 197n, 199n, 211n, 223n, 227n, 229n, 233n,
-            239n, 241n, 251n, 257n, 263n, 269n, 271n, 277n, 281n, 283n, 293n, 307n, 311n, 313n, 317n,
-            331n, 337n, 347n, 349n, 353n, 359n, 367n, 373n, 379n, 383n, 389n, 397n, 401n, 409n, 419n,
-            421n, 431n, 433n, 439n, 443n, 449n, 457n, 461n, 463n, 467n, 479n, 487n, 491n, 499n, 503n,
-            509n, 521n, 523n, 541n, 547n, 557n, 563n, 569n, 571n, 577n, 587n, 593n, 599n, 601n, 607n,
-            613n, 617n, 619n, 631n, 641n, 643n, 647n, 653n, 659n, 661n, 673n, 677n, 683n, 691n, 701n,
-            709n, 719n, 727n, 733n, 739n, 743n, 751n, 757n, 761n, 769n, 773n, 787n, 797n, 809n, 811n,
-            821n, 823n, 827n, 829n, 839n, 853n, 857n, 859n, 863n, 877n, 881n, 883n, 887n, 907n, 911n,
-            919n, 929n, 937n, 941n, 947n, 953n, 967n, 971n, 977n, 983n, 991n, 997n
-        ];
+        // Get small primes up to 2^16 for combined sieve (cached for performance)
+        const smallPrimes = getSmallPrimesForSieve();
 
         // Generate safe prime candidates until a valid one is found
-        while (true) {
+        do {
             // Generate a random odd number with exactly 'bits' bits
-            const p = await Crypto.randBigIntAsync(bits);
+            const p = await Crypto.randBigIntAsync(bits, randFill);
 
             // For a safe prime p = 2q + 1, q = (p-1)/2 must be prime
             const q = (p - 1n) / 2n;
@@ -1037,40 +992,19 @@ export class Crypto {
                 continue;
             }
 
-            // Sieve check: quickly eliminate candidates divisible by small primes
-            let divisibleBySmallPrime = false;
-
-            for (const prime of smallPrimes) {
-                // Skip if prime is too large for efficient sieving
-                if (prime * prime > p) {
-                    break;
-                }
-
-                // Check if p is divisible by the small prime
-                if (p % prime === 0n) {
-                    divisibleBySmallPrime = true;
-                    break;
-                }
-
-                // Check if q is divisible by the small prime
-                if (q % prime === 0n) {
-                    divisibleBySmallPrime = true;
-                    break;
-                }
-            }
-
-            if (divisibleBySmallPrime) {
+            // Combined sieve test: quickly eliminate candidates where either p or q is divisible by small primes
+            if (!combinedSieveTest(p, smallPrimes)) {
                 continue;
             }
 
             // Perform full primality tests only on candidates that pass sieving
-            // First check if q is prime (cheaper than checking p first)
-            if (!await isProbablePrimeAsync(q, iterations, Crypto.randBytesAsync, enhanced)) {
+            // First check if q ([Sophie Germain prime](https://en.wikipedia.org/wiki/Safe_and_Sophie_Germain_primes)) is prime
+            if (!await isProbablePrimeAsync(q, iterations, Crypto.randBytesAsync, enhanced, randFill)) {
                 continue;
             }
 
-            // Then check if p is prime
-            if (!await isProbablePrimeAsync(p, iterations, Crypto.randBytesAsync, enhanced)) {
+            // Then check if p (safe prime) is prime
+            if (!await isProbablePrimeAsync(p, iterations, Crypto.randBytesAsync, enhanced, randFill)) {
                 continue;
             }
 
@@ -1078,7 +1012,7 @@ export class Crypto {
             if (p.toString(2).length === bits) {
                 return p;
             }
-        }
+        } while (true);
     }
 
     /**
