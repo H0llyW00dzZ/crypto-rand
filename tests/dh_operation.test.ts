@@ -392,7 +392,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     // Detect if we're on Windows 2025 or macOS 13
     const platform = os.platform();
     const osRelease = os.release();
-    const isWindows2025 = platform === 'win32' && osRelease.includes('2025');
+    const isWindows2025 = platform === 'win32' && osRelease.startsWith('2025');
     const isMacOS13 = platform === 'darwin' && osRelease.startsWith('13.');
 
     // Skip test on slow platforms
