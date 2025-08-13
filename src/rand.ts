@@ -869,6 +869,8 @@ export class Crypto {
      * 
      * **Note:** This method is currently only available in Node.js environment due to its
      * dependency on the native crypto module for secure random number generation.
+     * It is still considered unstable due to its overhead (so slow) on some operating systems and architectures,
+     * although recent improvements have made it somewhat better than before.
      * 
      * @param bits - The bit length of the safe prime number to generate (default: 2048)
      * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
@@ -951,6 +953,8 @@ export class Crypto {
      * 
      * **Note:** This method is currently only available in Node.js environment due to its
      * dependency on the native crypto module for secure random number generation.
+     * It is still considered unstable due to its overhead (so slow) on some operating systems and architectures,
+     * although recent improvements have made it somewhat better than before.
      * 
      * @param bits - The bit length of the safe prime number to generate (default: 2048)
      * @param iterations - The number of iterations for the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test) (default: 10)
