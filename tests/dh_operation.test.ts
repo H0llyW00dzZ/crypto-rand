@@ -58,8 +58,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
    */
   function simulateKDF(
     secrets: bigint[],
-    salt?: Buffer | string,
-    info: Buffer | string = Buffer.from('TripleDH-KDF'),
+    salt?: Buffer<ArrayBufferLike> | string,
+    info: Buffer<ArrayBufferLike> | string = Buffer.from('TripleDH-KDF'),
     length: number = 32
   ): string {
     // Validate length parameter
@@ -74,10 +74,10 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     // Use a fixed salt for testing consistency if none provided
     const saltBuffer = salt
-      ? (typeof salt === 'string' ? Buffer.from(salt, 'utf8') : salt)
+      ? (typeof salt === 'string' ? Buffer.from(salt, 'utf8') : Buffer.from(salt))
       : Buffer.from('fixed-test-salt-for-consistency', 'utf8');
 
-    const infoBuffer = typeof info === 'string' ? Buffer.from(info, 'utf8') : info;
+    const infoBuffer = typeof info === 'string' ? Buffer.from(info, 'utf8') : Buffer.from(info);
 
     // Convert all secrets to buffers and concatenate them
     const combinedBuffer = Buffer.concat(
@@ -100,7 +100,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     // 2. Expand phase: Generate output key material of desired length
     let output = Buffer.alloc(0);
-    let T = Buffer.alloc(0);
+    let T: Buffer<ArrayBufferLike> = Buffer.alloc(0);
     let i = 0;
 
     // Generate enough output material to reach the desired length
@@ -388,6 +388,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     // With ECC, this would likely be fine to implement in TypeScript/JavaScript because ECC involves small and fast computations.
     test('should work with async safe prime generation', async () => {
       // Skip test on x64 arch
+      //
+      // On my local machine running Ubuntu 25.04, this introduces no noticeable overhead.
+      // However, the GitHub runner does not support Ubuntu 25.04, so we can't run the test there (RIP).
       if (process.arch === 'x64') {
         console.log('Skipping async safe prime generation test on x64 arch due to overhead. hahaha');
         return;
