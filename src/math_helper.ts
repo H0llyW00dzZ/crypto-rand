@@ -525,7 +525,8 @@ export function generatePrimesUpTo(limit: number): number[] {
 }
 
 // Cache for small primes to avoid recomputing
-let smallPrimesCache: bigint[] | undefined;
+// Using a Map to store multiple cache levels for different size requirements
+const smallPrimesCache = new Map<number, bigint[]>();
 
 /**
  * Generate small primes up to 2^16 (65536) for use in combined sieve operations
@@ -534,15 +535,49 @@ let smallPrimesCache: bigint[] | undefined;
  * combined sieve algorithm for safe prime generation as recommended by [Michael J. Wiener](https://eprint.iacr.org/2003/186).
  * The primes are cached for performance since this is an expensive operation.
  * 
- * @returns Array of all prime numbers up to 65536 as bigints
+ * Common prime limits are pre-computed and cached based on the requested limit.
+ * This improves performance by:
+ * 1. Avoiding redundant calculations for frequently used prime limits
+ * 2. Using progressive caching - smaller prime sets are used when possible
+ * 3. Avoiding unnecessary conversions between number and bigint
+ * 
+ * @param limit - Optional upper limit for prime generation (default: 65537 to include all primes up to 2^16)
+ * @returns Array of all prime numbers up to the limit as bigints
  */
-export function getSmallPrimesForSieve(): bigint[] {
-    // Cache the result since this is expensive to compute
-    if (!smallPrimesCache) {
-        const primes = generatePrimesUpTo(65537); // 2^16 + 1 to include up to 2^16
-        smallPrimesCache = primes.map(p => BigInt(p));
+export function getSmallPrimesForSieve(limit: number = 65537): bigint[] {
+    // Fast path for common limit (full sieve size)
+    if (limit === 65537 && smallPrimesCache.has(65537)) {
+        return smallPrimesCache.get(65537)!;
     }
-    return smallPrimesCache;
+
+    // Check if we already have a cache for the exact limit
+    if (smallPrimesCache.has(limit)) {
+        return smallPrimesCache.get(limit)!;
+    }
+
+    // Check if we have a larger cache that includes all the primes we need
+    const cachedLimits = Array.from(smallPrimesCache.keys()).sort((a, b) => b - a);
+    for (const cachedLimit of cachedLimits) {
+        if (cachedLimit > limit) {
+            // We can reuse the larger cache and filter it down
+            const largerCache = smallPrimesCache.get(cachedLimit)!;
+            // No need to filter if the difference is small
+            if (cachedLimit - limit < 1000) {
+                return largerCache;
+            }
+            // Filter the larger cache to only include primes up to the requested limit
+            const filteredCache = largerCache.filter(p => p <= BigInt(limit));
+            smallPrimesCache.set(limit, filteredCache);
+            return filteredCache;
+        }
+    }
+
+    // Generate primes and cache the result
+    const primes = generatePrimesUpTo(limit);
+    const bigintPrimes = primes.map(p => BigInt(p));
+    smallPrimesCache.set(limit, bigintPrimes);
+
+    return bigintPrimes;
 }
 
 /**
