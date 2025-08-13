@@ -219,6 +219,21 @@ describe('Crypto Class', () => {
       expect(result).toHaveLength(10);
       expect(/^[A-Za-z0-9+/]+$/.test(result)).toBe(true);
     });
+
+    it('should throw error in browser environment', () => {
+      // Save original isBrowser method
+      const originalIsBrowser = Crypto['isBrowser'];
+
+      // Mock isBrowser to return true
+      Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
+
+      try {
+        expect(() => Crypto.randBase64(10)).toThrow('randBase64 is not available in browser environment. This method requires Node.js crypto module.');
+      } finally {
+        // Restore original method
+        Crypto['isBrowser'] = originalIsBrowser;
+      }
+    });
   });
 
   describe('randBool()', () => {
