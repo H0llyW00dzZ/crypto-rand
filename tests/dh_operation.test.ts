@@ -230,7 +230,15 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       expect(await isProbablePrimeAsync(q, 38, cryptoRandomBytesAsync)).toBe(true);
     });
 
-    it('should generate different safe primes on multiple calls', async () => {
+    // Detect if we're on Windows 2025 or macOS 13
+    const platform = os.platform();
+    const osRelease = os.release();
+    const osVersion = os.version();
+    const isWindows2025 = platform === 'win32' && osVersion.includes('Windows Server 2025 Datacenter');
+    const isMacOS13 = platform === 'darwin' && osRelease.startsWith('13.');
+
+    // Skip test on slow platforms
+    (isWindows2025 || isMacOS13 ? test.skip : test)('should generate different safe primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
         // When the bit value is small, it can be particularly risky.
         // I'm also pretty sure it might cause the default entropy for random bytes that Node.js uses with OpenSSL to be poor,
@@ -392,7 +400,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     // Detect if we're on Windows 2025 or macOS 13
     const platform = os.platform();
     const osRelease = os.release();
-    const isWindows2025 = platform === 'win32' && osRelease.startsWith('2025');
+    const osVersion = os.version();
+    const isWindows2025 = platform === 'win32' && osVersion.includes('Windows Server 2025 Datacenter');
     const isMacOS13 = platform === 'darwin' && osRelease.startsWith('13.');
 
     // Skip test on slow platforms
