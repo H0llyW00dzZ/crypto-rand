@@ -235,7 +235,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     const osRelease = os.release();
     const osVersion = os.version();
     const isWindows2025 = platform === 'win32' && osVersion.includes('Windows Server 2025 Datacenter');
-    const isMacOS13 = platform === 'darwin' && osRelease.startsWith('13.');
+    const isMacOS13 = platform === 'darwin' && osRelease.startsWith('22.');
 
     // Skip test on slow platforms
     (isWindows2025 || isMacOS13 ? test.skip : test)('should generate different safe primes on multiple calls', async () => {
@@ -402,7 +402,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     const osRelease = os.release();
     const osVersion = os.version();
     const isWindows2025 = platform === 'win32' && osVersion.includes('Windows Server 2025 Datacenter');
-    const isMacOS13 = platform === 'darwin' && osRelease.startsWith('13.');
+    const isMacOS13 = platform === 'darwin' && osRelease.startsWith('22.');
 
     // Skip test on slow platforms
     (isWindows2025 || isMacOS13 ? test.skip : test)(
