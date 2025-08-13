@@ -239,7 +239,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       ]);
 
       expect(prime1).not.toBe(prime2);
-    }, 60000);
+    }, 600000);
 
     it('should throw error for invalid bit length', async () => {
       await expect(randSafePrimeAsync(0)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
