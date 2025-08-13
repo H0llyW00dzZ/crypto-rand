@@ -239,7 +239,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       ]);
 
       expect(prime1).not.toBe(prime2);
-    }, 600000);
+    }, 700000); // Increased to 700000 due to performance overhead on macOS 13 running on Intel x64 processors. hahaha
 
     it('should throw error for invalid bit length', async () => {
       await expect(randSafePrimeAsync(0)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
