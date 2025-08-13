@@ -484,3 +484,105 @@ export function gcd(a: bigint, b: bigint): bigint {
     }
     return a;
 }
+
+/**
+ * Generate all prime numbers up to a specified limit using the [Sieve of Eratosthenes](https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes)
+ * 
+ * This function implements the classical Sieve of Eratosthenes algorithm to efficiently
+ * find all prime numbers up to the given limit. It's optimized for generating the small
+ * primes needed for combined sieve operations in safe prime generation.
+ * 
+ * @param limit - The upper limit for prime generation (exclusive)
+ * @returns Array of all prime numbers less than the limit
+ */
+export function generatePrimesUpTo(limit: number): number[] {
+    if (limit <= 2) return [];
+
+    // Create a boolean array "prime[0..limit-1]" and initialize all entries as true
+    const prime: boolean[] = new Array(limit).fill(true);
+    prime[0] = prime[1] = false; // 0 and 1 are not prime numbers
+
+    // Start with the first prime number, 2
+    for (let p = 2; p * p < limit; p++) {
+        // If prime[p] is not changed, then it is a prime
+        if (prime[p]) {
+            // Update all multiples of p starting from p^2
+            for (let i = p * p; i < limit; i += p) {
+                prime[i] = false;
+            }
+        }
+    }
+
+    // Collect all prime numbers
+    const primes: number[] = [];
+    for (let p = 2; p < limit; p++) {
+        if (prime[p]) {
+            primes.push(p);
+        }
+    }
+
+    return primes;
+}
+
+// Cache for small primes to avoid recomputing
+let smallPrimesCache: bigint[] | undefined;
+
+/**
+ * Generate small primes up to 2^16 (65536) for use in combined sieve operations
+ * 
+ * This function generates all prime numbers up to 65536, which are used in the
+ * combined sieve algorithm for safe prime generation as recommended by [Michael J. Wiener](https://eprint.iacr.org/2003/186).
+ * The primes are cached for performance since this is an expensive operation.
+ * 
+ * @returns Array of all prime numbers up to 65536 as bigints
+ */
+export function getSmallPrimesForSieve(): bigint[] {
+    // Cache the result since this is expensive to compute
+    if (!smallPrimesCache) {
+        const primes = generatePrimesUpTo(65537); // 2^16 + 1 to include up to 2^16
+        smallPrimesCache = primes.map(p => BigInt(p));
+    }
+    return smallPrimesCache;
+}
+
+/**
+ * Combined sieve test for safe prime candidates using [Michael J. Wiener's](https://eprint.iacr.org/2003/186) method
+ * 
+ * This function implements the combined sieve approach that simultaneously tests
+ * both p and (p-1)/2 for divisibility by small primes, providing approximately
+ * 15x speedup over naive approaches according to Wiener's research.
+ * 
+ * For a safe prime p = 2q + 1, we need both p and q to be prime.
+ * This function quickly eliminates candidates where either p or q is composite
+ * by testing divisibility against small primes up to 2^16.
+ * 
+ * @param p - The safe prime candidate
+ * @param smallPrimes - Array of small primes for sieving (up to 2^16)
+ * @returns true if the candidate passes the sieve test, false otherwise
+ */
+export function combinedSieveTest(p: bigint, smallPrimes: bigint[]): boolean {
+    // For safe prime p = 2q + 1, calculate q = (p-1)/2
+    const q = (p - 1n) / 2n;
+
+    // Test against all small primes up to 2^16 (65536)
+    // For large numbers, we use all available small primes since they're pre-computed
+    // and the cost of division testing is much lower than computing square roots of huge numbers
+    for (const prime of smallPrimes) {
+        // Skip prime 2 since p and q are always odd for safe primes > 3
+        if (prime === 2n) {
+            continue;
+        }
+
+        // Check if p is divisible by the small prime (and not equal to it)
+        if (p % prime === 0n && p !== prime) {
+            return false;
+        }
+
+        // Check if q is divisible by the small prime (and not equal to it)
+        if (q % prime === 0n && q !== prime) {
+            return false;
+        }
+    }
+
+    return true;
+}

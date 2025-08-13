@@ -234,12 +234,12 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
         // When the bit value is small, it can be particularly risky.
         // I'm also pretty sure it might cause the default entropy for random bytes that Node.js uses with OpenSSL to be poor,
         // which is why it can be risky, due to how the algorithm works.
-        Crypto.randSafePrimeAsync(32, 38, false),
-        Crypto.randSafePrimeAsync(32, 38, false)
+        Crypto.randSafePrimeAsync(1024, 15, false),
+        Crypto.randSafePrimeAsync(1024, 15, false)
       ]);
 
       expect(prime1).not.toBe(prime2);
-    });
+    }, 60000);
 
     it('should throw error for invalid bit length', async () => {
       await expect(randSafePrimeAsync(0)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
@@ -384,23 +384,25 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       expect(aliceSharedSecret).toBe(bobSharedSecret);
     });
 
-    // This is literally an overhead on [x64](https://en.wikipedia.org/wiki/X86-64). hahahaha
-    // With ECC, this would likely be fine to implement in TypeScript/JavaScript because ECC involves small and fast computations.
+    // This test uses the optimized implementation for large bit sizes
+    // which significantly improves performance compared to the previous implementation
+    // However, on Windows it may incur considerable overhead and take a very long time to complete. hahaha
     test('should work with async safe prime generation', async () => {
-      // Skip test on x64 arch
-      //
-      // On my local machine running Ubuntu 25.04, this introduces no noticeable overhead.
-      // However, the GitHub runner does not support Ubuntu 25.04, so we can't run the test there (RIP).
-      if (process.arch === 'x64') {
-        console.log('Skipping async safe prime generation test on x64 arch due to overhead. hahaha');
-        return;
-      }
-
-      jest.setTimeout(100000);
-      // Generate a safe prime asynchronously
-      //
-      // 2048 is still causing overhead, however ARM can still handle it on Ubuntu 22.04. Will improve/fix it later when I have time.
-      const p = await Crypto.randSafePrimeAsync(1024, 15, false); // Reduce it to 1024 (with a $100 million cost to break it) and see how it goes.
+      jest.setTimeout(600000); // Increased timeout for large bit size test
+      
+      console.time('2048-bit safe prime generation');
+      // Generate a 2048-bit safe prime asynchronously
+      const p = await Crypto.randSafePrimeAsync(2048, 15, false);
+      console.timeEnd('2048-bit safe prime generation');
+      
+      // Verify bit length
+      expect(p.toString(2).length).toBe(2048);
+      
+      // Verify it's a safe prime
+      const q = (p - 1n) / 2n;
+      expect(await isProbablePrimeAsync(q, 15, cryptoRandomBytesAsync)).toBe(true);
+      expect(await isProbablePrimeAsync(p, 15, cryptoRandomBytesAsync)).toBe(true);
+      
       const g = 2n;
 
       // Generate private keys
@@ -427,7 +429,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       //
       // Note: This is not magic, it's proof that numbers don't lie
       expect(aliceSharedSecret).toBe(bobSharedSecret);
-    }, 350000);
+    }, 600000);
   });
 
   test('should successfully perform Triple Diffie-Hellman (3-DH) key exchange', () => {
