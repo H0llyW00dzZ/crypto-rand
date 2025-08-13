@@ -388,21 +388,19 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     // which significantly improves performance compared to the previous implementation
     // However, on Windows it may incur considerable overhead and take a very long time to complete. hahaha
     test('should work with async safe prime generation', async () => {
-      jest.setTimeout(600000); // Increased timeout for large bit size test
-      
       console.time('2048-bit safe prime generation');
       // Generate a 2048-bit safe prime asynchronously
       const p = await Crypto.randSafePrimeAsync(2048, 15, false);
       console.timeEnd('2048-bit safe prime generation');
-      
+
       // Verify bit length
       expect(p.toString(2).length).toBe(2048);
-      
+
       // Verify it's a safe prime
       const q = (p - 1n) / 2n;
       expect(await isProbablePrimeAsync(q, 15, cryptoRandomBytesAsync)).toBe(true);
       expect(await isProbablePrimeAsync(p, 15, cryptoRandomBytesAsync)).toBe(true);
-      
+
       const g = 2n;
 
       // Generate private keys
@@ -429,7 +427,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       //
       // Note: This is not magic, it's proof that numbers don't lie
       expect(aliceSharedSecret).toBe(bobSharedSecret);
-    }, 600000);
+    }, 1000000);
   });
 
   test('should successfully perform Triple Diffie-Hellman (3-DH) key exchange', () => {
