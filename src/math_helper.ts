@@ -526,7 +526,24 @@ export function generatePrimesUpTo(limit: number): number[] {
 
 // Cache for small primes to avoid recomputing
 // Using a Map to store multiple cache levels for different size requirements
-const smallPrimesCache = new Map<number, bigint[]>();
+// Export for testing purposes
+export const smallPrimesCache = new Map<number, bigint[]>();
+
+// Testing hooks
+export const testHooks = {
+    generatePrimesCalled: 0,
+    reset: function () {
+        this.generatePrimesCalled = 0;
+        smallPrimesCache.clear();
+    }
+};
+
+/**
+ * Clear the small primes cache and reset test hooks - for testing purposes only
+ */
+export function clearSmallPrimesCache(): void {
+    testHooks.reset();
+}
 
 /**
  * Generate small primes up to 2^16 (65536) for use in combined sieve operations
@@ -545,34 +562,39 @@ const smallPrimesCache = new Map<number, bigint[]>();
  * @returns Array of all prime numbers up to the limit as bigints
  */
 export function getSmallPrimesForSieve(limit: number = 65537): bigint[] {
-    // Fast path for common limit (full sieve size)
-    if (limit === 65537 && smallPrimesCache.has(65537)) {
-        return smallPrimesCache.get(65537)!;
-    }
-
-    // Check if we already have a cache for the exact limit
+    // Exact match in cache
     if (smallPrimesCache.has(limit)) {
         return smallPrimesCache.get(limit)!;
     }
 
-    // Check if we have a larger cache that includes all the primes we need
-    const cachedLimits = Array.from(smallPrimesCache.keys()).sort((a, b) => b - a);
-    for (const cachedLimit of cachedLimits) {
-        if (cachedLimit > limit) {
-            // We can reuse the larger cache and filter it down
-            const largerCache = smallPrimesCache.get(cachedLimit)!;
-            // No need to filter if the difference is small
-            if (cachedLimit - limit < 1000) {
-                return largerCache;
-            }
-            // Filter the larger cache to only include primes up to the requested limit
-            const filteredCache = largerCache.filter(p => p <= BigInt(limit));
-            smallPrimesCache.set(limit, filteredCache);
-            return filteredCache;
+    // Look for a larger cache entry
+    let largerCacheLimit = 0;
+    for (const cachedLimit of Array.from(smallPrimesCache.keys())) {
+        if (cachedLimit > limit && (largerCacheLimit === 0 || cachedLimit < largerCacheLimit)) {
+            largerCacheLimit = cachedLimit;
         }
     }
 
-    // Generate primes and cache the result
+    // If we found a larger cache
+    if (largerCacheLimit > 0) {
+        const largerCache = smallPrimesCache.get(largerCacheLimit)!;
+
+        // Small difference - use full cache without filtering
+        if (largerCacheLimit - limit < 1000) {
+            smallPrimesCache.set(limit, largerCache);
+            return largerCache;
+        }
+
+        // Larger difference - filter the cache using Array.prototype.filter
+        // This allows the spy to detect it
+        const filteredCache = largerCache.filter(p => p <= BigInt(limit));
+        smallPrimesCache.set(limit, filteredCache);
+        return filteredCache;
+    }
+
+    // No suitable cache found - generate new primes
+    // Direct call to generatePrimesUpTo for spy detection
+    testHooks.generatePrimesCalled++; // Increment the counter for testing
     const primes = generatePrimesUpTo(limit);
     const bigintPrimes = primes.map(p => BigInt(p));
     smallPrimesCache.set(limit, bigintPrimes);
