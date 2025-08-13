@@ -3411,6 +3411,21 @@ describe('Crypto Class', () => {
       }
       expect(versions.size).toBe(10);
     });
+
+    it('should throw error in browser environment', () => {
+      // Save original isBrowser method
+      const originalIsBrowser = Crypto['isBrowser'];
+
+      // Mock isBrowser to return true
+      Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
+
+      try {
+        expect(() => Crypto.randVersion()).toThrow('randVersion is not available in browser environment. This method requires Node.js crypto module.');
+      } finally {
+        // Restore original method
+        Crypto['isBrowser'] = originalIsBrowser;
+      }
+    });
   });
 
   describe('randExponential()', () => {
