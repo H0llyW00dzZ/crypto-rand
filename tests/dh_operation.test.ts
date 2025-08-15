@@ -25,13 +25,34 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     return Crypto.randBytesAsync(size) as Promise<Buffer>;
   };
 
-  // Skip test on slow platforms
-  const platform = os.platform();
-  const osRelease = os.release();
-  const osVersion = os.version();
-  const isWindows2025 = platform === 'win32' && osVersion.includes('Windows Server 2025 Datacenter');
-  const skipNode22inWindows2022 = platform === 'win32' && osVersion.includes('Windows Server 2022 Datacenter') && process.version.startsWith('v22');
-  const isMacOS13 = platform === 'darwin' && osRelease.startsWith('22.');
+  /**
+   * Determines if tests should be skipped based on platform and Node.js version
+   * 
+   * @param nodejsVersion - The Node.js version string (defaults to current process.version)
+   * @param osPlatform - The operating system platform (defaults to current os.platform())
+   * @param osReleaseVal - The operating system release (defaults to current os.release())
+   * @param osVersionVal - The operating system version (defaults to current os.version())
+   * @returns Boolean indicating whether tests should be skipped
+   */
+  function shouldSkipOnSlowPlatform(
+    nodejsVersion: string = process.version,
+    osPlatform: string = os.platform(),
+    osReleaseVal: string = os.release(),
+    osVersionVal: string = os.version()
+  ): boolean {
+    // Windows Server 2025 Datacenter
+    const isWindows2025 = osPlatform === 'win32' && osVersionVal.includes('Windows Server 2025 Datacenter');
+  
+    // Windows Server 2022 Datacenter with Node.js v22
+    const skipNode22inWindows2022 = osPlatform === 'win32' && 
+      osVersionVal.includes('Windows Server 2022 Datacenter') && 
+      nodejsVersion.startsWith('v22');
+  
+    // macOS 13 (Ventura)
+    const isMacOS13 = osPlatform === 'darwin' && osReleaseVal.startsWith('22.');
+  
+    return isWindows2025 || isMacOS13 || skipNode22inWindows2022;
+  }
 
   /**
    * Performs a Diffie-Hellman key exchange operation
@@ -246,7 +267,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     });
 
     // Skip test on slow platforms
-    (isWindows2025 || isMacOS13 ? test.skip : test)('should generate different safe primes on multiple calls', async () => {
+    (shouldSkipOnSlowPlatform() ? test.skip : test)('should generate different safe primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
         // When the bit value is small, it can be particularly risky.
         // I'm also pretty sure it might cause the default entropy for random bytes that Node.js uses with OpenSSL to be poor,
@@ -403,8 +424,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     // This test uses the optimized implementation for large bit sizes
     // which significantly improves performance compared to the previous implementation
-    // However, on Windows 2025 and macOS 13 it's too slow and should be skipped hahaha
-    (isWindows2025 || isMacOS13 || skipNode22inWindows2022 ? test.skip : test)(
+    // However, on slow platforms it's too slow and should be skipped
+    (shouldSkipOnSlowPlatform() ? test.skip : test)(
       'should work with async safe prime generation',
       async () => {
         console.time('2048-bit safe prime generation');
