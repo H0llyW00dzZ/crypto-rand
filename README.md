@@ -125,9 +125,9 @@ async function generateRandomValues() {
 
 #### Testing Environment
 
-- [ ] Add self-runner (GitHub Action Runner) that uses [Ubuntu 25.04 (Plucky Puffin)](https://canonical.com/blog/canonical-releases-ubuntu-25-04-plucky-puffin) with the latest kernel from Ubuntu
+- [ ] Add self-runner (GitHub Action Runner) that uses [Ubuntu 25.04 (Plucky Puffin)](https://canonical.com/blog/canonical-releases-ubuntu-25-04-plucky-puffin) with the latest kernel from Ubuntu including live kernel updates
 > [!NOTE]
-> This self-runner operates on a local physical machine rather than in a virtualized environment. It provides [bare-metal](https://en.wikipedia.org/wiki/Bare-metal_server)-like performance by running directly on the hardware instead of using [virtual machines](https://en.wikipedia.org/wiki/Virtual_machine) or [containers](https://en.wikipedia.org/wiki/Containerization_(computing)).
+> This self-runner operates on a local physical machine (my machine) rather than in a virtualized environment. It provides [bare-metal](https://en.wikipedia.org/wiki/Bare-metal_server)-like performance by running directly on the hardware instead of using [virtual machines](https://en.wikipedia.org/wiki/Virtual_machine) or [containers](https://en.wikipedia.org/wiki/Containerization_(computing)). The system is configured with live kernel update capability, allowing kernel updates to be applied without rebooting.
 
 ## API Documentation
 
