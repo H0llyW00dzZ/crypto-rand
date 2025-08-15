@@ -43,16 +43,11 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     osReleaseVal: string = os.release(),
     osVersionVal: string = os.version()
   ): boolean {
-    // I'm pretty sure Windows 2025 has the same overhead as Windows 2022.
-    // Windows Server 2025 Datacenter with Node.js v22
-    const skipNode22inWindows2025 = osPlatform === 'win32' &&
-      osVersionVal.includes('Windows Server 2025 Datacenter') &&
-      nodejsVersion.startsWith('v22');
 
-    // Windows Server 2025 Datacenter with Node.js v19
-    const skipNode19inWindows2025 = osPlatform === 'win32' &&
+    // Windows Server 2025 Datacenter with Node.js v23
+    const skipNode23inWindows2025 = osPlatform === 'win32' &&
       osVersionVal.includes('Windows Server 2025 Datacenter') &&
-      nodejsVersion.startsWith('v19');
+      nodejsVersion.startsWith('v23');
 
     // Windows Server 2022 Datacenter with Node.js v22
     const skipNode22inWindows2022 = osPlatform === 'win32' &&
@@ -70,7 +65,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     // macOS 15 (Sequoia) with Node.js v23
     const skipNode23inSequoia = osPlatform === 'darwin' && osReleaseVal.startsWith('24.') && nodejsVersion.startsWith('v23');
 
-    return skipNode22inWindows2025 || skipNode19inWindows2025 || isMacOS13 || skipNode22inWindows2022 || skipNode19inWindows2022 || skipNode23inSequoia;
+    return skipNode23inWindows2025 || isMacOS13 || skipNode22inWindows2022 || skipNode19inWindows2022 || skipNode23inSequoia;
   }
 
   /**
