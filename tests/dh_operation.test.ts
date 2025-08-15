@@ -25,6 +25,14 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     return Crypto.randBytesAsync(size) as Promise<Buffer>;
   };
 
+  // Skip test on slow platforms
+  const platform = os.platform();
+  const osRelease = os.release();
+  const osVersion = os.version();
+  const isWindows2025 = platform === 'win32' && osVersion.includes('Windows Server 2025 Datacenter');
+  const skipNode22inWindows2022 = platform === 'win32' && osVersion.includes('Windows Server 2022 Datacenter') && process.version.startsWith('v22');
+  const isMacOS13 = platform === 'darwin' && osRelease.startsWith('22.');
+
   /**
    * Performs a Diffie-Hellman key exchange operation
    * 
@@ -237,13 +245,6 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       expect(await isProbablePrimeAsync(q, 38, cryptoRandomBytesAsync)).toBe(true);
     });
 
-    // Detect if we're on Windows 2025 or macOS 13
-    const platform = os.platform();
-    const osRelease = os.release();
-    const osVersion = os.version();
-    const isWindows2025 = platform === 'win32' && osVersion.includes('Windows Server 2025 Datacenter');
-    const isMacOS13 = platform === 'darwin' && osRelease.startsWith('22.');
-
     // Skip test on slow platforms
     (isWindows2025 || isMacOS13 ? test.skip : test)('should generate different safe primes on multiple calls', async () => {
       const [prime1, prime2] = await Promise.all([
@@ -403,16 +404,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     // This test uses the optimized implementation for large bit sizes
     // which significantly improves performance compared to the previous implementation
     // However, on Windows 2025 and macOS 13 it's too slow and should be skipped hahaha
-
-    // Detect if we're on Windows 2025 or macOS 13
-    const platform = os.platform();
-    const osRelease = os.release();
-    const osVersion = os.version();
-    const isWindows2025 = platform === 'win32' && osVersion.includes('Windows Server 2025 Datacenter');
-    const isMacOS13 = platform === 'darwin' && osRelease.startsWith('22.');
-
-    // Skip test on slow platforms
-    (isWindows2025 || isMacOS13 ? test.skip : test)(
+    (isWindows2025 || isMacOS13 || skipNode22inWindows2022 ? test.skip : test)(
       'should work with async safe prime generation',
       async () => {
         console.time('2048-bit safe prime generation');
