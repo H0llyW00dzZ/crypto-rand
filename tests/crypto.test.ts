@@ -1571,9 +1571,11 @@ describe('Crypto Class', () => {
             { dimension: 512, modulus: 3329, label: 'medium dimension' },
             { dimension: 768, modulus: 3329, label: 'large dimension' },
             { dimension: 512, modulus: 7681, label: 'larger modulus' },
-            { dimension: 512, modulus: 12289, label: 'even larger modulus' }
+            { dimension: 512, modulus: 12289, label: 'even larger modulus' },
+            { dimension: 768, modulus: 999999999999, label: 'unknown modulus' },
           ];
 
+          // 1K iterations are acceptable within a CV of 1.1, as it also depends on resource availability.
           const iterations = 1000; // Number of times to run each parameter set
           const results: Record<string, { avgTime: number, maxTime: number, minTime: number, stdDev: number }> = {};
 
