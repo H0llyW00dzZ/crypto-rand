@@ -20,6 +20,7 @@ describe('Crypto Class', () => {
 
   const randLatticeErr = 'Dimension and modulus must be integers';
   const randBigIntErr = 'Bit length must be an integer greater than or equal to 2';
+  const randPrimeErr = 'Number of iterations must be a positive integer';
 
   describe('rand()', () => {
     it('should return a number between 0 and 1', () => {
@@ -1116,6 +1117,8 @@ describe('Crypto Class', () => {
 
       test('should throw error for dimension and modulus non-integer', () => {
         expect(() => Crypto.randLattice(133.7, 1.337)).toThrow(randLatticeErr);
+        expect(() => Crypto.randLattice(1337, 1.337)).toThrow(randLatticeErr);
+        expect(() => Crypto.randLattice(1.337, 1337)).toThrow(randLatticeErr);
       });
     });
 
@@ -1560,9 +1563,9 @@ describe('Crypto Class', () => {
       });
 
       test('should throw error for invalid iteration count', () => {
-        expect(() => Crypto.randPrime(32, 0)).toThrow('Number of iterations must be a positive integer');
-        expect(() => Crypto.randPrime(32, -1)).toThrow('Number of iterations must be a positive integer');
-        expect(() => Crypto.randPrime(32, 1.5)).toThrow('Number of iterations must be a positive integer');
+        expect(() => Crypto.randPrime(32, 0)).toThrow(randPrimeErr);
+        expect(() => Crypto.randPrime(32, -1)).toThrow(randPrimeErr);
+        expect(() => Crypto.randPrime(32, 1.5)).toThrow(randPrimeErr);
       });
     });
 

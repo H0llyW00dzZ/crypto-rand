@@ -16,6 +16,7 @@ describe('Crypto Async Methods', () => {
   }
 
   const randBigIntErr = 'Bit length must be an integer greater than or equal to 2';
+  const randPrimeErr = 'Number of iterations must be a positive integer';
 
   // Skip tests if not in Node.js environment
   const isNodeEnv = typeof window === 'undefined';
@@ -557,9 +558,9 @@ describe('Crypto Async Methods', () => {
     });
 
     it('should throw error for invalid iterations', async () => {
-      await expect(randPrimeAsync(16, 0)).rejects.toThrow('Number of iterations must be a positive integer');
-      await expect(randPrimeAsync(16, -1)).rejects.toThrow('Number of iterations must be a positive integer');
-      await expect(randPrimeAsync(16, 1.5)).rejects.toThrow('Number of iterations must be a positive integer');
+      await expect(randPrimeAsync(16, 0)).rejects.toThrow(randPrimeErr);
+      await expect(randPrimeAsync(16, -1)).rejects.toThrow(randPrimeErr);
+      await expect(randPrimeAsync(16, 1.5)).rejects.toThrow(randPrimeErr);
     });
 
     it('should throw error in browser environment', async () => {
