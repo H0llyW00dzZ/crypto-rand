@@ -14,6 +14,14 @@ import {
 import { modPow, modInverse, gcd } from '../src/math_helper';
 
 describe('Crypto Class', () => {
+  // Skip tests if not in Node.js environment
+  const isNodeEnv = typeof window === 'undefined';
+
+  if (!isNodeEnv) {
+    console.log('Skipping tests in browser environment');
+    return;
+  }
+
   function errorUnsupported(methodName: string): string {
     return `${methodName} is not available in browser environment. This method requires Node.js crypto module.`
   }

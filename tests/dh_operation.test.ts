@@ -8,6 +8,13 @@ import { isProbablePrime, isProbablePrimeAsync, modPow } from '../src/math_helpe
 // The truth is, the overhead is due to the architecture, not because the algorithm is slow. 
 // Even for RSA, which is not a slow algorithm, architecture plays a significant role.
 describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
+  // Skip tests if not in Node.js environment
+  const isNodeEnv = typeof window === 'undefined';
+
+  if (!isNodeEnv) {
+    console.log('Skipping tests in browser environment');
+    return;
+  }
 
   // Use the actual crypto random bytes function for better testing
   const cryptoRandomBytes = (size: number): Buffer => {

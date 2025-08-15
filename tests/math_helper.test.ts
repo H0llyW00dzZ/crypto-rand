@@ -2,6 +2,14 @@ import * as MathHelper from '../src/math_helper';
 import { Crypto } from '../src/rand';
 
 describe('Math Helper Functions', () => {
+  // Skip tests if not in Node.js environment
+  const isNodeEnv = typeof window === 'undefined';
+
+  if (!isNodeEnv) {
+    console.log('Skipping tests in browser environment');
+    return;
+  }
+
   describe('modPow', () => {
     it('should correctly calculate modular exponentiation for small numbers', () => {
       // Test cases: [base, exponent, modulus, expected result]
