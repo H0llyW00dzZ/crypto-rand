@@ -67,11 +67,12 @@ jobs:
       - name: Generate SHA-512 digest of test logs on failure
         if: ${{ steps.hack-crypto-coverage-test.outcome == 'failure' }}
         run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
+          if ($env:RUNNER_OS -eq 'Windows') {
             certutil -hashfile test-output.log SHA512 > test-output.log.sha512
-          else
+          } else {
             shasum -a 512 test-output.log > test-output.log.sha512
-          fi
+          }
+        shell: pwsh
 
       - name: Upload test logs as artifacts on failure
         if: ${{ steps.hack-crypto-coverage-test.outcome == 'failure' }}
