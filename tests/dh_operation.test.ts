@@ -473,7 +473,11 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       async () => {
         console.time('2048-bit safe prime generation');
         // Generate a 2048-bit safe prime asynchronously
-        const p = await Crypto.randSafePrimeAsync(2048, 15, false);
+        //
+        // Final test with `enhanced` set to true, performing the FIPS method. This final test is because Node.js coverage has already reached 99% (nodejs not browser). 
+        // Note that Diffie-Hellman is a strong cryptographic system for key exchange, as it effectively protects key privacy.
+        // This should remain secure until quantum computing advances, possibly around 2030 ~ 2035 (as visionary).
+        const p = await Crypto.randSafePrimeAsync(2048, 15, true);
         console.timeEnd('2048-bit safe prime generation');
 
         // Verify bit length
@@ -481,8 +485,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
         // Verify it's a safe prime
         const q = (p - 1n) / 2n;
-        expect(await isProbablePrimeAsync(q, 15, cryptoRandomBytesAsync)).toBe(true);
-        expect(await isProbablePrimeAsync(p, 15, cryptoRandomBytesAsync)).toBe(true);
+        expect(await isProbablePrimeAsync(q, 15, cryptoRandomBytesAsync, true)).toBe(true);
+        expect(await isProbablePrimeAsync(p, 15, cryptoRandomBytesAsync, true)).toBe(true);
 
         const g = 2n;
 
