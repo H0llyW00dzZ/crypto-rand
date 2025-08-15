@@ -22,9 +22,7 @@ describe('Crypto Async Methods', () => {
   const isNodeEnv = typeof window === 'undefined';
 
   if (!isNodeEnv) {
-    it('should skip tests in browser environment', () => {
-      console.log('Skipping async tests in browser environment');
-    });
+    console.log('Skipping async tests in browser environment');
     return;
   }
 
