@@ -62,6 +62,8 @@ jobs:
         continue-on-error: true
         run: npm run test:coverage 2>&1 | tee test-output.log
 
+        # TODO: Consider improving this CI/CD system later with a feature that performs cryptographic operations,
+        # such as GPG/OpenPGP (Based ECC), or uses math-based cryptography for signing as an example.
       - name: Generate SHA-512 digest of test logs on failure
         if: ${{ steps.hack-crypto-coverage-test.outcome == 'failure' }}
         run: |
