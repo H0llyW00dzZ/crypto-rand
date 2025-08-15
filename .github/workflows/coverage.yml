@@ -64,7 +64,7 @@ jobs:
       - name: Upload coverage to Codecov
         # This should be: if some tests fail, continue with the matrix without canceling other tasks that haven't completed or are still running.
         continue-on-error: true
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
