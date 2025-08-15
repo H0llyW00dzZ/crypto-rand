@@ -76,6 +76,11 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       osVersionVal.startsWith('Windows Server 2022') &&
       nodejsVersion.startsWith('v21');
 
+    // Windows Server 2022 Datacenter with Node.js v20
+    const skipNode20inWindows2022 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2022') &&
+      nodejsVersion.startsWith('v20');
+
     // macOS 13 (Ventura)
     //
     // TODO: Do we actually need to remove this? hahaha
@@ -94,7 +99,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     return skipNode23inWindows2025 || skipNode21inWindows2025 || skipNode20inWindows2025 ||
       isMacOS13 || skipNode22inWindows2022 || skipNode19inWindows2022 || skipNode21inWindows2022 ||
-      skipNode23inSequoia || skipNode19inSonoma;
+      skipNode20inWindows2022 || skipNode23inSequoia || skipNode19inSonoma;
   }
 
   /**
