@@ -44,6 +44,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     osVersionVal: string = os.version()
   ): boolean {
 
+    // Note: It's no surprise that Linux isn't included here due to its robust performance. ¯\_(ツ)_/¯
+
     // Windows Server 2025 Datacenter with Node.js v23
     const skipNode23inWindows2025 = osPlatform === 'win32' &&
       osVersionVal.startsWith('Windows Server 2025') &&
