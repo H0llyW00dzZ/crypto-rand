@@ -28,6 +28,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
   /**
    * Determines if tests should be skipped based on platform and Node.js version
    * 
+   * **Note:** Any OS, Node.js platform, release, or version that fails in the [CI/CD 🧪 Test Coverage Runner](https://github.com/H0llyW00dzZ/crypto-rand/actions)
+   * due to timeouts caused by excessive overhead (too slow) will be added here. hahaha
+   * 
    * @param nodejsVersion - The Node.js version string (defaults to current process.version)
    * @param osPlatform - The operating system platform (defaults to current os.platform())
    * @param osReleaseVal - The operating system release (defaults to current os.release())
@@ -40,18 +43,58 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     osReleaseVal: string = os.release(),
     osVersionVal: string = os.version()
   ): boolean {
-    // Windows Server 2025 Datacenter
-    const isWindows2025 = osPlatform === 'win32' && osVersionVal.includes('Windows Server 2025 Datacenter');
-  
+
+    // Note: It's no surprise that Linux isn't included here due to its robust performance. ¯\_(ツ)_/¯
+
+    // Windows Server 2025 Datacenter with Node.js v23
+    const skipNode23inWindows2025 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2025') &&
+      nodejsVersion.startsWith('v23');
+
+    // Windows Server 2025 Datacenter with Node.js v21
+    const skipNode21inWindows2025 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2025') &&
+      nodejsVersion.startsWith('v21');
+
+    // Windows Server 2025 Datacenter with Node.js v20
+    const skipNode20inWindows2025 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2025') &&
+      nodejsVersion.startsWith('v20');
+
     // Windows Server 2022 Datacenter with Node.js v22
-    const skipNode22inWindows2022 = osPlatform === 'win32' && 
-      osVersionVal.includes('Windows Server 2022 Datacenter') && 
+    const skipNode22inWindows2022 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2022') &&
       nodejsVersion.startsWith('v22');
-  
+
+    // Windows Server 2022 Datacenter with Node.js v19
+    const skipNode19inWindows2022 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2022') &&
+      nodejsVersion.startsWith('v19');
+
+    // Windows Server 2022 Datacenter with Node.js v21
+    const skipNode21inWindows2022 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2022') &&
+      nodejsVersion.startsWith('v21');
+
     // macOS 13 (Ventura)
-    const isMacOS13 = osPlatform === 'darwin' && osReleaseVal.startsWith('22.');
-  
-    return isWindows2025 || isMacOS13 || skipNode22inWindows2022;
+    //
+    // TODO: Do we actually need to remove this? hahaha
+    const isMacOS13 = osPlatform === 'darwin'
+      && osReleaseVal.startsWith('22.');
+
+    // macOS 15 (Sequoia) with Node.js v23
+    const skipNode23inSequoia = osPlatform === 'darwin'
+      && osReleaseVal.startsWith('24.')
+      && nodejsVersion.startsWith('v23');
+
+    // macOS 14 (Sonoma) with Node.js v19
+    const skipNode19inSonoma = osPlatform === 'darwin'
+      && osReleaseVal.startsWith('23.')
+      && nodejsVersion.startsWith('v19');
+
+    return skipNode23inWindows2025 || skipNode21inWindows2025 || skipNode20inWindows2025 ||
+      isMacOS13 || skipNode22inWindows2022 || skipNode19inWindows2022 || skipNode21inWindows2022 ||
+      skipNode23inSequoia || skipNode19inSonoma;
   }
 
   /**

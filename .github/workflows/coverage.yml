@@ -45,10 +45,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
@@ -58,13 +58,36 @@ jobs:
 
       - name: Run tests with coverage
         # This should be: if some tests fail, continue with the matrix without canceling other tasks that haven't completed or are still running.
+        id: hack-crypto-coverage-test
         continue-on-error: true
-        run: npm run test:coverage
+        run: npm run test:coverage 2>&1 | tee hack-crypto-test-output.log
+
+        # TODO: Consider improving this CI/CD system later with a feature that performs cryptographic operations,
+        # such as GPG/OpenPGP (Based ECC), or uses math-based cryptography for signing as an example.
+      - name: Generate SHA-512 digest of test logs on failure
+        if: ${{ steps.hack-crypto-coverage-test.outcome == 'failure' }}
+        run: |
+          if ($env:RUNNER_OS -eq 'Windows') {
+            certutil -hashfile hack-crypto-test-output.log SHA512 > hack-crypto-test-output.log.sha512
+          } else {
+            shasum -a 512 hack-crypto-test-output.log > hack-crypto-test-output.log.sha512
+          }
+        shell: pwsh
+
+      - name: Upload test logs as artifacts on failure
+        if: ${{ steps.hack-crypto-coverage-test.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: hack-crypto-test-logs-${{ matrix.os }}-node-${{ matrix.node-version }}
+          path: |
+            hack-crypto-test-output.log
+            hack-crypto-test-output.log.sha512
+          retention-days: 7
 
       - name: Upload coverage to Codecov
         # This should be: if some tests fail, continue with the matrix without canceling other tasks that haven't completed or are still running.
         continue-on-error: true
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
