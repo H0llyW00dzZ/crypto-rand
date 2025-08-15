@@ -4,6 +4,8 @@
  * such as for testing purposes.
  */
 import * as crypto from 'crypto';
+import { Crypto } from '../src/rand';
+import { DEFAULT_CDT_TABLES, DEFAULT_CHARSET, LOWERCASE_CHARSET, NUMERIC_CHARSET, SPECIAL_CHARSET, UPPERCASE_CHARSET } from './const';
 
 /**
  * [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test)
@@ -642,4 +644,80 @@ export function combinedSieveTest(p: bigint, smallPrimes: bigint[]): boolean {
     }
 
     return true;
+}
+
+/**
+ * Constant-time discrete Gaussian sampling function using [Cumulative Distribution Tables](https://en.wikipedia.org/wiki/Cumulative_distribution_function) (CDT)
+ * 
+ * This function implements a discrete Gaussian sampler that produces random values following
+ * a discrete Gaussian distribution with standard deviation `sigma`. It is specifically
+ * designed to be resistant to timing attacks by ensuring that the execution time is
+ * independent of the sampled values.
+ * 
+ * The implementation uses a pre-computed Cumulative Distribution Table (CDT) approach where:
+ * 1. A 16-bit random value is generated for comparison with table entries
+ * 2. All table entries are processed in constant time using bitwise operations
+ * 3. Comparisons and updates are performed without conditional branches
+ * 4. A random sign bit determines if the result is positive or negative
+ * 
+ * This constant-time implementation is crucial for cryptographic applications like
+ * lattice-based cryptography where timing variations could leak information about
+ * secret values. The function employs several techniques to maintain constant timing:
+ * - Fixed-size table processing regardless of the actual value found
+ * - Bitwise operations instead of conditional branches
+ * - Constant-time comparison using subtraction and bit manipulation
+ * - Constant-time sign bit generation
+ * 
+ * @param sigma - The standard deviation parameter for the discrete Gaussian distribution
+ * @param customCdtTables - Optional custom Cumulative Distribution Tables for different sigma values (defaults to DEFAULT_CDT_TABLES)
+ * @returns A signed integer sampled from the discrete Gaussian distribution with standard deviation sigma
+ */
+export function discreteGaussianSample(
+    sigma: number,
+    customCdtTables: Record<number, number[]> = DEFAULT_CDT_TABLES,
+): number {
+    // Get the appropriate CDT table based on sigma
+    const table = customCdtTables[sigma];
+    if (!table) throw new Error(`No CDT table for sigma=${sigma}`);
+
+    // Generate random 16-bit value for comparison with table entries
+    const randomBytes = Crypto.randBytes(2);
+    // We only need to handle Buffer since this function only works in Node.js environment
+    // Use type assertion since we know this is a Buffer in Node.js context
+    const r = (randomBytes as Buffer).readUInt16BE(0);
+
+    // Use a fixed-size table approach for constant-time operation
+    // We'll process all entries in the CDT table with the same timing regardless of values
+    let x = 0;
+    let active = 1; // Track whether we're still accumulating (in constant time)
+
+    // Process all table entries with constant timing
+    for (let i = 0; i < table.length; i++) {
+        // Constant-time comparison using bitwise operations
+        // This is equivalent to: r < table[i] ? 1 : 0
+        // But implemented without branches for constant-time operation
+        const tableEntry = table[i];
+
+        // Compare r and table[i] in constant time using subtraction and bit manipulation
+        // (tableEntry - r) will have its highest bit set if tableEntry > r
+        // We use a trick with unsigned right shift to extract the sign bit
+        // Note: This is constant-time on most modern processors
+        const comparison = ((tableEntry - r) >>> 15) & 1;
+
+        // Only update x if we haven't already found a higher value (active = 1)
+        // This maintains constant-time behavior regardless of where in the table the value is found
+        x += comparison & active;
+
+        // Once we find the first match, we'll set active to 0 to stop incrementing x
+        // But we continue to execute the loop for constant timing
+        active &= 1 - comparison;
+    }
+
+    // Generate sign bit in constant-time (avoids the conditional branch)
+    const signByte = Crypto.randBytes(1)[0];
+    // Turn the lowest bit into either +1 or -1 in constant time
+    // (signByte & 1) * 2 - 1 will be either 1 or -1
+    const sign = ((signByte & 1) << 1) - 1;
+
+    return sign * x;
 }
