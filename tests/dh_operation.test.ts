@@ -76,6 +76,11 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       osVersionVal.startsWith('Windows Server 2022') &&
       nodejsVersion.startsWith('v21');
 
+    // Windows Server 2022 Datacenter with Node.js v20
+    const skipNode20inWindows2022 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2022') &&
+      nodejsVersion.startsWith('v20');
+
     // macOS 13 (Ventura)
     //
     // TODO: Do we actually need to remove this? hahaha
@@ -94,7 +99,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     return skipNode23inWindows2025 || skipNode21inWindows2025 || skipNode20inWindows2025 ||
       isMacOS13 || skipNode22inWindows2022 || skipNode19inWindows2022 || skipNode21inWindows2022 ||
-      skipNode23inSequoia || skipNode19inSonoma;
+      skipNode20inWindows2022 || skipNode23inSequoia || skipNode19inSonoma;
   }
 
   /**
@@ -473,7 +478,11 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       async () => {
         console.time('2048-bit safe prime generation');
         // Generate a 2048-bit safe prime asynchronously
-        const p = await Crypto.randSafePrimeAsync(2048, 15, false);
+        //
+        // Final test with `enhanced` set to true, performing the FIPS method. This final test is because Node.js coverage has already reached 99% (nodejs not browser). 
+        // Note that Diffie-Hellman is a strong cryptographic system for key exchange, as it effectively protects key privacy.
+        // This should remain secure until quantum computing advances, possibly around 2030 ~ 2035 years (as visionary).
+        const p = await Crypto.randSafePrimeAsync(2048, 15, true);
         console.timeEnd('2048-bit safe prime generation');
 
         // Verify bit length
@@ -481,8 +490,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
         // Verify it's a safe prime
         const q = (p - 1n) / 2n;
-        expect(await isProbablePrimeAsync(q, 15, cryptoRandomBytesAsync)).toBe(true);
-        expect(await isProbablePrimeAsync(p, 15, cryptoRandomBytesAsync)).toBe(true);
+        expect(await isProbablePrimeAsync(q, 15, cryptoRandomBytesAsync, true)).toBe(true);
+        expect(await isProbablePrimeAsync(p, 15, cryptoRandomBytesAsync, true)).toBe(true);
 
         const g = 2n;
 
