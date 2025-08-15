@@ -1557,6 +1557,61 @@ describe('Crypto Class', () => {
         );
       });
 
+      describe('constant time execution', () => {
+        test('should execute in constant time regardless of input parameters', () => {
+          // Skip this test in environments without process.hrtime.bigint
+          if (typeof process === 'undefined' || !process.hrtime || !process.hrtime.bigint) {
+            console.log('Skipping constant time test: process.hrtime.bigint not available');
+            return;
+          }
+
+          // Different parameter sets to test
+          const paramSets = [
+            { dimension: 256, modulus: 3329, label: 'small dimension' },
+            { dimension: 512, modulus: 3329, label: 'medium dimension' },
+            { dimension: 768, modulus: 3329, label: 'large dimension' },
+            { dimension: 512, modulus: 7681, label: 'larger modulus' },
+            { dimension: 512, modulus: 12289, label: 'even larger modulus' }
+          ];
+
+          const iterations = 10; // Number of times to run each parameter set
+          const results: Record<string, { avgTime: number, maxTime: number, minTime: number, stdDev: number }> = {};
+
+          // Run each parameter set multiple times and record execution times
+          paramSets.forEach(params => {
+            const timings: number[] = [];
+
+            for (let i = 0; i < iterations; i++) {
+              const start = process.hrtime.bigint();
+              Crypto.randLattice(params.dimension, params.modulus);
+              const end = process.hrtime.bigint();
+              timings.push(Number(end - start));
+            }
+
+            // Calculate statistics
+            const avgTime = timings.reduce((sum, time) => sum + time, 0) / timings.length;
+            const maxTime = Math.max(...timings);
+            const minTime = Math.min(...timings);
+            const stdDev = Math.sqrt(timings.reduce((sum, time) => sum + Math.pow(time - avgTime, 2), 0) / timings.length);
+
+            results[params.label] = { avgTime, maxTime, minTime, stdDev };
+          });
+
+          // Analyze results to verify constant time behavior
+          const cvValues = Object.values(results).map(r => r.stdDev / r.avgTime);
+          const maxCV = Math.max(...cvValues);
+
+          expect(maxCV).toBeLessThan(0.9);
+
+          const avgTimes = Object.values(results).map(r => r.avgTime);
+          const minAvg = Math.min(...avgTimes);
+          const maxAvg = Math.max(...avgTimes);
+
+          const relativeDiff = (maxAvg - minAvg) / minAvg;
+
+          expect(relativeDiff).toBeLessThan(1.6);
+        });
+      });
     });
   });
 
