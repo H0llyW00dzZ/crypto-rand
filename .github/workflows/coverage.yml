@@ -62,7 +62,7 @@ jobs:
         continue-on-error: true
         run: npm run test:coverage 2>&1 | tee test-output.log
 
-      - name: Generate SHA-512 digest of test logs
+      - name: Generate SHA-512 digest of test logs on failure
         if: ${{ steps.hack-crypto-coverage-test.outcome == 'failure' }}
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
@@ -71,7 +71,7 @@ jobs:
             shasum -a 512 test-output.log > test-output.log.sha512
           fi
 
-      - name: Upload test logs as artifacts
+      - name: Upload test logs as artifacts on failure
         if: ${{ steps.hack-crypto-coverage-test.outcome == 'failure' }}
         uses: actions/upload-artifact@v4
         with:
