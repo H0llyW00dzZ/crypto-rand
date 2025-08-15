@@ -72,6 +72,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       nodejsVersion.startsWith('v21');
 
     // macOS 13 (Ventura)
+    //
+    // TODO: Do we actually need to remove this? hahaha
     const isMacOS13 = osPlatform === 'darwin'
       && osReleaseVal.startsWith('22.');
 
