@@ -111,6 +111,18 @@ async function generateRandomValues() {
 - [ ] Add more [post-quantum cryptography](https://en.wikipedia.org/wiki/Post-quantum_cryptography) methods
 - [ ] Implement a source for a [CSPRNG/CPRNG](https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator) using [TPM 2.0](https://en.wikipedia.org/wiki/Trusted_Platform_Module) with [C/C++ addons](https://nodejs.org/docs/latest/api/n-api.html). This is feasible, as the maximum output is likely 32 bytes, which is typical for [TPM 2.0](https://en.wikipedia.org/wiki/Trusted_Platform_Module). Tested on [ROG STRIX B450-F GAMING II](https://rog.asus.com/id/motherboards/rog-strix/rog-strix-b450-f-gaming-ii-model/), the maximum is 32 bytes.
 
+#### Node.js Version Compatibility
+- [ ] Implement fallback mechanisms for Node.js < 19.0.0 to support legacy environments (significant performance overhead expected)
+- [ ] Optimize prime number generation for Node.js 20+ by leveraging improved BigInt performance in V8 engine
+- [ ] Replace current implementation of `randSafePrime` with Node.js 21+ native crypto functions when available (reduces overhead by ~40%)
+- [ ] Add WebCrypto API polyfill for older Node.js versions where the implementation is inconsistent
+- [ ] Optimize `randBytes` and `randBytesAsync` for Node.js 19.0.0-19.9.0 where `crypto.randomFill` has higher overhead than newer versions
+- [ ] Implement Worker Threads support for CPU-intensive operations (like prime generation) in Node.js 20+ for better parallelization
+- [ ] Add support for Bun runtime which offers faster cryptographic operations than Node.js in some benchmarks
+- [ ] Reduce memory footprint of large prime generation in Node.js < 20.0.0 where garbage collection is less efficient
+- [ ] Update BigInt operations to use newer V8 optimizations available in Node.js 21+
+- [ ] Implement specialized versions of key algorithms optimized for ARM64 architecture in newer Node.js versions (performance gain of ~15-20% based on benchmarks)
+
 ## API Documentation
 
 ### Static Methods
