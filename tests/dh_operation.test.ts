@@ -60,13 +60,18 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       nodejsVersion.startsWith('v19');
 
     // macOS 13 (Ventura)
-    const isMacOS13 = osPlatform === 'darwin' && osReleaseVal.startsWith('22.');
+    const isMacOS13 = osPlatform === 'darwin'
+      && osReleaseVal.startsWith('22.');
 
     // macOS 15 (Sequoia) with Node.js v23
-    const skipNode23inSequoia = osPlatform === 'darwin' && osReleaseVal.startsWith('24.') && nodejsVersion.startsWith('v23');
+    const skipNode23inSequoia = osPlatform === 'darwin'
+      && osReleaseVal.startsWith('24.')
+      && nodejsVersion.startsWith('v23');
 
     // macOS 14 (Sonoma) with Node.js v19
-    const skipNode19inSonoma = osPlatform === 'darwin' && osReleaseVal.startsWith('23.') && nodejsVersion.startsWith('v19');
+    const skipNode19inSonoma = osPlatform === 'darwin'
+      && osReleaseVal.startsWith('23.')
+      && nodejsVersion.startsWith('v19');
 
     return skipNode23inWindows2025 || isMacOS13 || skipNode22inWindows2022 ||
       skipNode19inWindows2022 || skipNode23inSequoia || skipNode19inSonoma;
