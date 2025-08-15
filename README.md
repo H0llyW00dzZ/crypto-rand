@@ -123,6 +123,12 @@ async function generateRandomValues() {
 - [ ] Update BigInt operations to use newer V8 optimizations available in Node.js 21+
 - [ ] Implement specialized versions of key algorithms optimized for ARM64 architecture in newer Node.js versions (performance gain of ~15-20% based on benchmarks)
 
+#### Testing Environment
+
+- [ ] Add self-runner (GitHub Action Runner) that uses [Ubuntu 25.04 (Plucky Puffin)](https://canonical.com/blog/canonical-releases-ubuntu-25-04-plucky-puffin) with the latest kernel from Ubuntu
+> [!NOTE]
+> This self-runner operates on a local physical machine rather than in a virtualized environment. It provides [bare-metal](https://en.wikipedia.org/wiki/Bare-metal_server)-like performance by running directly on the hardware instead of using [virtual machines](https://en.wikipedia.org/wiki/Virtual_machine) or [containers](https://en.wikipedia.org/wiki/Containerization_(computing)).
+
 ## API Documentation
 
 ### Static Methods
