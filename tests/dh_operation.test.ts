@@ -43,26 +43,34 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     osReleaseVal: string = os.release(),
     osVersionVal: string = os.version()
   ): boolean {
-    // Windows Server 2025 Datacenter
-    const isWindows2025 = osPlatform === 'win32' && osVersionVal.includes('Windows Server 2025 Datacenter');
-  
+    // I'm pretty sure Windows 2025 has the same overhead as Windows 2022.
+    // Windows Server 2025 Datacenter with Node.js v22
+    const skipNode22inWindows2025 = osPlatform === 'win32' &&
+      osVersionVal.includes('Windows Server 2025 Datacenter') &&
+      nodejsVersion.startsWith('v22');
+
+    // Windows Server 2025 Datacenter with Node.js v19
+    const skipNode19inWindows2025 = osPlatform === 'win32' &&
+      osVersionVal.includes('Windows Server 2025 Datacenter') &&
+      nodejsVersion.startsWith('v19');
+
     // Windows Server 2022 Datacenter with Node.js v22
-    const skipNode22inWindows2022 = osPlatform === 'win32' && 
-      osVersionVal.includes('Windows Server 2022 Datacenter') && 
+    const skipNode22inWindows2022 = osPlatform === 'win32' &&
+      osVersionVal.includes('Windows Server 2022 Datacenter') &&
       nodejsVersion.startsWith('v22');
 
     // Windows Server 2022 Datacenter with Node.js v19
-    const skipNode19inWindows2022 = osPlatform === 'win32' && 
-      osVersionVal.includes('Windows Server 2022 Datacenter') && 
+    const skipNode19inWindows2022 = osPlatform === 'win32' &&
+      osVersionVal.includes('Windows Server 2022 Datacenter') &&
       nodejsVersion.startsWith('v19');
-  
+
     // macOS 13 (Ventura)
     const isMacOS13 = osPlatform === 'darwin' && osReleaseVal.startsWith('22.');
 
     // macOS 15 (Sequoia) with Node.js v23
     const skipNode23inSequoia = osPlatform === 'darwin' && osReleaseVal.startsWith('24.') && nodejsVersion.startsWith('v23');
-  
-    return isWindows2025 || isMacOS13 || skipNode22inWindows2022 || skipNode19inWindows2022 || skipNode23inSequoia;
+
+    return skipNode22inWindows2025 || skipNode19inWindows2025 || isMacOS13 || skipNode22inWindows2022 || skipNode19inWindows2022 || skipNode23inSequoia;
   }
 
   /**
