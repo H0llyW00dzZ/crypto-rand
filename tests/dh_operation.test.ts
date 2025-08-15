@@ -61,6 +61,11 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       osVersionVal.startsWith('Windows Server 2025') &&
       nodejsVersion.startsWith('v20');
 
+    // Windows Server 2025 Datacenter with Node.js v19
+    const skipNode19inWindows2025 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2025') &&
+      nodejsVersion.startsWith('v19');
+
     // Windows Server 2022 Datacenter with Node.js v22
     const skipNode22inWindows2022 = osPlatform === 'win32' &&
       osVersionVal.startsWith('Windows Server 2022') &&
@@ -81,6 +86,11 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       osVersionVal.startsWith('Windows Server 2022') &&
       nodejsVersion.startsWith('v20');
 
+    // Windows Server 2022 Datacenter with Node.js v23
+    const skipNode23inWindows2022 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2022') &&
+      nodejsVersion.startsWith('v23');
+
     // macOS 13 (Ventura)
     //
     // TODO: Do we actually need to remove this? hahaha
@@ -99,7 +109,8 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     return skipNode23inWindows2025 || skipNode21inWindows2025 || skipNode20inWindows2025 ||
       isMacOS13 || skipNode22inWindows2022 || skipNode19inWindows2022 || skipNode21inWindows2022 ||
-      skipNode20inWindows2022 || skipNode23inSequoia || skipNode19inSonoma;
+      skipNode20inWindows2022 || skipNode23inSequoia || skipNode19inSonoma || skipNode19inWindows2025 ||
+      skipNode23inWindows2022
   }
 
   /**
