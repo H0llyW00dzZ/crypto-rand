@@ -1,6 +1,7 @@
 // Access the environment variable from process.env
 const isBrowser = process.env.TEST_HACK_CRYPTO_BROWSER_ENV === "true";
-console.log(`Running in ${isBrowser ? "browser" : "nodejs"} environment.`);
+const nodeVersion = process.version;
+console.log(`Running in ${isBrowser ? "browser" : `nodejs ${nodeVersion}`} environment.`);
 
 // Function to create a repeated string for visual formatting
 const createSeparator = (length = 50) => "━".repeat(length);
