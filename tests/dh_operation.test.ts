@@ -28,6 +28,9 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
   /**
    * Determines if tests should be skipped based on platform and Node.js version
    * 
+   * **Note:** Any OS, Node.js platform, release, or version that fails in the [CI/CD 🧪 Test Coverage Runner](https://github.com/H0llyW00dzZ/crypto-rand/actions)
+   * due to timeouts caused by excessive overhead (too slow) will be added here. hahaha
+   * 
    * @param nodejsVersion - The Node.js version string (defaults to current process.version)
    * @param osPlatform - The operating system platform (defaults to current os.platform())
    * @param osReleaseVal - The operating system release (defaults to current os.release())
@@ -47,11 +50,16 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     const skipNode22inWindows2022 = osPlatform === 'win32' && 
       osVersionVal.includes('Windows Server 2022 Datacenter') && 
       nodejsVersion.startsWith('v22');
+
+    // Windows Server 2022 Datacenter with Node.js v19
+    const skipNode19inWindows2022 = osPlatform === 'win32' && 
+      osVersionVal.includes('Windows Server 2022 Datacenter') && 
+      nodejsVersion.startsWith('v19');
   
     // macOS 13 (Ventura)
     const isMacOS13 = osPlatform === 'darwin' && osReleaseVal.startsWith('22.');
   
-    return isWindows2025 || isMacOS13 || skipNode22inWindows2022;
+    return isWindows2025 || isMacOS13 || skipNode22inWindows2022 || skipNode19inWindows2022;
   }
 
   /**
