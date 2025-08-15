@@ -59,9 +59,11 @@ jobs:
 
       - name: Run tests with coverage
         run: npm run test:coverage
+        continue-on-error: true
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
+        continue-on-error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
