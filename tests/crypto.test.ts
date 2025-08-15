@@ -14,6 +14,22 @@ import {
 import { modPow, modInverse, gcd } from '../src/math_helper';
 
 describe('Crypto Class', () => {
+  // Skip tests if not in Node.js environment
+  const isNodeEnv = typeof window === 'undefined';
+
+  if (!isNodeEnv) {
+    console.log('Skipping tests in browser environment');
+    return;
+  }
+
+  function errorUnsupported(methodName: string): string {
+    return `${methodName} is not available in browser environment. This method requires Node.js crypto module.`
+  }
+
+  const randLatticeErr = 'Dimension and modulus must be integers';
+  const randBigIntErr = 'Bit length must be an integer greater than or equal to 2';
+  const randPrimeErr = 'Number of iterations must be a positive integer';
+
   describe('rand()', () => {
     it('should return a number between 0 and 1', () => {
       for (let i = 0; i < 100; i++) {
@@ -220,7 +236,7 @@ describe('Crypto Class', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        expect(() => Crypto.randHex(10)).toThrow('randHex is not available in browser environment. This method requires Node.js crypto module.');
+        expect(() => Crypto.randHex(10)).toThrow(errorUnsupported('randHex'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;
@@ -243,7 +259,7 @@ describe('Crypto Class', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        expect(() => Crypto.randBase64(10)).toThrow('randBase64 is not available in browser environment. This method requires Node.js crypto module.');
+        expect(() => Crypto.randBase64(10)).toThrow(errorUnsupported('randBase64'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;
@@ -431,7 +447,7 @@ describe('Crypto Class', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        expect(() => Crypto.randSeed()).toThrow('randSeed is not available in browser environment. This method requires Node.js crypto module.');
+        expect(() => Crypto.randSeed()).toThrow(errorUnsupported('randSeed'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;
@@ -467,7 +483,7 @@ describe('Crypto Class', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        expect(() => Crypto.randSeeded(1337)).toThrow('randSeeded (with seed parameter) is not available in browser environment. This method requires Node.js crypto module.');
+        expect(() => Crypto.randSeeded(1337)).toThrow(errorUnsupported('randSeeded (with seed parameter)'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;
@@ -1106,6 +1122,12 @@ describe('Crypto Class', () => {
         expect(result).toBeGreaterThanOrEqual(0);
         expect(result).toBeLessThan(1);
       });
+
+      test('should throw error for dimension and modulus non-integer', () => {
+        expect(() => Crypto.randLattice(133.7, 1.337)).toThrow(randLatticeErr);
+        expect(() => Crypto.randLattice(1337, 1.337)).toThrow(randLatticeErr);
+        expect(() => Crypto.randLattice(1.337, 1337)).toThrow(randLatticeErr);
+      });
     });
 
     describe('parameter validation', () => {
@@ -1261,7 +1283,7 @@ describe('Crypto Class', () => {
         Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
         expect(() => Crypto.randLattice()).toThrow(
-          'randLattice is not available in browser environment. This method requires Node.js crypto module.'
+          errorUnsupported('randLattice')
         );
 
         // Restore original method
@@ -1543,15 +1565,15 @@ describe('Crypto Class', () => {
 
     describe('parameter validation', () => {
       test('should throw error for invalid bit length', () => {
-        expect(() => Crypto.randPrime(0)).toThrow('Bit length must be an integer greater than or equal to 2');
-        expect(() => Crypto.randPrime(1)).toThrow('Bit length must be an integer greater than or equal to 2');
-        expect(() => Crypto.randPrime(1.5)).toThrow('Bit length must be an integer greater than or equal to 2');
+        expect(() => Crypto.randPrime(0)).toThrow(randBigIntErr);
+        expect(() => Crypto.randPrime(1)).toThrow(randBigIntErr);
+        expect(() => Crypto.randPrime(1.5)).toThrow(randBigIntErr);
       });
 
       test('should throw error for invalid iteration count', () => {
-        expect(() => Crypto.randPrime(32, 0)).toThrow('Number of iterations must be a positive integer');
-        expect(() => Crypto.randPrime(32, -1)).toThrow('Number of iterations must be a positive integer');
-        expect(() => Crypto.randPrime(32, 1.5)).toThrow('Number of iterations must be a positive integer');
+        expect(() => Crypto.randPrime(32, 0)).toThrow(randPrimeErr);
+        expect(() => Crypto.randPrime(32, -1)).toThrow(randPrimeErr);
+        expect(() => Crypto.randPrime(32, 1.5)).toThrow(randPrimeErr);
       });
     });
 
@@ -1562,7 +1584,7 @@ describe('Crypto Class', () => {
         Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
         expect(() => Crypto.randPrime()).toThrow(
-          'randPrime is not available in browser environment. This method requires Node.js crypto module.'
+          errorUnsupported('randPrime')
         );
 
         // Restore original method
@@ -3321,9 +3343,9 @@ describe('Crypto Class', () => {
 
     describe('parameter validation', () => {
       test('should throw error for invalid bit length', () => {
-        expect(() => Crypto.randBigInt(0)).toThrow('Bit length must be an integer greater than or equal to 2');
-        expect(() => Crypto.randBigInt(1)).toThrow('Bit length must be an integer greater than or equal to 2');
-        expect(() => Crypto.randBigInt(1.5)).toThrow('Bit length must be an integer greater than or equal to 2');
+        expect(() => Crypto.randBigInt(0)).toThrow(randBigIntErr);
+        expect(() => Crypto.randBigInt(1)).toThrow(randBigIntErr);
+        expect(() => Crypto.randBigInt(1.5)).toThrow(randBigIntErr);
       });
     });
 
@@ -3334,7 +3356,7 @@ describe('Crypto Class', () => {
         Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
         expect(() => Crypto.randBigInt()).toThrow(
-          'randBigInt is not available in browser environment. This method requires Node.js crypto module.'
+          errorUnsupported('randBigInt')
         );
 
         // Restore original method
@@ -3420,7 +3442,7 @@ describe('Crypto Class', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        expect(() => Crypto.randVersion()).toThrow('randVersion is not available in browser environment. This method requires Node.js crypto module.');
+        expect(() => Crypto.randVersion()).toThrow(errorUnsupported('randVersion'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;

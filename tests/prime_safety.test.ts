@@ -3,6 +3,14 @@ import { constantTimeCompare } from '../src/constant_time';
 import * as crypto from 'crypto';
 
 describe('Prime Value Safety Tests', () => {
+  // Skip tests if not in Node.js environment
+  const isNodeEnv = typeof window === 'undefined';
+
+  if (!isNodeEnv) {
+    console.log('Skipping tests in browser environment');
+    return;
+  }
+
   describe('constantTimeCompare', () => {
     it('should correctly identify equal values', () => {
       // Test with strings

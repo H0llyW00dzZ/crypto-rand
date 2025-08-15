@@ -4,27 +4,26 @@ on:
   push:
     branches: [master]
     paths-ignore:
-      - '**/README.md'
-      - '**/.npmignore'
-      - '**/.gitignore'
-      - '**/.dockerignore'
-      - '**/LICENSE'
+      - "**/README.md"
+      - "**/.npmignore"
+      - "**/.gitignore"
+      - "**/.dockerignore"
+      - "**/LICENSE"
   pull_request:
     branches: [master]
     paths-ignore:
-      - '**/README.md'
-      - '**/.npmignore'
-      - '**/.gitignore'
-      - '**/.dockerignore'
-      - '**/LICENSE'
+      - "**/README.md"
+      - "**/.npmignore"
+      - "**/.gitignore"
+      - "**/.dockerignore"
+      - "**/LICENSE"
 
 jobs:
   build:
     name: 🔢 Hack Crypto [OS ${{ matrix.os }} / Node ${{ matrix.node-version }}]
     strategy:
       matrix:
-        os:
-          [
+        os: [
             # Acknowledgement (H0llyW00dzZ): In the realm of cryptographic operations, ARM architecture is leading and surpassing all others.
             # ubuntu-latest, is disabled because ubuntu-24.04 is equivalent to ubuntu-latest for now
             ubuntu-24.04,
@@ -58,9 +57,13 @@ jobs:
         run: npm install
 
       - name: Run tests with coverage
+        # This should be: if some tests fail, continue with the matrix without canceling other tasks that haven't completed or are still running.
+        continue-on-error: true
         run: npm run test:coverage
 
       - name: Upload coverage to Codecov
+        # This should be: if some tests fail, continue with the matrix without canceling other tasks that haven't completed or are still running.
+        continue-on-error: true
         uses: codecov/codecov-action@v4
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

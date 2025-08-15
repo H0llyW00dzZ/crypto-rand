@@ -11,13 +11,18 @@ import { Crypto, randAsync, randBytesAsync, randHexAsync, randBase64Async, randS
 import { modPow, modInverse, gcd } from '../src/math_helper';
 
 describe('Crypto Async Methods', () => {
+  function errorUnsupported(methodName: string): string {
+    return `${methodName} is not available in browser environment. This method requires Node.js crypto module.`
+  }
+
+  const randBigIntErr = 'Bit length must be an integer greater than or equal to 2';
+  const randPrimeErr = 'Number of iterations must be a positive integer';
+
   // Skip tests if not in Node.js environment
   const isNodeEnv = typeof window === 'undefined';
 
   if (!isNodeEnv) {
-    it('should skip tests in browser environment', () => {
-      console.log('Skipping async tests in browser environment');
-    });
+    console.log('Skipping async tests in browser environment');
     return;
   }
 
@@ -348,7 +353,7 @@ describe('Crypto Async Methods', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        await expect(randHexAsync(10)).rejects.toThrow('randHexAsync is not available in browser environment');
+        await expect(randHexAsync(10)).rejects.toThrow(errorUnsupported('randHexAsync'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;
@@ -407,7 +412,7 @@ describe('Crypto Async Methods', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        await expect(randBase64Async(10)).rejects.toThrow('randBase64Async is not available in browser environment');
+        await expect(randBase64Async(10)).rejects.toThrow(errorUnsupported('randBase64Async'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;
@@ -451,7 +456,7 @@ describe('Crypto Async Methods', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        await expect(randSeedAsync()).rejects.toThrow('randSeedAsync is not available in browser environment');
+        await expect(randSeedAsync()).rejects.toThrow(errorUnsupported('randSeedAsync'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;
@@ -513,7 +518,7 @@ describe('Crypto Async Methods', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        await expect(randVersionAsync()).rejects.toThrow('randVersionAsync is not available in browser environment');
+        await expect(randVersionAsync()).rejects.toThrow(errorUnsupported('randVersionAsync'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;
@@ -545,15 +550,15 @@ describe('Crypto Async Methods', () => {
     });
 
     it('should throw error for invalid bit length', async () => {
-      await expect(randPrimeAsync(0)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
-      await expect(randPrimeAsync(1)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
-      await expect(randPrimeAsync(1.5)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
+      await expect(randPrimeAsync(0)).rejects.toThrow(randBigIntErr);
+      await expect(randPrimeAsync(1)).rejects.toThrow(randBigIntErr);
+      await expect(randPrimeAsync(1.5)).rejects.toThrow(randBigIntErr);
     });
 
     it('should throw error for invalid iterations', async () => {
-      await expect(randPrimeAsync(16, 0)).rejects.toThrow('Number of iterations must be a positive integer');
-      await expect(randPrimeAsync(16, -1)).rejects.toThrow('Number of iterations must be a positive integer');
-      await expect(randPrimeAsync(16, 1.5)).rejects.toThrow('Number of iterations must be a positive integer');
+      await expect(randPrimeAsync(16, 0)).rejects.toThrow(randPrimeErr);
+      await expect(randPrimeAsync(16, -1)).rejects.toThrow(randPrimeErr);
+      await expect(randPrimeAsync(16, 1.5)).rejects.toThrow(randPrimeErr);
     });
 
     it('should throw error in browser environment', async () => {
@@ -564,7 +569,7 @@ describe('Crypto Async Methods', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        await expect(randPrimeAsync()).rejects.toThrow('randPrimeAsync is not available in browser environment');
+        await expect(randPrimeAsync()).rejects.toThrow(errorUnsupported('randPrimeAsync'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;
@@ -596,9 +601,9 @@ describe('Crypto Async Methods', () => {
     });
 
     it('should throw error for invalid bit length', async () => {
-      await expect(randBigIntAsync(0)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
-      await expect(randBigIntAsync(1)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
-      await expect(randBigIntAsync(1.5)).rejects.toThrow('Bit length must be an integer greater than or equal to 2');
+      await expect(randBigIntAsync(0)).rejects.toThrow(randBigIntErr);
+      await expect(randBigIntAsync(1)).rejects.toThrow(randBigIntErr);
+      await expect(randBigIntAsync(1.5)).rejects.toThrow(randBigIntErr);
     });
 
     it('should throw error in browser environment', async () => {
@@ -609,7 +614,7 @@ describe('Crypto Async Methods', () => {
       Crypto['isBrowser'] = jest.fn().mockReturnValue(true);
 
       try {
-        await expect(randBigIntAsync()).rejects.toThrow('randBigIntAsync is not available in browser environment');
+        await expect(randBigIntAsync()).rejects.toThrow(errorUnsupported('randBigIntAsync'));
       } finally {
         // Restore original method
         Crypto['isBrowser'] = originalIsBrowser;
