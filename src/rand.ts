@@ -896,11 +896,12 @@ export class Crypto {
             throw new Error('Number of iterations must be a positive integer');
         }
 
-        // Get small primes up to 2^16 for combined sieve (cached for performance)
-        const smallPrimes = getSmallPrimesForSieve();
-
         // Generate safe prime candidates until a valid one is found
         do {
+            // Get small primes up to 2^16 for combined sieve (cached for performance)
+            // Placed here to speed up within the loop. (see how it goes)
+            const smallPrimes = getSmallPrimesForSieve();
+
             // Generate a random odd number with exactly 'bits' bits
             const p = Crypto.randBigInt(bits, randFill);
 
@@ -980,11 +981,12 @@ export class Crypto {
             throw new Error('Number of iterations must be a positive integer');
         }
 
-        // Get small primes up to 2^16 for combined sieve (cached for performance)
-        const smallPrimes = getSmallPrimesForSieve();
-
         // Generate safe prime candidates until a valid one is found
         do {
+            // Get small primes up to 2^16 for combined sieve (cached for performance)
+            // Placed here to speed up within the loop. (see how it goes)
+            const smallPrimes = getSmallPrimesForSieve();
+
             // Generate a random odd number with exactly 'bits' bits
             const p = await Crypto.randBigIntAsync(bits, randFill);
 
