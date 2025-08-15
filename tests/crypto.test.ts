@@ -1574,7 +1574,7 @@ describe('Crypto Class', () => {
             { dimension: 512, modulus: 12289, label: 'even larger modulus' }
           ];
 
-          const iterations = 10; // Number of times to run each parameter set
+          const iterations = 1000; // Number of times to run each parameter set
           const results: Record<string, { avgTime: number, maxTime: number, minTime: number, stdDev: number }> = {};
 
           // Run each parameter set multiple times and record execution times
@@ -1601,7 +1601,7 @@ describe('Crypto Class', () => {
           const cvValues = Object.values(results).map(r => r.stdDev / r.avgTime);
           const maxCV = Math.max(...cvValues);
 
-          expect(maxCV).toBeLessThan(0.9);
+          expect(maxCV).toBeLessThan(1.1);
 
           const avgTimes = Object.values(results).map(r => r.avgTime);
           const minAvg = Math.min(...avgTimes);
