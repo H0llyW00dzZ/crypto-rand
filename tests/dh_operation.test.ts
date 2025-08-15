@@ -51,7 +51,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       osVersionVal.startsWith('Windows Server 2025') &&
       nodejsVersion.startsWith('v23');
 
-    // Windows Server 2025 Datacenter with Node.js v23
+    // Windows Server 2025 Datacenter with Node.js v21
     const skipNode21inWindows2025 = osPlatform === 'win32' &&
       osVersionVal.startsWith('Windows Server 2025') &&
       nodejsVersion.startsWith('v21');
