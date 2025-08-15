@@ -58,8 +58,28 @@ jobs:
 
       - name: Run tests with coverage
         # This should be: if some tests fail, continue with the matrix without canceling other tasks that haven't completed or are still running.
+        id: hack-crypto-coverage-test
         continue-on-error: true
-        run: npm run test:coverage
+        run: npm run test:coverage 2>&1 | tee test-output.log
+
+      - name: Generate SHA-512 digest of test logs
+        if: ${{ steps.hack-crypto-coverage-test.outcome == 'failure' }}
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            certutil -hashfile test-output.log SHA512 > test-output.log.sha512
+          else
+            shasum -a 512 test-output.log > test-output.log.sha512
+          fi
+
+      - name: Upload test logs as artifacts
+        if: ${{ steps.hack-crypto-coverage-test.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.os }}-node-${{ matrix.node-version }}
+          path: |
+            test-output.log
+            test-output.log.sha512
+          retention-days: 7
 
       - name: Upload coverage to Codecov
         # This should be: if some tests fail, continue with the matrix without canceling other tasks that haven't completed or are still running.
