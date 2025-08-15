@@ -46,17 +46,17 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
 
     // Windows Server 2025 Datacenter with Node.js v23
     const skipNode23inWindows2025 = osPlatform === 'win32' &&
-      osVersionVal.includes('Windows Server 2025 Datacenter') &&
+      osVersionVal.startsWith('Windows Server 2025') &&
       nodejsVersion.startsWith('v23');
 
     // Windows Server 2022 Datacenter with Node.js v22
     const skipNode22inWindows2022 = osPlatform === 'win32' &&
-      osVersionVal.includes('Windows Server 2022 Datacenter') &&
+      osVersionVal.startsWith('Windows Server 2022') &&
       nodejsVersion.startsWith('v22');
 
     // Windows Server 2022 Datacenter with Node.js v19
     const skipNode19inWindows2022 = osPlatform === 'win32' &&
-      osVersionVal.includes('Windows Server 2022 Datacenter') &&
+      osVersionVal.startsWith('Windows Server 2022') &&
       nodejsVersion.startsWith('v19');
 
     // macOS 13 (Ventura)
