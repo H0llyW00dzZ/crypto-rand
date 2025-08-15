@@ -1025,4 +1025,117 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     const uniqueKeys = new Set(allKeys);
     expect(uniqueKeys.size).toBe(allKeys.length);
   });
+
+  // If Diffie-Hellman isn't too slow or causing overhead on some OS, architecture, or Node.js version,
+  // it can be highly effective. For example, it could be used to implement another cryptographic system.
+  (shouldSkipOnSlowPlatform() ? test.skip : test)(
+    'should simulate Signal-like key ratcheting with forward secrecy (async)',
+    async () => {
+      console.time('2048-bit safe prime generation for Signal-like key ratcheting with forward secrecy');
+
+      // Generate a 2048-bit safe prime asynchronously
+      const p = await Crypto.randSafePrimeAsync(2048, 15, true);
+      console.timeEnd('2048-bit safe prime generation for Signal-like key ratcheting with forward secrecy');
+
+      // Verify bit length
+      expect(p.toString(2).length).toBe(2048);
+
+      // Verify it's a safe prime
+      const q = (p - 1n) / 2n;
+      expect(await isProbablePrimeAsync(q, 15, cryptoRandomBytesAsync, true)).toBe(true);
+      expect(await isProbablePrimeAsync(p, 15, cryptoRandomBytesAsync, true)).toBe(true);
+
+      const g = 2n;
+
+      // Generate initial DH secrets (simulating X3DH output)
+      const initialSecrets = await Promise.all([
+        Crypto.randBigInt(256),
+        Crypto.randBigInt(256),
+        Crypto.randBigInt(256),
+      ]);
+
+      const salt = Buffer.from('signal-double-ratchet-async', 'utf8');
+
+      // Derive initial root key from X3DH output
+      let rootKey = simulateKDF(initialSecrets, salt, 'initial-root-key-async', 32);
+
+      // Initialize sending and receiving chains
+      const sendingChainKeys: string[] = [];
+      const receivingChainKeys: string[] = [];
+      const messageKeys: string[] = [];
+      const rootKeys: string[] = [rootKey];
+
+      // Simulate Double Ratchet with both DH ratchet and symmetric ratchet
+      for (let dhRatchetStep = 0; dhRatchetStep < 3; dhRatchetStep++) {
+        // DH Ratchet: Generate new ephemeral DH key pair
+        const newDHPrivate = await Crypto.randBigIntAsync(256);
+
+        // Simulate receiving party's DH public key
+        const otherDHPrivate = await Crypto.randBigIntAsync(256);
+        const otherDHPublic = dhGeneratePublicKey(p, g, otherDHPrivate);
+
+        // Compute new DH shared secret
+        const newDHSecret = dhComputeSharedSecret(p, otherDHPublic, newDHPrivate);
+
+        // Root key ratchet: derive new root key and initial chain key
+        const rootKeyBigInt = BigInt('0x' + rootKey);
+        const kdfOutput = simulateKDF([rootKeyBigInt, newDHSecret], salt, `dh-ratchet-${dhRatchetStep}`, 64);
+
+        // Split KDF output: first 32 bytes for new root key, next 32 bytes for chain key
+        rootKey = kdfOutput.substring(0, 64);  // First 32 bytes (64 hex chars)
+        let chainKey = kdfOutput.substring(64, 128); // Next 32 bytes (64 hex chars)
+
+        rootKeys.push(rootKey);
+
+        // Determine if this is sending or receiving chain
+        const isSendingChain = dhRatchetStep % 2 === 0;
+        if (isSendingChain) {
+          sendingChainKeys.push(chainKey);
+        } else {
+          receivingChainKeys.push(chainKey);
+        }
+
+        // Symmetric ratchet: derive multiple message keys from chain key
+        for (let msgIndex = 0; msgIndex < 3; msgIndex++) {
+          const chainKeyBigInt = BigInt('0x' + chainKey);
+
+          // Derive message key (for encryption/decryption)
+          const messageKey = simulateKDF([chainKeyBigInt], salt, `message-${dhRatchetStep}-${msgIndex}`, 32);
+          messageKeys.push(messageKey);
+
+          // Advance chain key (symmetric ratchet step)
+          chainKey = simulateKDF([chainKeyBigInt], salt, `next-chain-${dhRatchetStep}-${msgIndex}`, 32);
+        }
+      }
+
+      // Verify forward secrecy: all keys must be unique
+      const allKeys = [...rootKeys, ...sendingChainKeys, ...receivingChainKeys, ...messageKeys];
+      const uniqueKeys = new Set(allKeys);
+      expect(uniqueKeys.size).toBe(allKeys.length);
+
+      // Verify proper key hierarchy
+      expect(rootKeys).toHaveLength(4); // Initial + 3 DH ratchet steps
+      expect(sendingChainKeys.length + receivingChainKeys.length).toBe(3); // 3 DH ratchet steps
+      expect(messageKeys).toHaveLength(9); // 3 DH steps * 3 messages each
+
+      // Verify cryptographic properties
+      allKeys.forEach(key => {
+        expect(key).toMatch(/^[0-9a-f]+$/); // Valid hex
+        expect(key.length).toBe(64); // 32 bytes = 64 hex chars
+      });
+
+      // Test key deletion simulation (forward secrecy)
+      // In real Signal, old keys are deleted after use
+      const oldRootKey = rootKeys[0];
+      const currentRootKey = rootKeys[rootKeys.length - 1];
+      expect(oldRootKey).not.toBe(currentRootKey);
+
+      // Verify that knowing current keys doesn't reveal previous keys
+      // (This is ensured by the one-way nature of KDF, but we test uniqueness)
+      const firstMessageKey = messageKeys[0];
+      const lastMessageKey = messageKeys[messageKeys.length - 1];
+      expect(firstMessageKey).not.toBe(lastMessageKey);
+    },
+    1000000
+  );
 });
