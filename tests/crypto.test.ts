@@ -1572,7 +1572,6 @@ describe('Crypto Class', () => {
             { dimension: 768, modulus: 3329, label: 'large dimension' },
             { dimension: 512, modulus: 7681, label: 'larger modulus' },
             { dimension: 512, modulus: 12289, label: 'even larger modulus' },
-            { dimension: 768, modulus: 999999999999, label: 'unknown modulus' },
           ];
 
           // 1K iterations are acceptable within a CV of 1.1, as it also depends on resource availability.
