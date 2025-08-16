@@ -1616,7 +1616,7 @@ describe('Crypto Class', () => {
       });
     });
 
-    // This is superior and better than Math.random() because it's much harder to factor.
+    // This is superior and better than Math.random() because it's much hard-to-solve problems.
     test('should work with custom CDT table', () => {
       // Custom CDT table for sigma
       const customCDT = {
