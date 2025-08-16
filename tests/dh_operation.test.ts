@@ -480,59 +480,6 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       // Both parties should arrive at the same shared secret
       expect(aliceSharedSecret).toBe(bobSharedSecret);
     });
-
-    // This test uses the optimized implementation for large bit sizes
-    // which significantly improves performance compared to the previous implementation
-    // However, on slow platforms it's too slow and should be skipped
-    (shouldSkipOnSlowPlatform() ? test.skip : test)(
-      'should work with async safe prime generation',
-      async () => {
-        console.time('2048-bit safe prime generation');
-        // Generate a 2048-bit safe prime asynchronously
-        //
-        // Final test with `enhanced` set to true, performing the FIPS method. This final test is because Node.js coverage has already reached 99% (nodejs not browser). 
-        // Note that Diffie-Hellman is a strong cryptographic system for key exchange, as it effectively protects key privacy.
-        // This should remain secure until quantum computing advances, possibly around 2030 ~ 2035 years (as visionary).
-        const p = await Crypto.randSafePrimeAsync(2048, 15, true);
-        console.timeEnd('2048-bit safe prime generation');
-
-        // Verify bit length
-        expect(p.toString(2).length).toBe(2048);
-
-        // Verify it's a safe prime
-        const q = (p - 1n) / 2n;
-        expect(await isProbablePrimeAsync(q, 15, cryptoRandomBytesAsync, true)).toBe(true);
-        expect(await isProbablePrimeAsync(p, 15, cryptoRandomBytesAsync, true)).toBe(true);
-
-        const g = 2n;
-
-        // Generate private keys
-        // Using 256-bit private keys which is secure for DH
-        const alicePrivateKey = await Crypto.randBigIntAsync(256);
-        const bobPrivateKey = await Crypto.randBigIntAsync(256);
-
-        // Generate public keys
-        const alicePublicKey = dhGeneratePublicKey(p, g, alicePrivateKey);
-        const bobPublicKey = dhGeneratePublicKey(p, g, bobPrivateKey);
-
-        // Verify that public keys are not in a small subgroup
-        // For a safe prime, the only small subgroup elements are 1 and p-1
-        expect(alicePublicKey).not.toBe(1n);
-        expect(alicePublicKey).not.toBe(p - 1n);
-        expect(bobPublicKey).not.toBe(1n);
-        expect(bobPublicKey).not.toBe(p - 1n);
-
-        // Compute shared secrets
-        const aliceSharedSecret = dhComputeSharedSecret(p, bobPublicKey, alicePrivateKey);
-        const bobSharedSecret = dhComputeSharedSecret(p, alicePublicKey, bobPrivateKey);
-
-        // Both parties should arrive at the same shared secret
-        //
-        // Note: This is not magic, it's proof that numbers don't lie
-        expect(aliceSharedSecret).toBe(bobSharedSecret);
-      },
-      1000000
-    );
   });
 
   test('should successfully perform Triple Diffie-Hellman (3-DH) key exchange', () => {
@@ -1037,8 +984,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     expect(uniqueKeys.size).toBe(allKeys.length);
   });
 
-  // If Diffie-Hellman isn't too slow or causing overhead on some OS, architecture, or Node.js version,
-  // it can be highly effective. For example, it could be used to implement another cryptographic system.
+  // Final test replaced by this due to excessive slowness (overhead); performs 2x 2048-bit safe prime generation
   (shouldSkipOnSlowPlatform() ? test.skip : test)(
     'should simulate Signal-like key ratcheting with forward secrecy (async)',
     async () => {
