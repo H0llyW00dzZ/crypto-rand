@@ -1615,6 +1615,42 @@ describe('Crypto Class', () => {
         });
       });
     });
+
+    // This is superior and better than Math.random() because it's much harder to factor.
+    test('should work with custom CDT table', () => {
+      // Custom CDT table for sigma
+      const customCDT = {
+        2.5: [65535, 62891, 56734, 47889, 37876, 28456, 20482, 14236, 9634, 6324],
+        4.0: [65535, 64512, 61923, 57456, 51423, 44234, 36567, 29123, 22456, 16789, 12345, 9012, 6543, 4567, 3210, 2234],
+        12.8: [65535, 65472, 65280, 64896, 64000, 62500, 60000, 56789, 52345, 47123, 41234, 35678, 30123, 25000, 20123, 16234, 12987, 10234, 8123, 6234, 4567, 3210, 2345, 1543, 987, 543, 321, 234, 123, 87, 54, 32, 21, 12, 5, 2, 1],
+        178.56: [65535, 65520, 65500, 65450, 65350, 65200, 64900, 64500, 64000, 63400, 62700, 61900, 61000, 60000, 58900, 57700, 56400, 55000, 53500, 52000, 50400, 48700, 47000, 45300, 43500, 41700, 39900, 38100, 36300, 34500, 32700, 31000, 29300, 27600, 26000, 24400, 22900, 21400, 20000, 18600, 17300, 16100, 14900, 13800, 12700, 11700, 10800, 9900, 9100, 8300, 7600, 6900, 6300, 5700, 5200, 4700, 4300, 3900, 3500, 3200, 2900, 2600, 2300, 2100, 1900, 1700, 1500, 1300, 1200, 1100, 1000, 900, 800, 700, 600, 500, 400, 300, 200, 100, 50, 25, 10, 5, 2, 1]
+      };
+
+      const resultSigma2_5 = Crypto.randLattice(256, 7681, 2.5, 'normalized', customCDT);
+      const resultSigma4_0 = Crypto.randLattice(1024, 12289, 4.0, 'normalized', customCDT);
+      const resultSigma12_8 = Crypto.randLattice(2048, 12289, 12.8, 'normalized', customCDT);
+      const resultSigma178_56 = Crypto.randLattice(4096, 12289, 178.56, 'normalized', customCDT);
+
+      expect(resultSigma2_5).toBeDefined();
+      expect(Number.isFinite(resultSigma2_5)).toBe(true);
+      expect(typeof resultSigma2_5).toBe('number');
+      console.log('Sigma 2.5 result:', resultSigma2_5);
+
+      expect(resultSigma4_0).toBeDefined();
+      expect(Number.isFinite(resultSigma4_0)).toBe(true);
+      expect(typeof resultSigma4_0).toBe('number');
+      console.log('Sigma 4.0 result:', resultSigma4_0);
+
+      expect(resultSigma12_8).toBeDefined();
+      expect(Number.isFinite(resultSigma12_8)).toBe(true);
+      expect(typeof resultSigma12_8).toBe('number');
+      console.log('Sigma 12.8 result:', resultSigma12_8);
+
+      expect(resultSigma178_56).toBeDefined();
+      expect(Number.isFinite(resultSigma178_56)).toBe(true);
+      expect(typeof resultSigma178_56).toBe('number');
+      console.log('Very large sigma (178.56) result:', resultSigma178_56);
+    });
   });
 
   describe('randPrime()', () => {
