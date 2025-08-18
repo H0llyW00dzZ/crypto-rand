@@ -93,7 +93,8 @@ export class Crypto {
         }
 
         const range = max - min;
-        const randomFloat = Crypto.rand();
+        // Switch to lattice-based methods instead of using Crypto.rand(), and see how it performs
+        const randomFloat = Crypto.randLattice();
         return Math.floor(randomFloat * range) + min;
     }
 
@@ -133,7 +134,8 @@ export class Crypto {
         }
 
         const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-        const random = Crypto.rand() * totalWeight;
+        // Switch to lattice-based methods instead of using Crypto.rand(), and see how it performs
+        const random = Crypto.randLattice() * totalWeight;
 
         let sum = 0;
         for (let i = 0; i < weights.length; i++) {
@@ -425,7 +427,8 @@ export class Crypto {
      * Generate random float in range.
      */
     static randFloat(min: number = 0, max: number = 1): number {
-        return Crypto.rand() * (max - min) + min;
+        // Switch to lattice-based methods instead of using Crypto.rand(), and see how it performs
+        return Crypto.randLattice() * (max - min) + min;
     }
 
     /**
@@ -1186,7 +1189,8 @@ export class Crypto {
      * Generate random number with exponential distribution
      */
     static randExponential(lambda: number = 1): number {
-        const u = Crypto.rand();
+        // Switch to lattice-based methods instead of using Crypto.rand(), and see how it performs
+        const u = Crypto.randLattice();
         return -Math.log(1 - u) / lambda;
     }
 
