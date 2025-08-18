@@ -1253,7 +1253,7 @@ describe('Crypto Class', () => {
       });
 
       test('should produce cryptographically strong output', () => {
-        const results = Array.from({ length: 100 }, () => Crypto.randLattice());
+        const results = Array.from({ length: 1337 }, () => Crypto.randLattice());
 
         // Check for patterns that would indicate weak randomness
         let consecutiveEqual = 0;
