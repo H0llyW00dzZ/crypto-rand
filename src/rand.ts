@@ -724,9 +724,10 @@ export class Crypto {
      * **Note:** This method is currently only available in Node.js environment due to its
      * dependency on the native crypto module for secure random number generation.
      * 
-     * @param dimension - The dimension of the lattice (default: 512)
-     * @param modulus - The modulus value for lattice operations (default: 3329)
-     * @param sigma - The standard deviation for the [Gaussian distribution](https://en.wikipedia.org/wiki/Normal_distribution) (default: 3.2)
+     * @param dimension - The dimension of the lattice (default: 512). For maximum uniqueness, use higher values like 1024.
+     * @param modulus - The modulus value for lattice operations (default: 3329). For maximum uniqueness, use larger values like 16777213.
+     * @param sigma - The standard deviation for the [Gaussian distribution](https://en.wikipedia.org/wiki/Normal_distribution) (default: 3.2).
+     * For maximum uniqueness (100%), use sigma 178.56 with increased dimension and larger modulus.
      * @param output - The format of the output: 'normalized' (0-1 range) or 'integer' (default: 'normalized')
      * @param customCdtTables - Optional custom [Cumulative Distribution Tables](https://en.wikipedia.org/wiki/Cumulative_distribution_function) for discrete Gaussian sampling. Format: { sigma_value: [table_entries] }, e.g., { 3.2: [65535, 63963, ...] }
      * @returns A random number generated using lattice-based cryptography
