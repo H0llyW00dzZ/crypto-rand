@@ -241,7 +241,13 @@ export class Crypto {
      * Generate random boolean with optional probability.
      */
     static randBool(probability: number = 0.5): boolean {
-        return Crypto.rand() < probability;
+        if (probability < 0 || probability > 1) {
+            throw new Error('Probability must be between 0 and 1');
+        }
+
+        // Use Crypto.rand() in browser environments, otherwise use lattice-based methods for better performance
+        const randomValue = Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice();
+        return randomValue < probability;
     }
 
     /**

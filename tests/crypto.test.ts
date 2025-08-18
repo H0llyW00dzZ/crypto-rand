@@ -286,6 +286,18 @@ describe('Crypto Class', () => {
       expect(trueRatio).toBeGreaterThan(0.7); // Should be around 80%
       expect(trueRatio).toBeLessThan(0.9);
     });
+
+    it('should throw an error if probability is less than 0', () => {
+      expect(() => {
+        Crypto.randBool(-0.1337);
+      }).toThrow('Probability must be between 0 and 1');
+    });
+
+    it('should throw an error if probability is greater than 1', () => {
+      expect(() => {
+        Crypto.randBool(1.1337);
+      }).toThrow('Probability must be between 0 and 1');
+    });
   });
 
   describe('randBytes()', () => {
