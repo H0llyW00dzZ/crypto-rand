@@ -20,7 +20,7 @@ describe('Crypto.rand vs Crypto.randLattice', () => {
     test('both methods should return values between 0 and 1', () => {
       for (let i = 0; i < 100; i++) {
         const randResult = Crypto.rand();
-        const randLatticeResult = Crypto.randLattice();
+        const randLatticeResult = Crypto.randLattice(1024, 16777213, 178.56, 'normalized');
 
         // Verify rand() results
         expect(randResult).toBeGreaterThanOrEqual(0);
@@ -81,7 +81,7 @@ describe('Crypto.rand vs Crypto.randLattice', () => {
 
       // Generate sequences for both methods
       const randSequence = Array.from({ length: sampleSize }, () => Crypto.rand());
-      const randLatticeSequence = Array.from({ length: sampleSize }, () => Crypto.randLattice());
+      const randLatticeSequence = Array.from({ length: sampleSize }, () => Crypto.randLattice(1024, 16777213, 178.56, 'normalized'));
 
       // Count consecutive repeats for rand()
       let randConsecutiveEqual = 0;
@@ -131,7 +131,7 @@ describe('Crypto.rand vs Crypto.randLattice', () => {
       // Generate samples and count bin occurrences
       for (let i = 0; i < sampleSize; i++) {
         const randValue = Crypto.rand();
-        const latticeValue = Crypto.randLattice();
+        const latticeValue = Crypto.randLattice(1024, 16777213, 178.56, 'normalized');
 
         // Determine bin index for each value
         const randBin = Math.floor(randValue * bins);
@@ -173,7 +173,7 @@ describe('Crypto.rand vs Crypto.randLattice', () => {
       for (let i = 0; i < sampleSize; i++) {
         // Round values to specified precision to make comparison meaningful
         const randValue = Math.floor(Crypto.rand() * (10 ** precision)) / (10 ** precision);
-        const latticeValue = Math.floor(Crypto.randLattice() * (10 ** precision)) / (10 ** precision);
+        const latticeValue = Math.floor(Crypto.randLattice(1024, 16777213, 178.56, 'normalized') * (10 ** precision)) / (10 ** precision);
 
         randObserved.add(randValue);
         latticeObserved.add(latticeValue);
