@@ -94,7 +94,7 @@ export class Crypto {
 
         const range = max - min;
         // Use Crypto.rand() in browser environments, otherwise use lattice-based methods for better performance
-        const randomFloat = Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice();
+        const randomFloat = Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice(1024, 16777213, 178.56, 'normalized');
         return Math.floor(randomFloat * range) + min;
     }
 
@@ -135,7 +135,7 @@ export class Crypto {
 
         const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
         // Use Crypto.rand() in browser environments, otherwise use lattice-based methods for better performance
-        const random = (Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice()) * totalWeight;
+        const random = (Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice(1024, 16777213, 178.56, 'normalized')) * totalWeight;
 
         let sum = 0;
         for (let i = 0; i < weights.length; i++) {
@@ -246,7 +246,7 @@ export class Crypto {
         }
 
         // Use Crypto.rand() in browser environments, otherwise use lattice-based methods for better performance
-        const randomValue = Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice();
+        const randomValue = Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice(1024, 16777213, 178.56, 'normalized');
         return randomValue < probability;
     }
 
@@ -434,7 +434,7 @@ export class Crypto {
      */
     static randFloat(min: number = 0, max: number = 1): number {
         // Use Crypto.rand() in browser environments, otherwise use lattice-based methods for better performance
-        return (Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice()) * (max - min) + min;
+        return (Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice(1024, 16777213, 178.56, 'normalized')) * (max - min) + min;
     }
 
     /**
@@ -723,6 +723,8 @@ export class Crypto {
      * 
      * **Note:** This method is currently only available in Node.js environment due to its
      * dependency on the native crypto module for secure random number generation.
+     * 
+     * **TODO:** Implement async version
      * 
      * @param dimension - The dimension of the lattice (default: 512). For maximum uniqueness, use higher values like 1024.
      * @param modulus - The modulus value for lattice operations (default: 3329). For maximum uniqueness, use larger values like 16777213.
@@ -1197,7 +1199,7 @@ export class Crypto {
      */
     static randExponential(lambda: number = 1): number {
         // Use Crypto.rand() in browser environments, otherwise use lattice-based methods for better performance
-        const u = Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice();
+        const u = Crypto.isBrowser() ? Crypto.rand() : Crypto.randLattice(1024, 16777213, 178.56, 'normalized');
         return -Math.log(1 - u) / lambda;
     }
 
