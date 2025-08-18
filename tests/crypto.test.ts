@@ -1027,9 +1027,9 @@ describe('Crypto Class', () => {
       const end = Date.now();
 
       expect(password).toHaveLength(1000);
-      // We need to increase this now because the average of 1k is set to 999 due to different hardware.
+      // We need to increase this now because the average of 1k is set to 1444 due to different hardware.
       // However, on my local machine (Ubuntu 25.04 (Plucky Puffin)), it's less than 350.
-      expect(end - start).toBeLessThan(999); // Increased from 700 to 999 because 500 fails on Windows, haha.
+      expect(end - start).toBeLessThan(1444); // Increased from 1337 to 1444 because 1337 fails on Windows, hahaha.
     });
 
     it('should generate passwords with balanced character distribution', () => {
