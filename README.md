@@ -227,6 +227,7 @@ async function generateRandomValues() {
 >
 > - **randLattice**: Generates cryptographically secure random numbers using [lattice-based](https://en.wikipedia.org/wiki/Lattice-based_cryptography) mathematical operations and the [Learning With Errors (LWE)](https://en.wikipedia.org/wiki/Learning_with_errors) problem. Uses high-dimensional vector operations with Gaussian error distribution for enhanced security.
 > The current implementation of **randLattice** is performed as:
+>
 > $$
 > \begin{align*}
 > \text{1. Generate } \mathbf{a} & \quad \mathbf{a} \in \mathbb{Z}_q^n \\
