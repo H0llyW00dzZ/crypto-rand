@@ -151,7 +151,7 @@ async function generateRandomValues() {
 - `Crypto.randSubset(array, size)` - Select a random subset from an array
 - `Crypto.randWalk(steps, stepSize?)` - Generate random walk sequence (stepSize defaults to 1)
 - `Crypto.randPassword(options)` - Generate secure password with configurable requirements
-- `Crypto.randLattice(dimension?, modulus?)` - Generate lattice-based cryptographically secure random number
+- `Crypto.randLattice(dimension?, modulus?)` - Generate [lattice-based cryptographically](https://en.wikipedia.org/wiki/Lattice-based_cryptography) secure random number
 - `Crypto.randPrime(bits?, iterations?, enhanced?, randFill?)` - Generate cryptographically secure random prime number with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
 - `Crypto.randSafePrime(bits?, iterations?, enhanced?)` - Generate cryptographically secure random safe prime number suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)
 - `Crypto.randBigInt(bits?, randFill?)` - Generate cryptographically secure random bigint with specified bit length
@@ -225,7 +225,18 @@ async function generateRandomValues() {
 >
 > - **randPassword vs. randString**: `randPassword` is specifically designed for password generation with built-in character type controls, password-specific features like excluding similar-looking characters (0O1lI), and ensuring proper character distribution for strong passwords. While `randString` is a general-purpose string generator, `randPassword` is optimized for creating secure passwords with common password policy requirements.
 >
-> - **randLattice**: Generates cryptographically secure random numbers using lattice-based mathematical operations and the Learning With Errors (LWE) problem. Uses high-dimensional vector operations with Gaussian error distribution for enhanced security.
+> - **randLattice**: Generates cryptographically secure random numbers using [lattice-based](https://en.wikipedia.org/wiki/Lattice-based_cryptography) mathematical operations and the [Learning With Errors (LWE)](https://en.wikipedia.org/wiki/Learning_with_errors) problem. Uses high-dimensional vector operations with Gaussian error distribution for enhanced security.
+> The current implementation of **randLattice** is performed as:
+> $$
+> \begin{align*}
+> \text{1. Generate } \mathbf{a} & \quad \mathbf{a} \in \mathbb{Z}_q^n \\
+> \text{2. Generate } \mathbf{s} & \quad \mathbf{s} \in \{-1, 0, 1\}^n \\
+> \text{3. Compute } b & \quad b = \langle \mathbf{a}, \mathbf{s} \rangle \mod q \\
+> \text{4. Sample } e & \quad e \sim D_{\mathbb{Z}, \sigma} \\
+> \text{5. Compute } z & \quad z = (b + e) \mod q \\
+> \text{6. Output } & \quad (a, z) \text{ or } (a, \frac{z}{q})
+> \end{align*}
+> $$
 >
 > - **randPrime**: Generates cryptographically secure random prime numbers of specified bit length using the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test). This is useful for cryptographic applications like [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) key generation that require large prime numbers. The function now supports an enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) mode that implements additional checks following the [FIPS 186-5](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf) standard, including [GCD](https://en.wikipedia.org/wiki/Greatest_common_divisor) verification between random witnesses and the tested number.
 >
