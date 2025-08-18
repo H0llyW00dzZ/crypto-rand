@@ -51,6 +51,11 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
       osVersionVal.startsWith('Windows Server 2025') &&
       nodejsVersion.startsWith('v23');
 
+    // Windows Server 2025 Datacenter with Node.js v22
+    const skipNode22inWindows2025 = osPlatform === 'win32' &&
+      osVersionVal.startsWith('Windows Server 2025') &&
+      nodejsVersion.startsWith('v22');
+
     // Windows Server 2025 Datacenter with Node.js v21
     const skipNode21inWindows2025 = osPlatform === 'win32' &&
       osVersionVal.startsWith('Windows Server 2025') &&
@@ -110,7 +115,7 @@ describe('Safe Prime Generation and Diffie-Hellman Operations', () => {
     return skipNode23inWindows2025 || skipNode21inWindows2025 || skipNode20inWindows2025 ||
       isMacOS13 || skipNode22inWindows2022 || skipNode19inWindows2022 || skipNode21inWindows2022 ||
       skipNode20inWindows2022 || skipNode23inSequoia || skipNode19inSonoma || skipNode19inWindows2025 ||
-      skipNode23inWindows2022
+      skipNode23inWindows2022 || skipNode22inWindows2025
   }
 
   /**
