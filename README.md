@@ -229,14 +229,7 @@ async function generateRandomValues() {
 > The current implementation of **randLattice** is performed as:
 >
 > $$
-> \begin{align*}
-> \text{1. Generate } \mathbf{a} & \quad \mathbf{a} \in \mathbb{Z}_q^n \\
-> \text{2. Generate } \mathbf{s} & \quad \mathbf{s} \in \{-1, 0, 1\}^n \\
-> \text{3. Compute } b & \quad b = \langle \mathbf{a}, \mathbf{s} \rangle \mod q \\
-> \text{4. Sample } e & \quad e \sim D_{\mathbb{Z}, \sigma} \\
-> \text{5. Compute } z & \quad z = (b + e) \mod q \\
-> \text{6. Output } & \quad (a, z) \text{ or } (a, \frac{z}{q})
-> \end{align*}
+> \begin{align*} \text{1. Generate } \mathbf{a} & \quad \mathbf{a} \in \mathbb{Z}_q^n \\ \text{2. Generate } \mathbf{s} & \quad \mathbf{s} \in \{-1, 0, 1\}^n \\ \text{3. Compute } b & \quad b = \langle \mathbf{a}, \mathbf{s} \rangle \mod q \\ \text{4. Sample } e & \quad e \sim D_{\mathbb{Z}, \sigma} \\ \text{5. Compute } z & \quad z = (b + e) \mod q \\ \text{6. Output } & \quad (a, z) \text{ or } (a, \frac{z}{q}) \end{align*}
 > $$
 >
 > - **randPrime**: Generates cryptographically secure random prime numbers of specified bit length using the [Miller-Rabin primality test](https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test). This is useful for cryptographic applications like [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) key generation that require large prime numbers. The function now supports an enhanced [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards) mode that implements additional checks following the [FIPS 186-5](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-5.pdf) standard, including [GCD](https://en.wikipedia.org/wiki/Greatest_common_divisor) verification between random witnesses and the tested number.
