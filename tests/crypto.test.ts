@@ -469,15 +469,15 @@ describe('Crypto Class', () => {
 
   describe('randSeeded()', () => {
     it('should return deterministic values for same seed', () => {
-      const seed = 12345;
+      const seed = Crypto.randLattice();
       const result1 = Crypto.randSeeded(seed);
       const result2 = Crypto.randSeeded(seed);
       expect(result1).toBe(result2);
     });
 
     it('should return different values for different seeds', () => {
-      const result1 = Crypto.randSeeded(111);
-      const result2 = Crypto.randSeeded(222);
+      const result1 = Crypto.randSeeded(Crypto.randLattice(512, 3329, 3.2, 'integer'));
+      const result2 = Crypto.randSeeded(Crypto.randLattice(512, 3329, 3.2, 'integer'));
       expect(result1).not.toBe(result2);
     });
 
