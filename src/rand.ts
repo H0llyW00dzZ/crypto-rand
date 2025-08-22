@@ -712,27 +712,48 @@ export class Crypto {
     }
 
     /**
-     * Generate cryptographically secure random number using [lattice-based](https://en.wikipedia.org/wiki/Lattice-based_cryptography) mathematical operations.
+     * Generate a cryptographically secure random number using [lattice-based](https://en.wikipedia.org/wiki/Lattice-based_cryptography) mathematical operations.
      * It uses lattice operations combined with Gaussian error distribution to produce cryptographically secure randomness.
+     *
+     * **Current Challenge of this Implementation (LWE Problem):**
      * 
-     * This implementation is designed to be resistant to timing attacks by:
+     * The Learning With Errors (LWE) problem is a foundational challenge in lattice-based cryptography. It involves the following:
+     * 
+     * Given multiple LWE samples (aᵢ, zᵢ) where:
+     *
+     * ```
+     *   ┌──────────┐   ┌─────────┐
+     *   │ Sample 1 │   │ (a₁, z₁) │ ← z₁ = ⟨a₁, s⟩ + e₁ mod q
+     *   │ Sample 2 │ = │ (a₂, z₂) │ ← z₂ = ⟨a₂, s⟩ + e₂ mod q
+     *   │ Sample 3 │   │ (a₃, z₃) │ ← z₃ = ⟨a₃, s⟩ + e₃ mod q
+     *   │   ...    │   │   ...    │
+     *   │ Sample m │   │ (aₘ, zₘ) │ ← zₘ = ⟨aₘ, s⟩ + eₘ mod q
+     *   └──────────┘   └─────────┘
+     * ```
+     *
+     * The challenge is to find the secret vector \( s = [s₁, s₂, ..., sₙ] \).
+     * 
+     * This problem is computationally hard and is the basis for many cryptographic protocols, providing strong security guarantees even against quantum adversaries.
+     *
+     * The implementation is designed to resist timing attacks by:
      * - Using constant-time operations for all critical cryptographic steps
      * - Ensuring that execution time is independent of secret values
      * - Avoiding branches and conditional operations in the core sampling algorithm
      * - Processing all input data with consistent timing regardless of values
-     * 
-     * **Note:** This method is currently only available in Node.js environment due to its
+     *
+     * **Note:** This method is currently only available in a Node.js environment due to its
      * dependency on the native crypto module for secure random number generation.
-     * 
-     * **TODO:** Implement async version
-     * 
+     *
+     * **TODO:** Implement an async version.
+     *
      * @param dimension - The dimension of the lattice (default: 512). For maximum uniqueness, use higher values like 1024.
      * @param modulus - The modulus value for lattice operations (default: 3329). For maximum uniqueness, use larger values like 16777213.
      * @param sigma - The standard deviation for the [Gaussian distribution](https://en.wikipedia.org/wiki/Normal_distribution) (default: 3.2).
-     * For maximum uniqueness (100%), use sigma 178.56 with increased dimension and larger modulus.
-     * @param output - The format of the output: 'normalized' (0-1 range) or 'integer' (default: 'normalized')
-     * @param customCdtTables - Optional custom [Cumulative Distribution Tables](https://en.wikipedia.org/wiki/Cumulative_distribution_function) for discrete Gaussian sampling. Format: { sigma_value: [table_entries] }, e.g., { 3.2: [65535, 63963, ...] }
-     * @returns A random number generated using lattice-based cryptography
+     *                For maximum uniqueness (100%), use sigma 178.56 with increased dimension and larger modulus.
+     * @param output - The format of the output: 'normalized' (0-1 range) or 'integer' (default: 'normalized').
+     * @param customCdtTables - Optional custom [Cumulative Distribution Tables](https://en.wikipedia.org/wiki/Cumulative_distribution_function)
+     *                         for discrete Gaussian sampling. Format: { sigma_value: [table_entries] }, e.g., { 3.2: [65535, 63963, ...] }.
+     * @returns A random number generated using lattice-based cryptography.
      */
     static randLattice(
         dimension: number = 512,
@@ -741,7 +762,6 @@ export class Crypto {
         output: 'normalized' | 'integer' = 'normalized',
         customCdtTables: Record<number, number[]> = DEFAULT_CDT_TABLES
     ): number {
-
         if (Crypto.isBrowser()) {
             Crypto.throwBrowserError('randLattice');
         }
@@ -750,7 +770,6 @@ export class Crypto {
         if (!Number.isInteger(dimension) || !Number.isInteger(modulus)) {
             throw new Error('Dimension and modulus must be integers');
         }
-
 
         // Check if it has at least one entry
         if (Object.keys(customCdtTables).length === 0) {
@@ -779,7 +798,7 @@ export class Crypto {
         // Use custom tables if provided, otherwise use defaults
         const CDT_TABLES = customCdtTables || DEFAULT_CDT_TABLES;
 
-        // 2. Secret vector {-1, 0, 1} using constant-time techniques
+        // 1. Secret vector {-1, 0, 1} using constant-time techniques
         // We generate random bytes and map them to the range {-1, 0, 1} in a constant-time manner
         const secret = new Array(dimension);
         // Generate enough random bytes (each byte gives us values for 4 elements)
@@ -807,7 +826,7 @@ export class Crypto {
             secret[i] = mappedValue;
         }
 
-        // 3. Matrix row uniform mod q using constant-time techniques
+        // 2. Matrix row uniform mod q using constant-time techniques
         const matrixRow = new Array(dimension);
         // Generate random bytes for matrix elements
         const matrixBytes = Crypto.randBytes(dimension * 4); // Using 4 bytes per element for simplicity
@@ -822,7 +841,7 @@ export class Crypto {
             matrixRow[i] = val % modulus;
         }
 
-        // 4. Inner product mod q using constant-time techniques
+        // 3. Inner product mod q using constant-time techniques
         // We compute the inner product carefully to avoid timing attacks
         let innerProduct = 0;
         for (let i = 0; i < dimension; i++) {
@@ -833,10 +852,10 @@ export class Crypto {
             innerProduct = ((innerProduct % modulus) + modulus) % modulus;
         }
 
-        // 5. Discrete Gaussian error
+        // 4. Discrete Gaussian error
         const error = discreteGaussianSample(sigma, CDT_TABLES);
 
-        // 6. LWE sample
+        // 5. LWE sample
         const lweSample = innerProduct + error;
         const normalizedSample = ((lweSample % modulus) + modulus) % modulus;
 
