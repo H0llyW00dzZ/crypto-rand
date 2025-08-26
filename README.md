@@ -151,7 +151,7 @@ async function generateRandomValues() {
 - `Crypto.randSubset(array, size)` - Select a random subset from an array
 - `Crypto.randWalk(steps, stepSize?)` - Generate random walk sequence (stepSize defaults to 1)
 - `Crypto.randPassword(options)` - Generate secure password with configurable requirements
-- `Crypto.randLattice(dimension?, modulus?)` - Generate [lattice-based cryptographically](https://en.wikipedia.org/wiki/Lattice-based_cryptography) secure random number
+- `Crypto.randLattice(dimension?, modulus?, sigma?, output?, customCdtTables?)` - Generate [lattice-based cryptographically](https://en.wikipedia.org/wiki/Lattice-based_cryptography) secure random number (Node.js only)
 - `Crypto.randPrime(bits?, iterations?, enhanced?, randFill?)` - Generate cryptographically secure random prime number with optional [FIPS](https://en.wikipedia.org/wiki/Federal_Information_Processing_Standards)-enhanced mode
 - `Crypto.randSafePrime(bits?, iterations?, enhanced?)` - Generate cryptographically secure random safe prime number suitable for [Diffie-Hellman key exchanges](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange)
 - `Crypto.randBigInt(bits?, randFill?)` - Generate cryptographically secure random bigint with specified bit length
