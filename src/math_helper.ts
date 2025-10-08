@@ -699,10 +699,17 @@ export function discreteGaussianSample(
         const tableEntry = table[i];
 
         // Compare r and table[i] in constant time using subtraction and bit manipulation
-        // (tableEntry - r) will have its highest bit set if tableEntry > r
-        // We use a trick with unsigned right shift to extract the sign bit
-        // Note: This is constant-time on most modern processors
-        const comparison = ((tableEntry - r) >>> 15) & 1;
+        // When r < tableEntry (i.e., tableEntry - r > 0), we want comparison = 1
+        // We compute (tableEntry - r) and check if it's positive by looking at the sign bit
+        // For 16-bit values: if (tableEntry - r) >= 0, the bit 15 is 0, so we get 1 after XOR
+        // JavaScript numbers are 32-bit signed integers for bitwise operations
+        // So we need to work with the sign bit properly
+        const diff = tableEntry - r;
+        // If diff >= 0 (r <= tableEntry), we want 1; if diff < 0 (r > tableEntry), we want 0
+        // The sign bit (bit 31 in 32-bit representation) is 0 when positive, 1 when negative
+        // So we extract bit 31 and flip it: (diff >>> 31) gives us 0 for positive, 1 for negative
+        // Then (1 - (diff >>> 31)) gives us 1 for positive (r <= tableEntry), 0 for negative
+        const comparison = 1 - (diff >>> 31);
 
         // Only update x if we haven't already found a higher value (active = 1)
         // This maintains constant-time behavior regardless of where in the table the value is found
